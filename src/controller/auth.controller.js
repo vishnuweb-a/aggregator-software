@@ -1,0 +1,295 @@
+import User from '../model/user.model.js'
+import validator from 'validator'
+import bcrypt from 'bcrypt'
+import jwt from 'jsonwebtoken' 
+import crypto from 'crypto'
+import { strOpt,optValidate } from '../services/otp.service.js'
+import { sendOtp,welcomeMessage } from '../services/mail.service.js'
+import credential from '../config/config.js'
+
+
+
+/**
+ *  - post : /register 
+ *  -  registration is performed and otp is sent 
+ */
+
+const registerUser = async (req , res)=>{
+  try {
+        const {name , email , password , phoneNumber}  = req.body
+
+        if(!name || !email || !password || !phoneNumber){
+          return res.status(400).json({message : "all fields are required"})
+        }
+
+        if(!validator.isEmail(email)){
+          return res.status(400).json({message : "invalid email"})
+        }
+        const isUserExist = await User.findOne({email})
+        if (isUserExist){
+      return     res.status(400).json({message : "user already exist"})
+
+        }
+        const hashedPassword = await bcrypt.hash(password,10)
+        const  user = await User.create({
+          name,
+          email,
+          password : hashedPassword,
+          phoneNumber
+        })
+        if(!user){
+        return    res.status(400).json({message : "user not created"})
+        }
+        
+        const generatedOtp = crypto.randomInt(1000,9999)
+        const otpResponse = await strOpt(generatedOtp, email)
+        console.log(otpResponse)
+        if(!otpResponse){
+          return res.status(400).json({message : "otp not sent"})
+        }
+         const emailSent = await    sendOtp (email, generatedOtp)
+         console.log(emailSent)
+   
+        
+        return res.status(201).json({
+          "message"  :  " user created sucessfully  (unverified) and opt sent. plz verify user ",
+          
+        })
+  }catch(err){
+    console.log(err.message)
+  }
+}
+
+
+/**  
+ *   - post : /validate  
+ *  -  user is verified and welcome email is sent ..
+ */
+
+const validateAndMarkStatus = async (req,res)=>{
+    try {
+
+      const  {email,otp}  = req.body
+      const validate = await optValidate(email,otp)
+      if(!validate){
+        return res.status(400).json({
+          message :  "invalid otp ....."
+        })
+      }
+
+      const user = await User.findOne({email})
+      if(!user){
+        return res.status(400).json({
+          message : "user not fetched from database ."
+        })
+
+      }
+      if(user.status === 'verified'){
+        return res.status(400).json({
+          "response"  :  " user is verified ."
+        })
+      }
+
+      const insert = await User.updateOne(
+   { email: email },
+   { $set: { status  : "verified" } }
+);
+      if(!insert){
+        return res.status(400).json({
+          "response" : "user not updated .."
+        })
+      }
+     
+     
+
+      const token = jwt.sign({userId :user._id,password : user.password},credential.jwtSecret,{expiresIn : '1h'})
+      res.cookie('token',token)
+      await welcomeMessage(email,insert.name)
+      return res.status(200).json({
+        "response" : "user varified successfully ....",
+        
+      
+      })
+    }catch(err){
+      console.log(err.message)
+    }
+}
+
+
+
+
+/**  
+ *   -  post :  /login  
+ *  - helps to  login  user ..
+ */
+
+const loginUser = async (req,res)=>{
+
+  try{
+   const {email , password} = req.body
+   if(!email || !password){
+       return res.status(400).json({message  :  "all feilds must be present ..."})
+   } 
+   const user = await User.findOne({email})
+   if(!email){
+    return res.status(404).json({message  :  "user is not found ...  "})
+   }
+   const verify = await bcrypt.compare(password,user.password)
+   if(!verify){
+     return res.status(400).json({
+      message : " you have given wrong password ."
+     })
+   }
+   const token = jwt.sign({userId : user._id},credential.jwtSecret,{expiresIn : '1h'})
+
+   res.cookie('token',token)
+   return res.status(200).json({
+       "response"  : "user login successfully ..."
+   })
+  }catch(err){
+    return res.status(500).json({
+      "response" : err.message
+    })
+  }
+}
+
+/**  
+ *   - delete : /logout 
+ *  - logout  the user 
+ */
+
+const logoutUser = async (req, res)=>{
+   try{
+    res.clearCookie('token')
+    return res.status(200).json({
+      "response" : "user logout successfully "
+   })
+}catch(err){
+      return res.status(500).json({
+        "response" : err.message
+      })
+   }
+  }
+
+    /**  
+     *  - post : /forgetpassword
+     *   - send otp at email 
+     */
+  const forgotPassword = async (req,res)=>{
+
+    try {
+     const {email} = req.body
+     if(!email){
+      return res.status(404).json({
+        "response" : "email need to be their ."
+      })
+     }
+     const user = await User.findOne({email})
+     if(!user){
+      return res.status(404).json({
+        "response" : "user not found need to register .."
+      })
+     }
+
+     const  otp =  crypto.randomInt(1000,9999)
+
+     await strOpt(otp,email)
+
+     await sendOtp(email,otp)
+
+     res.status(200).json({
+      "response" : "otp sent successfully .."
+     })
+
+    }catch(err){
+      return res.status(500).json({
+        "response" : err.message
+      })
+    }
+    
+    }
+
+
+   /**  
+    *  - post : / verifyotp 
+    *   - verify sent otp given by  user 
+    */
+    const verifyOtpForForgotPassword = async (req,res)=>{
+       try {
+
+        const {otp, email} =  req.body
+        const validate = await optValidate(email,otp)
+         if(!validate){
+           return res.status(400).json({
+            "response"  : "invalid otp ..."
+           })
+         }
+
+         res.status(200).json({
+          "response" : " otp verified successfully  .."
+         })
+
+
+
+       }catch(err){
+        return res.status(500).json({
+          "response" : err.message
+        })
+       }
+    }
+   
+     /**  
+      *  -  post : /changePassword
+      *  -  change the pasword and saved  in the database . 
+      */
+
+    const changePassword =  async (req,res)=>{
+       try {
+            const {email,password} = req.body
+            const user = await User.findOne({email})
+            if(!user){
+              return res.status(404).json({
+                "response" : "user not found ."
+              })
+            }
+            const hashedPassword = await bcrypt.hash(password,10)
+            const update = await User.updateOne(
+                                      { email: email },
+              { $set: { password : hashedPassword } }
+            );
+            if(!update){
+              return res.status(404).json({
+                "response" : "password not updated ."
+              })
+            }
+     res.status(200).json({
+      "response" : "password updated successfully ."
+     })
+    
+       }catch(err){
+        return res.status(500).json({
+          "response" : err.message
+        })
+       }
+    }
+
+
+const getMe = async (req, res) => {
+  try {
+    const token = req.cookies?.token
+    if (!token) return res.status(401).json({ response: 'Not authenticated' })
+    const decoded = jwt.verify(token, credential.jwtSecret)
+    const user = await User.findById(decoded.userId).select('-password')
+    if (!user) return res.status(404).json({ response: 'User not found' })
+    return res.status(200).json({ user: { name: user.name, email: user.email, phoneNumber: user.phoneNumber, status: user.status } })
+  } catch (err) {
+    return res.status(401).json({ response: 'Invalid token' })
+  }
+}
+
+export  { registerUser,validateAndMarkStatus, loginUser ,logoutUser ,forgotPassword ,verifyOtpForForgotPassword ,changePassword, getMe }
+
+
+
+
+
