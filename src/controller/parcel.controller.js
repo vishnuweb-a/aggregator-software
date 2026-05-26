@@ -86,6 +86,7 @@ export const courierOption = async (req, res) => {
       _id: parcelId,
       senderId: userId,
     });
+    console.log(parcelDetail);
 
     if (!parcelDetail) {
       return res.status(404).json({
@@ -150,93 +151,226 @@ export const courierOption = async (req, res) => {
  * - used to make order placed.
  */
 // CONFIRM COURIER
-export const confirmCourier = async (req, res) => {
-  try {
-    const userId = req.user;
+export const confirmCourier = async (req,res)=>{
 
-    const { parcelId, courierId } = req.body;
+try{
 
-    // get parcel
-    const parcelData = await Parcel.findOne({
-      _id: parcelId,
-      senderId: userId,
-    });
+const userId=req.user;
 
-    if (!parcelData) {
-      return res.status(404).json({
-        response: "parcel not found",
-      });
-    }
+const {
+parcelId,
+courierId
+}=req.body;
 
-    // get courier
-    const courierData = await Courier.findById(courierId);
+const parcelData=await Parcel.findOne({
+_id:parcelId,
+senderId:userId
+});
 
-    if (!courierData) {
-      return res.status(404).json({
-        response: "courier not found",
-      });
-    }
+if(!parcelData){
 
-    // calculate final price
-    const finalPrice = courierData.base_price + parcelData.weight * courierData.per_kg;
+return res.status(404).json({
+response:"parcel not found"
+});
 
-    // create awb
-    const awb = "AWB" + Date.now();
+}
 
-    // create shipment
-    const shipment = await Shipment.create({
-      senderId: userId,
-      parcelId: parcelData._id,
-      courierId: courierData._id,
-      courierPartner: courierData.provider,
-      price: finalPrice,
-      eta: courierData.eta_days,
-      awb,
+const courierData=
+await Courier.findById(
+courierId
+);
 
-      // receiver auto fill
-      receiver: {
-        name: parcelData.recieverName,
-        phone: parcelData.recieverPhone,
-        address: parcelData.recieverAddress,
-      },
+if(!courierData){
 
-      // sender auto fill
-      sender: {
-        name: parcelData.senderName,
-        phone: parcelData.senderPhoneNumber,
-        address: parcelData.senderAddress,
-      },
+return res.status(404).json({
+response:"courier not found"
+});
 
-      trackingHistory: [
-        {
-          status: "BOOKED",
-          location: parcelData.senderAddress,
-        },
-      ],
-    });
+}
 
-    // update parcel
-    parcelData.status = "BOOKED";
-    await parcelData.save();
-    bookingConfirmation(parcelData.senderEmail, JSON.stringify(shipment));
-    // recieverEmail is not stored on parcel — skip receiver email
-    return res.status(201).json({
-      response: "shipment created",
-      shipment: {
-        awb:            shipment.awb,
-        courierPartner: shipment.courierPartner,
-        price:          shipment.price,
-        eta:            shipment.eta,
-        status:         "BOOKED",
-      },
-    });
-  } catch (err) {
-    return res.status(500).json({
-      response: err.message,
-    });
-  }
+const finalPrice=
+courierData.base_price+
+(
+parcelData.weight*
+courierData.per_kg
+);
+
+const orderId=
+"ORD_"+Date.now();
+
+const upiUrl=
+`upi://pay?pa=v17957621@oksbi&pn=AGGREGATOR%20SOFTWARE&am=${finalPrice}&cu=INR&tn=${orderId}`;
+
+const shipment=
+await Shipment.create({
+
+senderId:userId,
+
+parcelId:parcelData._id,
+
+courierId:courierData._id,
+
+courierPartner:
+courierData.provider,
+
+price:finalPrice,
+
+eta:courierData.eta_days,
+
+paymentStatus:
+"PENDING",
+
+shipmentStatus:
+"PAYMENT_PENDING",
+
+upiUrl,
+
+receiver:{
+name:
+parcelData.recieverName,
+
+phone:
+parcelData.recieverPhone,
+
+address:
+parcelData.recieverAddress
+},
+
+sender:{
+name:
+parcelData.senderName,
+
+phone:
+parcelData.senderPhoneNumber,
+
+address:
+parcelData.senderAddress
+}
+
+});
+
+return res.status(201).json({
+
+response:
+"payment required",
+
+payment:{
+amount:
+finalPrice,
+
+upiUrl
+},
+
+shipmentId:
+shipment._id
+
+});
+
+}catch(err){
+
+return res.status(500).json({
+response:
+err.message
+});
+
+}
+
 };
 
+/**
+ *  -  POST : /api/payment/verify
+ */
+
+export const verifyPayment=
+async(req,res)=>{
+
+try{
+
+const {
+shipmentId,
+utr,
+paymentScreenshot
+}=req.body;
+
+const shipment=
+await Shipment.findById(
+shipmentId
+);
+
+if(!shipment){
+
+return res.status(404)
+.json({
+
+response:
+"shipment not found"
+
+});
+
+}
+
+shipment.paymentStatus=
+"PAID";
+
+shipment.shipmentStatus=
+"BOOKED";
+
+shipment.utr=utr;
+
+shipment.paymentScreenshot=
+paymentScreenshot;
+
+shipment.awb=
+"AWB"+Date.now();
+
+shipment.trackingHistory=[
+{
+status:"BOOKED",
+location:
+shipment.sender.address
+}
+];
+
+await shipment.save();
+
+await Parcel.findByIdAndUpdate(
+
+shipment.parcelId,
+
+{
+status:"BOOKED"
+}
+
+);
+
+return res.json({
+
+response:
+"payment verified",
+
+awb:
+shipment.awb,
+
+status:
+shipment.shipmentStatus
+
+});
+
+}catch(err){
+
+return res.status(500)
+.json({
+
+response:
+err.message
+});
+
+}
+
+};
+
+
+ /** post :  /api/ */
 /**
  * - get : /shipments
  * - returns all shipments for the logged-in user

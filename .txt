@@ -1,0 +1,1 @@
+upi://pay?pa=v17957621@oksbi&pn=AGGREGATOR SOFTWARE&am=${amount}&cu=INR&tn=ORD_2005

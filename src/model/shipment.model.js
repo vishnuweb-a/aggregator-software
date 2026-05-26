@@ -1,121 +1,83 @@
 import mongoose from "mongoose";
 
-const shipmentSchema = new mongoose.Schema(
-  {
-    // user who created shipment
-    senderId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
+const shipmentSchema = new mongoose.Schema({
 
-    // linked parcel
-    parcelId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Parcel",
-      required: true,
-    },
+senderId:{
+type:mongoose.Schema.Types.ObjectId,
+ref:"user"
+},
 
-    // selected courier
-    courierId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "CourierService",
-      required: true,
-    },
+parcelId:{
+type:mongoose.Schema.Types.ObjectId,
+ref:"parcel"
+},
 
-    // provider name
-    courierPartner: {
-      type: String,
-      required: true,
-    },
+courierId:{
+type:mongoose.Schema.Types.ObjectId,
+ref:"courier"
+},
 
-    // calculated final price
-    price: {
-      type: Number,
-      required: true,
-    },
+courierPartner:String,
 
-    // estimated delivery time
-    eta: {
-      type: Number,
-      required: true,
-    },
+price:Number,
 
-    // generated shipment code
-    awb: {
-      type: String,
-      required: true,
-      unique: true,
-    },
+eta:Number,
 
-    // shipment lifecycle
-    status: {
-      type: String,
-      enum: [
-        "BOOKED",
-        "PICKED_UP",
-        "IN_TRANSIT",
-        "OUT_FOR_DELIVERY",
-        "DELIVERED",
-        "CANCELLED",
-      ],
-      default: "BOOKED",
-    },
+awb:String,
 
-    // receiver details
-    receiver: {
-      name: {
-        type: String,
-        required: true,
-      },
-      phone: {
-        type: String,
-        required: true,
-      },
-      address: {
-        type: String,
-        required: true,
-      },
-    },
+paymentStatus:{
+type:String,
+enum:[
+"PENDING",
+"PAID",
+"FAILED"
+],
+default:"PENDING"
+},
 
-    // sender details snapshot
-    sender: {
-      name: String,
-      phone: String,
-      address: String,
-    },
+shipmentStatus:{
+type:String,
+enum:[
+"PAYMENT_PENDING",
+"BOOKED",
+"IN_TRANSIT",
+"DELIVERED"
+],
+default:"PAYMENT_PENDING"
+},
 
-    // payment info
-    paymentType: {
-      type: String,
-      enum: ["PREPAID", "COD"],
-      default: "PREPAID",
-    },
+utr:String,
 
-    // tracking timeline
-    trackingHistory: [
-      {
-        status: String,
-        location: String,
-        updatedAt: {
-          type: Date,
-          default: Date.now,
-        },
-      },
-    ],
-  },
-  {
-    timestamps: true,
-  }
+paymentScreenshot:String,
+
+upiUrl:String,
+
+receiver:{
+name:String,
+phone:String,
+address:String
+},
+
+sender:{
+name:String,
+phone:String,
+address:String
+},
+
+trackingHistory:[
+{
+status:String,
+location:String,
+time:{
+type:Date,
+default:Date.now
+}
+}
+]
+
+},{timestamps:true});
+
+export default mongoose.model(
+"shipment",
+shipmentSchema
 );
-
-// indexes
-shipmentSchema.index({ senderId: 1 });
-shipmentSchema.index({ parcelId: 1 });
-shipmentSchema.index({ courierId: 1 });
-
-shipmentSchema.index({ status: 1 });
-
-const Shipment = mongoose.model("Shipment", shipmentSchema);
-
-export default Shipment;
