@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import {
@@ -12,28 +12,28 @@ const Navbar = () => (
     position: 'fixed',
     top: 0, left: 0, right: 0,
     zIndex: 100,
-    background: 'rgba(8,12,20,0.9)',
-    backdropFilter: 'blur(20px)',
-    WebkitBackdropFilter: 'blur(20px)',
-    borderBottom: '1px solid rgba(99,119,170,0.18)',
-    height: 62,
+    background: 'var(--header-bg)',
+    backdropFilter: 'blur(24px)',
+    WebkitBackdropFilter: 'blur(24px)',
+    borderBottom: '1px solid var(--header-border)',
+    boxShadow: '0 10px 30px rgba(8,6,20,0.35)',
+    height: 64,
     display: 'flex',
     alignItems: 'center',
-    padding: '0 2rem',
+    padding: '0 2.25rem',
   }}>
     <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
       <div style={{
-        width: 38, height: 38, borderRadius: 11,
-        background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+        width: 40, height: 40, borderRadius: 14,
+        background: 'var(--accent)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        boxShadow: '0 4px 14px rgba(99,102,241,0.4)',
+        boxShadow: '0 10px 22px rgba(59,130,246,0.35)',
       }}>
         <Truck size={18} color="#fff" strokeWidth={2.5} />
       </div>
       <span style={{
         fontSize: '1.05rem', fontWeight: 800, letterSpacing: '-0.01em',
-        background: 'linear-gradient(135deg, #a5b4fc, #818cf8)',
-        WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+        color: 'var(--text-1)',
       }}>
         Apna Courier Service
       </span>
@@ -223,7 +223,7 @@ const Login = () => {
               <span style={{ fontSize: '0.83rem', color: 'var(--text-2)' }}>
                 Need to change password?{' '}
                 <button type="button" onClick={() => { clearAlerts(); setMode('forgot'); }}
-                  style={{ color: '#a78bfa', fontWeight: 700, background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.83rem', padding: 0 }}>
+                  style={{ color: 'var(--accent)', fontWeight: 700, background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.83rem', padding: 0 }}>
                   Reset here →
                 </button>
               </span>
@@ -267,7 +267,7 @@ const Login = () => {
               </div>
             </div>
             <button type="submit" disabled={isLoading} className="btn-primary"
-              style={{ width: '100%', padding: '0.88rem', background: 'linear-gradient(135deg, #10b981, #059669)' }}>
+              style={{ width: '100%', padding: '0.88rem', background: '#10b981' }}>
               {isLoading ? (<><Spinner /> Verifying…</>) : (<><CheckCircle size={16} /> Verify OTP</>)}
             </button>
           </form>

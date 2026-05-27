@@ -1,27 +1,28 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, Fragment } from 'react';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
 import {
   LogOut, Package, MapPin, Search, CheckCircle,
-  Navigation, Clock, CreditCard, ChevronRight, User,
+  Clock, CreditCard, ChevronRight, User,
   AlertCircle, ArrowLeft, Truck, Zap, Phone, Mail,
   ShieldCheck, PlusCircle, List, Home,
 } from 'lucide-react';
 
 /* ─── Navbar ─────────────────────────────────────── */
-const Navbar = ({ user, logout, view, setView }) => (
+const Navbar = ({ logout, view, setView }) => (
   <header style={{
     position: 'sticky', top: 0, zIndex: 50,
-    background: 'rgba(8,12,20,0.9)',
-    backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
-    borderBottom: '1px solid rgba(99,119,170,0.18)',
+    background: 'var(--header-bg)',
+    backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)',
+    borderBottom: '1px solid var(--header-border)',
+    boxShadow: '0 10px 30px rgba(8,6,20,0.35)',
   }}>
     <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 1.5rem', height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-        <div style={{ width: 38, height: 38, borderRadius: 11, background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 14px rgba(99,102,241,0.4)' }}>
+        <div style={{ width: 40, height: 40, borderRadius: 14, background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 10px 22px rgba(59,130,246,0.35)' }}>
           <Truck size={18} color="#fff" strokeWidth={2.5} />
         </div>
-        <span style={{ fontSize: '1.05rem', fontWeight: 800, letterSpacing: '-0.01em', background: 'linear-gradient(135deg,#a5b4fc,#818cf8)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+        <span style={{ fontSize: '1.05rem', fontWeight: 800, letterSpacing: '-0.01em', color: 'var(--text-1)' }}>
           Apna Courier Service
         </span>
       </div>
@@ -54,32 +55,35 @@ const InfoRow = ({ icon: Icon, label, value }) => (
 );
 
 /* ─── Shipment History Card ───────────────────────── */
-const ShipmentCard = ({ s }) => (
-  <div className="glass-card" style={{ padding: 0, overflow: 'hidden' }}>
-    <div style={{ height: 3, background: 'linear-gradient(90deg,var(--accent),var(--accent-2))' }} />
-    <div style={{ padding: '1.1rem 1.25rem' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.6rem' }}>
-        <div>
-          <p style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 0.2rem' }}>AWB</p>
-          <p style={{ fontFamily: 'monospace', fontWeight: 800, fontSize: '1rem', color: 'var(--accent)', margin: 0 }}>{s.awb}</p>
-        </div>
-        <span className="badge badge-green"><CheckCircle size={10} /> {s.status}</span>
-      </div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', marginTop: '0.6rem' }}>
-        {[
-          { label: 'Provider', value: s.courierPartner },
-          { label: 'Amount', value: `₹${s.price}` },
-          { label: 'ETA', value: `${s.eta} Days` },
-        ].map(({ label, value }) => (
-          <div key={label}>
-            <p style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.04em', margin: '0 0 0.15rem' }}>{label}</p>
-            <p style={{ fontWeight: 700, fontSize: '0.85rem', color: 'var(--text-1)', margin: 0 }}>{value}</p>
+const ShipmentCard = ({ s }) => {
+  const status = s.shipmentStatus || s.status || 'PENDING'
+  return (
+    <div className="glass-card" style={{ padding: 0, overflow: 'hidden' }}>
+      <div style={{ height: 3, background: 'var(--accent)' }} />
+      <div style={{ padding: '1.1rem 1.25rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.6rem' }}>
+          <div>
+            <p style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 0.2rem' }}>AWB</p>
+            <p style={{ fontFamily: 'monospace', fontWeight: 800, fontSize: '1rem', color: 'var(--accent)', margin: 0 }}>{s.awb || '—'}</p>
           </div>
-        ))}
+          <span className="badge badge-green"><CheckCircle size={10} /> {status}</span>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', marginTop: '0.6rem' }}>
+          {[
+            { label: 'Provider', value: s.courierPartner },
+            { label: 'Amount', value: `₹${s.price}` },
+            { label: 'ETA', value: `${s.eta} Days` },
+          ].map(({ label, value }) => (
+            <div key={label}>
+              <p style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.04em', margin: '0 0 0.15rem' }}>{label}</p>
+              <p style={{ fontWeight: 700, fontSize: '0.85rem', color: 'var(--text-1)', margin: 0 }}>{value}</p>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
-  </div>
-);
+  )
+};
 
 /* ─── Profile View (two columns) ─────────────────── */
 const ProfileView = ({ user, shipments, loadingShipments }) => (
@@ -89,7 +93,7 @@ const ProfileView = ({ user, shipments, loadingShipments }) => (
     <div className="glass-card" style={{ padding: '2rem' }}>
       {/* Avatar */}
       <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
-        <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem', boxShadow: '0 0 28px rgba(99,102,241,0.4)' }}>
+        <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem', boxShadow: '0 0 28px rgba(59,130,246,0.35)' }}>
           <span style={{ fontSize: '2rem', fontWeight: 900, color: '#fff' }}>{(user?.name || 'U')[0].toUpperCase()}</span>
         </div>
         <h2 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-1)', margin: '0 0 0.25rem' }}>{user?.name || 'User'}</h2>
@@ -147,6 +151,10 @@ const BookingView = ({ onBooked }) => {
   const [parcelData, setParcelData] = useState({ senderName:'', senderEmail:'', senderPhoneNumber:'', senderAddress:'', recieverName:'', recieverPhone:'', recieverAddress:'', DelevarableType:'', weight:'' });
   const [createdParcelId, setCreatedParcelId] = useState(null);
   const [couriers, setCouriers]  = useState([]);
+  const [pendingShipment, setPendingShipment] = useState(null);
+  const [paymentInfo, setPaymentInfo] = useState(null);
+  const [utr, setUtr] = useState('');
+  const [paymentScreenshot, setPaymentScreenshot] = useState('');
   const [loading, setLoading]    = useState(false);
   const [error, setError]        = useState('');
   const [successData, setSuccessData] = useState(null);
@@ -168,27 +176,57 @@ const BookingView = ({ onBooked }) => {
     setLoading(true); setError('');
     try {
       const r = await api.post('/user/parcel/confirmOrder', { parcelId: createdParcelId, courierId });
-      setSuccessData(r.data.shipment); setStep(3);
+      setPendingShipment(r.data.shipment);
+      setPaymentInfo(r.data.payment);
+      setStep(3);
     } catch (err) { setError(err.response?.data?.response || 'Failed to confirm'); }
     finally { setLoading(false); }
   };
 
-  const reset = () => { setStep(1); setCreatedParcelId(null); setCouriers([]); setSuccessData(null); setParcelData({ senderName:'', senderEmail:'', senderPhoneNumber:'', senderAddress:'', recieverName:'', recieverPhone:'', recieverAddress:'', DelevarableType:'', weight:'' }); };
+  const handleVerifyPayment = async (e) => {
+    e.preventDefault();
+    setLoading(true); setError('');
+    try {
+      const r = await api.post('/user/payment/verify', {
+        shipmentId: pendingShipment?._id,
+        utr,
+        paymentScreenshot: paymentScreenshot || '',
+      });
+      setSuccessData(r.data.shipment);
+      setStep(4);
+    } catch (err) {
+      setError(err.response?.data?.response || 'Payment verification failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const reset = () => {
+    setStep(1);
+    setCreatedParcelId(null);
+    setCouriers([]);
+    setPendingShipment(null);
+    setPaymentInfo(null);
+    setUtr('');
+    setPaymentScreenshot('');
+    setSuccessData(null);
+    setParcelData({ senderName:'', senderEmail:'', senderPhoneNumber:'', senderAddress:'', recieverName:'', recieverPhone:'', recieverAddress:'', DelevarableType:'', weight:'' });
+  };
 
   return (
     <div>
       {/* Step indicator */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '2rem', justifyContent: 'center' }}>
-        {['Details', 'Select Courier', 'Confirmed'].map((label, i) => (
-          <React.Fragment key={label}>
+        {['Details', 'Select Courier', 'Payment', 'Confirmed'].map((label, i) => (
+          <Fragment key={label}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-              <div style={{ width: 28, height: 28, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 800, background: step > i + 1 ? 'var(--green)' : step === i + 1 ? 'linear-gradient(135deg,var(--accent),var(--accent-2))' : 'rgba(255,255,255,0.05)', color: step >= i + 1 ? '#fff' : 'var(--text-3)', border: step < i + 1 ? '1px solid var(--border)' : 'none' }}>
+              <div style={{ width: 28, height: 28, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 800, background: step > i + 1 ? 'var(--green)' : step === i + 1 ? 'var(--accent)' : 'rgba(255,255,255,0.05)', color: step >= i + 1 ? '#fff' : 'var(--text-3)', border: step < i + 1 ? '1px solid var(--border)' : 'none' }}>
                 {step > i + 1 ? <CheckCircle size={14} /> : i + 1}
               </div>
               <span style={{ fontSize: '0.78rem', fontWeight: 600, color: step === i + 1 ? 'var(--accent)' : 'var(--text-3)' }}>{label}</span>
             </div>
-            {i < 2 && <div style={{ flex: 1, height: 1, background: step > i + 1 ? 'var(--green)' : 'var(--border)', maxWidth: 60 }} />}
-          </React.Fragment>
+            {i < 3 && <div style={{ flex: 1, height: 1, background: step > i + 1 ? 'var(--green)' : 'var(--border)', maxWidth: 60 }} />}
+          </Fragment>
         ))}
       </div>
 
@@ -251,7 +289,7 @@ const BookingView = ({ onBooked }) => {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(260px,1fr))', gap: '1.25rem' }}>
               {couriers.map(c => (
                 <div key={c._id} className="glass-card" style={{ overflow: 'hidden' }}>
-                  <div style={{ height: 3, background: 'linear-gradient(90deg,var(--accent),var(--accent-2))' }} />
+                  <div style={{ height: 3, background: 'var(--accent)' }} />
                   <div style={{ padding: '1.25rem' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
                       <span style={{ fontWeight: 800, fontSize: '1rem' }}>{c.provider}</span>
@@ -279,10 +317,53 @@ const BookingView = ({ onBooked }) => {
       )}
 
       {/* Step 3 */}
-      {step === 3 && successData && (
+      {step === 3 && pendingShipment && (
+        <div style={{ maxWidth: 640, margin: '0 auto' }}>
+          <div className="glass-card" style={{ padding: '2rem', textAlign: 'left' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1rem' }}>
+              <CreditCard size={18} color="var(--accent)" />
+              <h2 style={{ fontSize: '1.2rem', fontWeight: 800, margin: 0 }}>Complete Payment</h2>
+            </div>
+            <p style={{ color: 'var(--text-2)', fontSize: '0.9rem', marginBottom: '1.25rem' }}>
+              Your booking is created. Please pay to confirm the shipment.
+            </p>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.25rem' }}>
+              <div className="glass-card" style={{ padding: '1rem' }}>
+                <p style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 0.35rem' }}>Amount</p>
+                <p style={{ fontSize: '1.4rem', fontWeight: 900, color: 'var(--accent)', margin: 0 }}>₹{paymentInfo?.amount || pendingShipment.price}</p>
+              </div>
+              <div className="glass-card" style={{ padding: '1rem' }}>
+                <p style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 0.35rem' }}>Courier</p>
+                <p style={{ fontSize: '1rem', fontWeight: 700, margin: 0 }}>{pendingShipment.courierPartner}</p>
+                <p style={{ fontSize: '0.8rem', color: 'var(--text-2)', margin: '0.2rem 0 0' }}>ETA {pendingShipment.eta} days</p>
+              </div>
+            </div>
+            <div style={{ marginBottom: '1.25rem' }}>
+              <p style={{ fontSize: '0.78rem', color: 'var(--text-2)', marginBottom: '0.4rem' }}>Pay using UPI</p>
+              <a href={paymentInfo?.upiUrl || pendingShipment.upiUrl} className="btn-ghost" style={{ width: '100%', justifyContent: 'center' }}>
+                Open UPI Payment Link
+              </a>
+            </div>
+            <form onSubmit={handleVerifyPayment} style={{ display: 'grid', gap: '0.9rem' }}>
+              <Field label="UTR / Transaction ID">
+                <input type="text" value={utr} onChange={(e) => setUtr(e.target.value)} className="input-field no-icon" placeholder="Enter UTR" required />
+              </Field>
+              <Field label="Payment Screenshot URL (optional)">
+                <input type="text" value={paymentScreenshot} onChange={(e) => setPaymentScreenshot(e.target.value)} className="input-field no-icon" placeholder="https://..." />
+              </Field>
+              <button type="submit" disabled={loading} className="btn-primary" style={{ width: '100%', marginTop: '0.5rem' }}>
+                {loading ? <><Spinner /> Verifying…</> : <><ShieldCheck size={16} /> Verify Payment</>}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Step 4 */}
+      {step === 4 && successData && (
         <div style={{ maxWidth: 520, margin: '0 auto' }}>
           <div className="glass-card" style={{ padding: '2.5rem', textAlign: 'center', overflow: 'hidden', position: 'relative' }}>
-            <div style={{ position: 'absolute', top: -60, left: '50%', transform: 'translateX(-50%)', width: 220, height: 220, background: 'radial-gradient(circle,rgba(16,185,129,0.2) 0%,transparent 70%)', borderRadius: '50%', pointerEvents: 'none' }} />
+            <div style={{ position: 'absolute', top: -60, left: '50%', transform: 'translateX(-50%)', width: 220, height: 220, background: 'rgba(34,197,94,0.12)', borderRadius: '50%', pointerEvents: 'none' }} />
             <div style={{ width: 72, height: 72, borderRadius: '50%', background: 'rgba(16,185,129,0.12)', border: '2px solid rgba(16,185,129,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.25rem', boxShadow: '0 0 28px var(--green-glow)' }}>
               <CheckCircle size={34} color="var(--green)" strokeWidth={2} />
             </div>
@@ -292,7 +373,7 @@ const BookingView = ({ onBooked }) => {
               <p style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 0.25rem' }}>Tracking Number (AWB)</p>
               <p style={{ fontFamily: 'monospace', fontWeight: 800, fontSize: '1.4rem', color: 'var(--accent)', margin: '0 0 1rem' }}>{successData.awb}</p>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.9rem' }}>
-                {[{ l: 'Provider', v: successData.courierPartner }, { l: 'Amount Paid', v: `₹${successData.price}` }, { l: 'Status', v: successData.status }, { l: 'ETA', v: `${successData.eta} Days` }].map(({ l, v }) => (
+                {[{ l: 'Provider', v: successData.courierPartner }, { l: 'Amount Paid', v: `₹${successData.price}` }, { l: 'Status', v: successData.shipmentStatus || successData.status }, { l: 'ETA', v: `${successData.eta} Days` }].map(({ l, v }) => (
                   <div key={l}>
                     <p style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.04em', margin: '0 0 0.15rem' }}>{l}</p>
                     <p style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--text-1)', margin: 0 }}>{v}</p>
@@ -324,7 +405,7 @@ const Dashboard = () => {
       try {
         const r = await api.get('/user/shipments');
         setShipments(Array.isArray(r.data.shipments) ? r.data.shipments : []);
-      } catch (_) {
+      } catch {
         setShipments([]);
       } finally {
         setLoadingShipments(false);
@@ -341,7 +422,7 @@ const Dashboard = () => {
   return (
     <div style={{ minHeight: '100vh', fontFamily: "'Inter', system-ui, sans-serif" }}>
       <div className="bg-mesh" />
-      <Navbar user={user} logout={logout} view={view} setView={setView} />
+      <Navbar logout={logout} view={view} setView={setView} />
       <main style={{ maxWidth: 1200, margin: '0 auto', padding: '2.5rem 1.5rem', position: 'relative', zIndex: 1 }}>
         {view === 'profile' && <ProfileView user={user} shipments={shipments} loadingShipments={loadingShipments} />}
         {view === 'book'    && <BookingView onBooked={handleBooked} />}

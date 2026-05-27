@@ -10,27 +10,30 @@
 }
 
 :root {
-  --bg-deep:    #080c14;
-  --bg-card:    #0f1623;
-  --bg-glass:   rgba(15, 22, 35, 0.75);
-  --border:     rgba(99, 119, 170, 0.18);
-  --border-glow:rgba(99, 119, 255, 0.4);
-  --accent:     #6366f1;
-  --accent-2:   #8b5cf6;
-  --accent-glow:rgba(99,102,241,0.35);
-  --green:      #10b981;
-  --green-glow: rgba(16,185,129,0.3);
-  --red:        #ef4444;
-  --text-1:     #f0f4ff;
-  --text-2:     #8fa0c0;
-  --text-3:     #596480;
-  --radius-sm:  10px;
-  --radius-md:  16px;
-  --radius-lg:  24px;
-  --radius-xl:  32px;
-  --shadow-card:0 4px 32px rgba(0,0,0,0.45);
-  --shadow-glow:0 0 40px rgba(99,102,241,0.2);
-  --trans:      all 0.22s cubic-bezier(.4,0,.2,1);
+  --bg-deep:    #0b1020;
+  --bg-card:    #121829;
+  --bg-glass:   rgba(18, 24, 41, 0.78);
+  --border:     rgba(59, 130, 246, 0.2);
+  --border-glow:rgba(59, 130, 246, 0.45);
+  --accent:     #3b82f6;
+  --accent-2:   #2563eb;
+  --accent-3:   #1d4ed8;
+  --accent-glow:rgba(59, 130, 246, 0.35);
+  --green:      #22c55e;
+  --green-glow: rgba(34, 197, 94, 0.35);
+  --red:        #f43f5e;
+  --text-1:     #e5e7eb;
+  --text-2:     #b9c0cf;
+  --text-3:     #7b8598;
+  --radius-sm:  14px;
+  --radius-md:  20px;
+  --radius-lg:  28px;
+  --radius-xl:  38px;
+  --shadow-card:0 12px 40px rgba(10,6,28,0.55);
+  --shadow-glow:0 0 50px rgba(168,85,247,0.25);
+  --header-bg:  rgba(10, 8, 24, 0.72);
+  --header-border: rgba(168, 85, 247, 0.18);
+  --trans:      all 0.24s cubic-bezier(.4,0,.2,1);
 }
 
 html { scroll-behavior: smooth; }
@@ -42,6 +45,8 @@ body {
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  color-scheme: dark;
+  overflow-x: hidden;
 }
 
 /* ── Scrollbar ── */
@@ -50,13 +55,14 @@ body {
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
 
-/* ── Animated gradient mesh background ── */
+/* ── Animated mesh background ── */
 .bg-mesh {
   position: fixed;
   inset: 0;
   z-index: 0;
   pointer-events: none;
   overflow: hidden;
+  display: none;
 }
 
 .bg-mesh::before,
@@ -70,19 +76,19 @@ body {
 }
 
 .bg-mesh::before {
-  width: 600px;
-  height: 600px;
-  background: radial-gradient(circle, #6366f1 0%, transparent 70%);
-  top: -200px;
-  left: -150px;
+  width: 560px;
+  height: 560px;
+  background: rgba(59, 130, 246, 0.25);
+  top: -220px;
+  left: -170px;
 }
 
 .bg-mesh::after {
-  width: 500px;
-  height: 500px;
-  background: radial-gradient(circle, #8b5cf6 0%, transparent 70%);
-  bottom: -150px;
-  right: -100px;
+  width: 520px;
+  height: 520px;
+  background: rgba(59, 130, 246, 0.2);
+  bottom: -180px;
+  right: -140px;
   animation-duration: 15s;
   animation-delay: -5s;
 }
@@ -95,7 +101,7 @@ body {
 
 /* ── Glass card ── */
 .glass-card {
-  background: var(--bg-glass);
+  background: rgba(18, 24, 41, 0.92);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   backdrop-filter: blur(20px);
@@ -112,12 +118,12 @@ body {
 /* ── Input field ── */
 .input-field {
   width: 100%;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  background: rgba(255,255,255,0.045);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: 999px;
   color: var(--text-1);
   font-size: 0.92rem;
-  padding: 0.72rem 0.9rem 0.72rem 2.6rem;
+  padding: 0.78rem 1rem 0.78rem 2.8rem;
   outline: none;
   transition: var(--trans);
   font-family: inherit;
@@ -129,17 +135,18 @@ body {
 
 .input-field:focus {
   border-color: var(--accent);
-  background: rgba(99,102,241,0.08);
-  box-shadow: 0 0 0 3px rgba(99,102,241,0.18);
+  background: rgba(59,130,246,0.12);
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.2);
 }
 
 .input-field.no-icon {
-  padding-left: 0.9rem;
+  padding-left: 1rem;
 }
 
 textarea.input-field {
   resize: none;
-  padding-left: 0.9rem;
+  padding-left: 1rem;
+  border-radius: 20px;
 }
 
 /* ── Labels ── */
@@ -180,23 +187,24 @@ textarea.input-field {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  background: var(--accent);
   color: #fff;
   font-weight: 700;
   font-size: 0.92rem;
   padding: 0.8rem 1.8rem;
-  border-radius: var(--radius-sm);
+  border-radius: 999px;
   border: none;
   cursor: pointer;
   transition: var(--trans);
-  box-shadow: 0 4px 20px var(--accent-glow);
+  box-shadow: 0 10px 28px var(--accent-glow);
   font-family: inherit;
   letter-spacing: 0.01em;
 }
 
 .btn-primary:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 8px 28px var(--accent-glow);
+  background: var(--accent-2);
+  box-shadow: 0 14px 34px var(--accent-glow);
 }
 
 .btn-primary:active:not(:disabled) {
@@ -214,13 +222,13 @@ textarea.input-field {
   align-items: center;
   justify-content: center;
   gap: 0.4rem;
-  background: rgba(255,255,255,0.05);
-  border: 1px solid var(--border);
-  color: var(--text-2);
+  background: rgba(59,130,246,0.1);
+  border: 1px solid rgba(59,130,246,0.3);
+  color: #dbeafe;
   font-weight: 600;
   font-size: 0.82rem;
   padding: 0.55rem 1rem;
-  border-radius: var(--radius-sm);
+  border-radius: 999px;
   cursor: pointer;
   transition: var(--trans);
   font-family: inherit;
@@ -228,8 +236,8 @@ textarea.input-field {
 
 .btn-ghost:hover {
   border-color: var(--accent);
-  color: var(--accent);
-  background: rgba(99,102,241,0.08);
+  color: #fff;
+  background: rgba(59,130,246,0.18);
 }
 
 /* ── Badge ── */
@@ -242,6 +250,7 @@ textarea.input-field {
   padding: 0.2rem 0.6rem;
   border-radius: 999px;
   letter-spacing: 0.04em;
+  backdrop-filter: blur(6px);
 }
 
 .badge-green {
@@ -251,9 +260,9 @@ textarea.input-field {
 }
 
 .badge-blue {
-  background: rgba(99,102,241,0.15);
-  color: #a5b4fc;
-  border: 1px solid rgba(99,102,241,0.3);
+  background: rgba(59,130,246,0.15);
+  color: #bfdbfe;
+  border: 1px solid rgba(59,130,246,0.3);
 }
 
 /* ── Alert / notification ── */
@@ -262,7 +271,7 @@ textarea.input-field {
   align-items: flex-start;
   gap: 0.75rem;
   padding: 0.9rem 1.1rem;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   font-size: 0.87rem;
   margin-bottom: 1.2rem;
   animation: slideIn 0.25s ease;
@@ -290,11 +299,11 @@ textarea.input-field {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, var(--accent), var(--accent-2));
-  box-shadow: 0 4px 16px var(--accent-glow);
+  width: 48px;
+  height: 48px;
+  border-radius: 16px;
+  background: var(--accent);
+  box-shadow: 0 10px 26px var(--accent-glow);
   flex-shrink: 0;
 }
 
