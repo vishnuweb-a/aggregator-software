@@ -1,4 +1,5 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose'
+
 
 
 const courierSchema = new mongoose.Schema({
@@ -22,15 +23,34 @@ per_kg:Number,
 
 eta_days:Number,
 
-active:Boolean
+active:Boolean,
+
+success_rate:{
+type:Number,
+default:95
+},
+
+on_time_rate:{
+type:Number,
+default:90
+},
+
+damage_rate:{
+type:Number,
+default:2
+},
+
+coverage_score:{
+type:Number,
+default:80
+},
+
+priority:{
+type:Number,
+default:1
+}
 
 });
 
-// The third argument explicitly sets the collection name so Mongoose doesn't guess.
-const courier = mongoose.model(
-  "courier",
-  courierSchema,
-  "courierProviders"   // ← exact MongoDB collection name
-);
-
-export default courier;
+const Courier = mongoose.model('courier',courierSchema,"courierProviders")
+export default Courier 
