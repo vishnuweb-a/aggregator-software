@@ -7,6 +7,14 @@ import { strOpt,optValidate } from '../services/otp.service.js'
 import { sendOtp,welcomeMessage } from '../services/mail.service.js'
 import credential from '../config/config.js'
 
+const isProduction = process.env.NODE_ENV === 'production'
+const cookieOptions = {
+  httpOnly: true,
+  sameSite: isProduction ? 'none' : 'lax',
+  secure: isProduction,
+  maxAge: 60 * 60 * 1000,
+}
+
 
 
 /**
@@ -103,7 +111,7 @@ const validateAndMarkStatus = async (req,res)=>{
      
 
       const token = jwt.sign({userId :user._id,password : user.password},credential.jwtSecret,{expiresIn : '1h'})
-      res.cookie('token',token)
+      res.cookie('token', token, cookieOptions)
       await welcomeMessage(email,insert.name)
       return res.status(200).json({
         "response" : "user varified successfully ....",
@@ -142,7 +150,7 @@ const loginUser = async (req,res)=>{
    }
    const token = jwt.sign({userId : user._id},credential.jwtSecret,{expiresIn : '1h'})
 
-   res.cookie('token',token)
+   res.cookie('token', token, cookieOptions)
    return res.status(200).json({
        "response"  : "user login successfully ..."
    })
@@ -160,7 +168,7 @@ const loginUser = async (req,res)=>{
 
 const logoutUser = async (req, res)=>{
    try{
-    res.clearCookie('token')
+    res.clearCookie('token', cookieOptions)
     return res.status(200).json({
       "response" : "user logout successfully "
    })
@@ -288,7 +296,6 @@ const getMe = async (req, res) => {
 }
 
 export  { registerUser,validateAndMarkStatus, loginUser ,logoutUser ,forgotPassword ,verifyOtpForForgotPassword ,changePassword, getMe }
-
 
 
 

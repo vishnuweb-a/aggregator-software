@@ -1,22 +1,22 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState } from 'react';
 import api from '../api/axios';
 
 const AuthContext = createContext();
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    // Persist user across page refresh using localStorage
+  const [user, setUser] = useState(() => {
+    const stored = localStorage.getItem('acs_user');
+    if (!stored) return null;
     try {
-      const stored = localStorage.getItem('acs_user');
-      if (stored) setUser(JSON.parse(stored));
-    } catch (_) {}
-    setLoading(false);
-  }, []);
+      return JSON.parse(stored);
+    } catch {
+      return null;
+    }
+  });
+  const [loading] = useState(false);
 
   const login = async (email, password) => {
     const response = await api.post('/auth/login', { email, password });
@@ -27,7 +27,7 @@ export const AuthProvider = ({ children }) => {
         const userData = profileRes.data.user;
         setUser(userData);
         localStorage.setItem('acs_user', JSON.stringify(userData));
-      } catch (_) {
+      } catch {
         const userData = { email };
         setUser(userData);
         localStorage.setItem('acs_user', JSON.stringify(userData));
@@ -39,7 +39,9 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     try {
       await api.delete('/auth/logout');
-    } catch (_) {}
+    } catch (err) {
+      console.error('Logout failed', err);
+    }
     setUser(null);
     localStorage.removeItem('acs_user');
   };
@@ -58,7 +60,7 @@ export const AuthProvider = ({ children }) => {
         const userData = profileRes.data.user;
         setUser(userData);
         localStorage.setItem('acs_user', JSON.stringify(userData));
-      } catch (_) {
+      } catch {
         const userData = { email };
         setUser(userData);
         localStorage.setItem('acs_user', JSON.stringify(userData));

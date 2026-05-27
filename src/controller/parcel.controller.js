@@ -249,21 +249,23 @@ parcelData.senderAddress
 
 });
 
+const shipmentSummary = {
+  _id: shipment._id,
+  courierPartner: shipment.courierPartner,
+  price: shipment.price,
+  eta: shipment.eta,
+  paymentStatus: shipment.paymentStatus,
+  shipmentStatus: shipment.shipmentStatus,
+  upiUrl: shipment.upiUrl,
+}
+
 return res.status(201).json({
-
-response:
-"payment required",
-
-payment:{
-amount:
-finalPrice,
-
-upiUrl
-},
-
-shipmentId:
-shipment._id
-
+  response: "payment required",
+  payment: {
+    amount: finalPrice,
+    upiUrl,
+  },
+  shipment: shipmentSummary,
 });
 
 }catch(err){
@@ -344,16 +346,16 @@ status:"BOOKED"
 );
 
 return res.json({
-
-response:
-"payment verified",
-
-awb:
-shipment.awb,
-
-status:
-shipment.shipmentStatus
-
+  response: "payment verified",
+  shipment: {
+    _id: shipment._id,
+    awb: shipment.awb,
+    courierPartner: shipment.courierPartner,
+    price: shipment.price,
+    eta: shipment.eta,
+    paymentStatus: shipment.paymentStatus,
+    shipmentStatus: shipment.shipmentStatus,
+  },
 });
 
 }catch(err){
@@ -380,7 +382,7 @@ export const getUserShipments = async (req, res) => {
     const userId = req.user;
     const shipments = await Shipment.find({ senderId: userId })
       .sort({ createdAt: -1 })
-      .select('awb courierPartner price eta status createdAt');
+      .select('awb courierPartner price eta shipmentStatus paymentStatus createdAt');
     return res.status(200).json({ shipments });
   } catch (err) {
     return res.status(500).json({ response: err.message });

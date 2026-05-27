@@ -1,11 +1,13 @@
 import express from 'express';
-import  cookieParser from 'cookie-parser'
+import cookieParser from 'cookie-parser'
+import cors from 'cors'
 import connectDB from './db/db.connect.js';
 import { redisConnect } from './redis/redis.js';
 import authRouter from './routes/user.auth.js';
 import {swaggerUi,specs} from "./config/swagger.js";
 import parcelRouter from './routes/courier.route.js';
 import Wallet from './routes/wallet.route.js'
+import credential from './config/config.js'
 
 
 
@@ -14,6 +16,16 @@ const app = express()
 
 connectDB()
 redisConnect()
+
+const clientUrls = (credential.clientUrl || 'http://localhost:5173')
+  .split(',')
+  .map((url) => url.trim())
+  .filter(Boolean)
+
+app.use(cors({
+  origin: clientUrls,
+  credentials: true,
+}))
 
 app.use(express.json())
 app.use(express.urlencoded({extended : true}))
@@ -26,4 +38,3 @@ app.use('/api/wallet',Wallet)
 
 
 export default app
-
