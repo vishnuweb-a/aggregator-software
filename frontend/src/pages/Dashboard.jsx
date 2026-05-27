@@ -1,11 +1,11 @@
-import { useState, useEffect, Fragment } from 'react';
+import { useState, useEffect, useCallback, Fragment } from 'react';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
 import {
   LogOut, Package, MapPin, Search, CheckCircle,
   Clock, CreditCard, ChevronRight, User,
   AlertCircle, ArrowLeft, Truck, Zap, Phone, Mail,
-  ShieldCheck, PlusCircle, List, Home,
+  ShieldCheck, PlusCircle, List, Home, Wallet, Download,
 } from 'lucide-react';
 
 /* ─── Navbar ─────────────────────────────────────── */
@@ -30,6 +30,9 @@ const Navbar = ({ logout, view, setView }) => (
         <button onClick={() => setView('profile')} className="btn-ghost" style={{ gap: '0.4rem', padding: '0.4rem 0.8rem', color: view === 'profile' ? 'var(--accent)' : undefined }}>
           <Home size={14} /> Profile
         </button>
+        <button onClick={() => setView('wallet')} className="btn-ghost" style={{ gap: '0.4rem', padding: '0.4rem 0.8rem', color: view === 'wallet' ? 'var(--accent)' : undefined }}>
+          <Wallet size={14} /> Wallet
+        </button>
         <button onClick={() => setView('book')} className="btn-ghost" style={{ gap: '0.4rem', padding: '0.4rem 0.8rem', color: view === 'book' ? 'var(--accent)' : undefined }}>
           <PlusCircle size={14} /> New Booking
         </button>
@@ -43,8 +46,8 @@ const Navbar = ({ logout, view, setView }) => (
 
 /* ─── Info Row ───────────────────────────────────── */
 const InfoRow = ({ icon: Icon, label, value }) => (
-  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 0', borderBottom: '1px solid rgba(99,119,170,0.12)' }}>
-    <div style={{ width: 34, height: 34, borderRadius: 9, background: 'rgba(99,102,241,0.12)', border: '1px solid rgba(99,102,241,0.22)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 0', borderBottom: '1px solid rgba(59,130,246,0.12)' }}>
+    <div style={{ width: 34, height: 34, borderRadius: 9, background: 'rgba(59,130,246,0.12)', border: '1px solid rgba(59,130,246,0.22)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
       <Icon size={15} color="var(--accent)" />
     </div>
     <div>
@@ -86,7 +89,7 @@ const ShipmentCard = ({ s }) => {
 };
 
 /* ─── Profile View (two columns) ─────────────────── */
-const ProfileView = ({ user, shipments, loadingShipments }) => (
+const ProfileView = ({ user, shipments, loadingShipments, walletBalance }) => (
   <div style={{ display: 'grid', gridTemplateColumns: '320px 1fr', gap: '2rem', alignItems: 'start' }}>
 
     {/* LEFT — User Info */}
@@ -103,8 +106,9 @@ const ProfileView = ({ user, shipments, loadingShipments }) => (
       <InfoRow icon={Mail} label="Email" value={user?.email} />
       <InfoRow icon={Phone} label="Phone" value={user?.phoneNumber ? String(user.phoneNumber) : null} />
       <InfoRow icon={User} label="Account Status" value={user?.status || 'verified'} />
+      <InfoRow icon={Wallet} label="Wallet Balance" value={walletBalance != null ? `₹${walletBalance}` : '—'} />
 
-      <div style={{ marginTop: '1.25rem', padding: '0.9rem', background: 'rgba(99,102,241,0.07)', borderRadius: 12, border: '1px solid rgba(99,102,241,0.18)', textAlign: 'center' }}>
+      <div style={{ marginTop: '1.25rem', padding: '0.9rem', background: 'rgba(59,130,246,0.07)', borderRadius: 12, border: '1px solid rgba(59,130,246,0.18)', textAlign: 'center' }}>
         <p style={{ fontSize: '0.72rem', color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 0.35rem', fontWeight: 700 }}>Total Shipments</p>
         <p style={{ fontSize: '2.2rem', fontWeight: 900, color: 'var(--accent)', margin: 0 }}>{shipments.length}</p>
       </div>
@@ -134,6 +138,63 @@ const ProfileView = ({ user, shipments, loadingShipments }) => (
   </div>
 );
 
+/* ─── Wallet View ─────────────────────────────────── */
+const WalletView = ({ balance, loading, notice, error, onRecharge }) => {
+  const [amount, setAmount] = useState('');
+  const [message, setMessage] = useState('');
+  const [formError, setFormError] = useState('');
+
+  const handleRecharge = async (e) => {
+    e.preventDefault();
+    setMessage('');
+    setFormError('');
+    const amountNumber = Number(amount);
+    if (!amountNumber || amountNumber <= 0) {
+      setFormError('Enter a valid recharge amount.');
+      return;
+    }
+    try {
+      const newBalance = await onRecharge(amountNumber);
+      setMessage(`Wallet recharged. New balance ₹${newBalance}`);
+      setAmount('');
+    } catch (err) {
+      setFormError(err.response?.data?.response || 'Wallet recharge failed.');
+    }
+  };
+
+  return (
+    <div style={{ maxWidth: 700, margin: '0 auto' }}>
+      <div className="glass-card" style={{ padding: '2rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1rem' }}>
+          <Wallet size={18} color="var(--accent)" />
+          <h2 style={{ fontSize: '1.2rem', fontWeight: 800, margin: 0 }}>Wallet</h2>
+        </div>
+
+        {notice && <div className="alert alert-success"><CheckCircle size={16} /><span>{notice}</span></div>}
+        {error && <div className="alert alert-error"><AlertCircle size={16} /><span>{error}</span></div>}
+        {formError && <div className="alert alert-error"><AlertCircle size={16} /><span>{formError}</span></div>}
+        {message && <div className="alert alert-success"><CheckCircle size={16} /><span>{message}</span></div>}
+
+        <div className="glass-card" style={{ padding: '1.25rem', marginBottom: '1.5rem' }}>
+          <p style={{ fontSize: '0.72rem', color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 0.35rem', fontWeight: 700 }}>Current Balance</p>
+          <p style={{ fontSize: '2rem', fontWeight: 900, color: 'var(--accent)', margin: 0 }}>
+            {loading ? 'Loading…' : (balance != null ? `₹${balance}` : '—')}
+          </p>
+        </div>
+
+        <form onSubmit={handleRecharge} style={{ display: 'grid', gap: '0.9rem' }}>
+          <Field label="Recharge Amount (₹)">
+            <input type="number" min="1" step="1" value={amount} onChange={(e) => setAmount(e.target.value)} className="input-field no-icon" placeholder="1000" required />
+          </Field>
+          <button type="submit" disabled={loading} className="btn-primary" style={{ width: '100%' }}>
+            {loading ? <><Spinner /> Recharging…</> : 'Recharge Wallet'}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+};
+
 /* ─── Booking Stepper ─────────────────────────────── */
 const Spinner = ({ small }) => (
   <span style={{ width: small ? 14 : 16, height: small ? 14 : 16, border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', display: 'inline-block', animation: 'spin 0.7s linear infinite' }} />
@@ -146,20 +207,30 @@ const FieldRow = ({ children }) => (
   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>{children}</div>
 );
 
-const BookingView = ({ onBooked }) => {
+const BookingView = ({ onBooked, walletBalance, walletLoading, refreshWalletBalance, rechargeWallet, onWalletBalanceUpdate }) => {
   const [step, setStep] = useState(1);
   const [parcelData, setParcelData] = useState({ senderName:'', senderEmail:'', senderPhoneNumber:'', senderAddress:'', recieverName:'', recieverPhone:'', recieverAddress:'', DelevarableType:'', weight:'' });
   const [createdParcelId, setCreatedParcelId] = useState(null);
+  const [selectedCourierId, setSelectedCourierId] = useState(null);
   const [couriers, setCouriers]  = useState([]);
   const [pendingShipment, setPendingShipment] = useState(null);
   const [paymentInfo, setPaymentInfo] = useState(null);
   const [utr, setUtr] = useState('');
   const [paymentScreenshot, setPaymentScreenshot] = useState('');
+  const [walletTopup, setWalletTopup] = useState('');
+  const [walletMessage, setWalletMessage] = useState('');
+  const [downloading, setDownloading] = useState(false);
   const [loading, setLoading]    = useState(false);
   const [error, setError]        = useState('');
   const [successData, setSuccessData] = useState(null);
 
   const onChange = e => setParcelData({ ...parcelData, [e.target.name]: e.target.value });
+
+  useEffect(() => {
+    if (step === 3 && refreshWalletBalance) {
+      refreshWalletBalance();
+    }
+  }, [step, refreshWalletBalance]);
 
   const handleCreateParcel = async (e) => {
     e.preventDefault(); setLoading(true); setError('');
@@ -176,9 +247,14 @@ const BookingView = ({ onBooked }) => {
     setLoading(true); setError('');
     try {
       const r = await api.post('/user/parcel/confirmOrder', { parcelId: createdParcelId, courierId });
+      setSelectedCourierId(courierId);
       setPendingShipment(r.data.shipment);
       setPaymentInfo(r.data.payment);
       setStep(3);
+      setWalletMessage('');
+      if (refreshWalletBalance) {
+        await refreshWalletBalance();
+      }
     } catch (err) { setError(err.response?.data?.response || 'Failed to confirm'); }
     finally { setLoading(false); }
   };
@@ -201,17 +277,105 @@ const BookingView = ({ onBooked }) => {
     }
   };
 
+  const handleWalletTopup = async (e) => {
+    e.preventDefault();
+    setError('');
+    setWalletMessage('');
+    const amountNumber = Number(walletTopup);
+    if (!amountNumber || amountNumber <= 0) {
+      setError('Enter a valid top-up amount.');
+      return;
+    }
+    try {
+      const newBalance = await rechargeWallet(amountNumber);
+      setWalletMessage(`Wallet topped up. Balance ₹${newBalance}`);
+      setWalletTopup('');
+    } catch (err) {
+      setError(err.response?.data?.response || 'Wallet recharge failed.');
+    }
+  };
+
+  const handlePayWithWallet = async () => {
+    setLoading(true); setError('');
+    try {
+      if (!createdParcelId || !selectedCourierId) {
+        setError('Courier selection is missing.');
+        return;
+      }
+      const payableAmount = Number(paymentInfo?.amount || pendingShipment?.price || 0);
+      if (walletBalance == null) {
+        setError('Wallet balance not loaded yet.');
+        return;
+      }
+      if (walletBalance < payableAmount) {
+        setError('Insufficient wallet balance.');
+        return;
+      }
+      const r = await api.post('/user/payment/wallet', { parcelId: createdParcelId, courierId: selectedCourierId });
+      const successPayload = {
+        _id: r.data.shipmentId,
+        awb: r.data.awb,
+        courierPartner: pendingShipment?.courierPartner,
+        price: payableAmount,
+        eta: pendingShipment?.eta,
+        paymentStatus: 'PAID',
+        shipmentStatus: 'BOOKED',
+      };
+      setSuccessData(successPayload);
+      setStep(4);
+      if (typeof r.data.walletBalance === 'number' && onWalletBalanceUpdate) {
+        onWalletBalanceUpdate(r.data.walletBalance);
+      }
+    } catch (err) {
+      setError(err.response?.data?.response || 'Wallet payment failed.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDownloadReceipt = async () => {
+    if (!successData?._id) return;
+    setDownloading(true);
+    setError('');
+    try {
+      const response = await api.post(`/user/payment/recipt/${successData._id}`, {}, { responseType: 'blob' });
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      const disposition = response.headers?.['content-disposition'] || '';
+      const match = /filename=([^;]+)/i.exec(disposition);
+      const filename = match ? match[1].replace(/"/g, '').trim() : `shipment-${successData.awb || successData._id}.pdf`;
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      setError(err.response?.data?.response || 'Failed to download invoice.');
+    } finally {
+      setDownloading(false);
+    }
+  };
+
   const reset = () => {
     setStep(1);
     setCreatedParcelId(null);
+    setSelectedCourierId(null);
     setCouriers([]);
     setPendingShipment(null);
     setPaymentInfo(null);
     setUtr('');
     setPaymentScreenshot('');
+    setWalletTopup('');
+    setWalletMessage('');
+    setDownloading(false);
     setSuccessData(null);
     setParcelData({ senderName:'', senderEmail:'', senderPhoneNumber:'', senderAddress:'', recieverName:'', recieverPhone:'', recieverAddress:'', DelevarableType:'', weight:'' });
   };
+
+  const payableAmount = Number(paymentInfo?.amount || pendingShipment?.price || 0);
+  const walletCanPay = walletBalance != null && walletBalance >= payableAmount;
 
   return (
     <div>
@@ -344,6 +508,33 @@ const BookingView = ({ onBooked }) => {
                 Open UPI Payment Link
               </a>
             </div>
+            <div className="glass-card" style={{ padding: '1rem', marginBottom: '1.25rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem' }}>
+                <div>
+                  <p style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 0.25rem' }}>Wallet Balance</p>
+                  <p style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-1)', margin: 0 }}>
+                    {walletLoading ? 'Loading…' : (walletBalance != null ? `₹${walletBalance}` : '—')}
+                  </p>
+                </div>
+                <button type="button" onClick={handlePayWithWallet} disabled={loading || walletLoading || !walletCanPay} className="btn-primary" style={{ padding: '0.6rem 1.2rem' }}>
+                  {loading ? <Spinner small /> : 'Pay with Wallet'}
+                </button>
+              </div>
+              {!walletCanPay && walletBalance != null && (
+                <p style={{ marginTop: '0.6rem', fontSize: '0.8rem', color: 'var(--text-2)' }}>
+                  Insufficient wallet balance for ₹{payableAmount}. Top up to continue.
+                </p>
+              )}
+              {walletMessage && (
+                <p style={{ marginTop: '0.6rem', fontSize: '0.8rem', color: 'var(--green)' }}>{walletMessage}</p>
+              )}
+              <form onSubmit={handleWalletTopup} style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '0.6rem', marginTop: '0.85rem' }}>
+                <input type="number" min="1" step="1" value={walletTopup} onChange={(e) => setWalletTopup(e.target.value)} className="input-field no-icon" placeholder="Top up amount" />
+                <button type="submit" disabled={loading || walletLoading} className="btn-ghost" style={{ padding: '0.6rem 1rem' }}>
+                  Top Up
+                </button>
+              </form>
+            </div>
             <form onSubmit={handleVerifyPayment} style={{ display: 'grid', gap: '0.9rem' }}>
               <Field label="UTR / Transaction ID">
                 <input type="text" value={utr} onChange={(e) => setUtr(e.target.value)} className="input-field no-icon" placeholder="Enter UTR" required />
@@ -381,6 +572,9 @@ const BookingView = ({ onBooked }) => {
                 ))}
               </div>
             </div>
+            <button onClick={handleDownloadReceipt} disabled={downloading} className="btn-ghost" style={{ width: '100%', justifyContent: 'center', marginBottom: '0.9rem' }}>
+              {downloading ? <><Spinner small /> Downloading…</> : <><Download size={14} /> Download Invoice PDF</>}
+            </button>
             <div style={{ display: 'flex', gap: '0.75rem' }}>
               <button onClick={reset} className="btn-primary" style={{ flex: 1, padding: '0.85rem' }}><Zap size={15} /> Book Another</button>
               <button onClick={onBooked} className="btn-ghost" style={{ flex: 1 }}><List size={14} /> View Profile</button>
@@ -398,6 +592,50 @@ const Dashboard = () => {
   const [view, setView] = useState('profile');
   const [shipments, setShipments] = useState([]);
   const [loadingShipments, setLoadingShipments] = useState(true);
+  const [walletBalance, setWalletBalance] = useState(null);
+  const [walletLoading, setWalletLoading] = useState(false);
+  const [walletNotice, setWalletNotice] = useState('');
+  const [walletError, setWalletError] = useState('');
+
+  const fetchWalletBalance = useCallback(async () => {
+    setWalletLoading(true);
+    setWalletError('');
+    try {
+      const r = await api.get('/wallet/balance');
+      const balanceValue = r.data.balance ?? r.data['balance in wallet is'];
+      const normalized = Number(balanceValue);
+      const finalBalance = Number.isFinite(normalized) ? normalized : 0;
+      setWalletBalance(finalBalance);
+      setWalletNotice('');
+      return finalBalance;
+    } catch (err) {
+      if (err.response?.status === 404) {
+        setWalletBalance(0);
+        setWalletNotice('Wallet not created yet. Recharge to activate.');
+        return 0;
+      }
+      setWalletError(err.response?.data?.response || 'Failed to load wallet balance.');
+      return null;
+    } finally {
+      setWalletLoading(false);
+    }
+  }, []);
+
+  const rechargeWallet = useCallback(async (amount) => {
+    setWalletLoading(true);
+    setWalletError('');
+    try {
+      const r = await api.post('/wallet/recharge', { amount });
+      const balanceValue = r.data.balance ?? r.data['balance in wallet is'];
+      const normalized = Number(balanceValue);
+      const finalBalance = Number.isFinite(normalized) ? normalized : 0;
+      setWalletBalance(finalBalance);
+      setWalletNotice('');
+      return finalBalance;
+    } finally {
+      setWalletLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     // Fetch user's shipment history
@@ -414,6 +652,13 @@ const Dashboard = () => {
     fetchShipments();
   }, [view]);
 
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      fetchWalletBalance();
+    }, 0);
+    return () => clearTimeout(timeoutId);
+  }, [fetchWalletBalance]);
+
   const handleBooked = () => {
     setView('profile');
     setLoadingShipments(true);
@@ -424,8 +669,18 @@ const Dashboard = () => {
       <div className="bg-mesh" />
       <Navbar logout={logout} view={view} setView={setView} />
       <main style={{ maxWidth: 1200, margin: '0 auto', padding: '2.5rem 1.5rem', position: 'relative', zIndex: 1 }}>
-        {view === 'profile' && <ProfileView user={user} shipments={shipments} loadingShipments={loadingShipments} />}
-        {view === 'book'    && <BookingView onBooked={handleBooked} />}
+        {view === 'profile' && <ProfileView user={user} shipments={shipments} loadingShipments={loadingShipments} walletBalance={walletBalance} />}
+        {view === 'wallet' && <WalletView balance={walletBalance} loading={walletLoading} notice={walletNotice} error={walletError} onRecharge={rechargeWallet} />}
+        {view === 'book'    && (
+          <BookingView
+            onBooked={handleBooked}
+            walletBalance={walletBalance}
+            walletLoading={walletLoading}
+            refreshWalletBalance={fetchWalletBalance}
+            rechargeWallet={rechargeWallet}
+            onWalletBalanceUpdate={setWalletBalance}
+          />
+        )}
       </main>
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
