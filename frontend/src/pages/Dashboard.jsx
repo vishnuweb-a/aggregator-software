@@ -6,6 +6,7 @@ import {
   Clock, CreditCard, ChevronRight, User,
   AlertCircle, ArrowLeft, Truck, Zap, Phone, Mail,
   ShieldCheck, PlusCircle, List, Home, Wallet, Download,
+  Star, DollarSign, Award, Navigation,
 } from 'lucide-react';
 
 /* ─── Navbar ─────────────────────────────────────── */
@@ -19,7 +20,7 @@ const Navbar = ({ logout, view, setView }) => (
   }}>
     <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 1.5rem', height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-        <div style={{ width: 40, height: 40, borderRadius: 14, background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 10px 22px rgba(59,130,246,0.35)' }}>
+        <div style={{ width: 40, height: 40, borderRadius: 14, background: 'linear-gradient(135deg, var(--accent), var(--purple))', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 10px 22px rgba(59,130,246,0.35)' }}>
           <Truck size={18} color="#fff" strokeWidth={2.5} />
         </div>
         <span style={{ fontSize: '1.05rem', fontWeight: 800, letterSpacing: '-0.01em', color: 'var(--text-1)' }}>
@@ -57,12 +58,28 @@ const InfoRow = ({ icon: Icon, label, value }) => (
   </div>
 );
 
+/* ─── Star Rating Component ─────────────────────── */
+const StarRating = ({ rating = 0, max = 5 }) => (
+  <div className="star-rating">
+    {Array.from({ length: max }, (_, i) => (
+      <span key={i} className={`star ${i < Math.round(rating) ? 'filled' : ''}`}>★</span>
+    ))}
+  </div>
+);
+
+/* ─── Score Bar Component ────────────────────────── */
+const ScoreBar = ({ score = 0, maxScore = 100 }) => (
+  <div className="score-bar" style={{ width: '100%' }}>
+    <div className="score-bar-fill" style={{ width: `${Math.min((score / maxScore) * 100, 100)}%` }} />
+  </div>
+);
+
 /* ─── Shipment History Card ───────────────────────── */
 const ShipmentCard = ({ s }) => {
   const status = s.shipmentStatus || s.status || 'PENDING'
   return (
     <div className="glass-card" style={{ padding: 0, overflow: 'hidden' }}>
-      <div style={{ height: 3, background: 'var(--accent)' }} />
+      <div style={{ height: 3, background: 'linear-gradient(90deg, var(--accent), var(--purple))' }} />
       <div style={{ padding: '1.1rem 1.25rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.6rem' }}>
           <div>
@@ -96,7 +113,7 @@ const ProfileView = ({ user, shipments, loadingShipments, walletBalance }) => (
     <div className="glass-card" style={{ padding: '2rem' }}>
       {/* Avatar */}
       <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
-        <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem', boxShadow: '0 0 28px rgba(59,130,246,0.35)' }}>
+        <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'linear-gradient(135deg, var(--accent), var(--purple))', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem', boxShadow: '0 0 28px rgba(59,130,246,0.35)' }}>
           <span style={{ fontSize: '2rem', fontWeight: 900, color: '#fff' }}>{(user?.name || 'U')[0].toUpperCase()}</span>
         </div>
         <h2 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-1)', margin: '0 0 0.25rem' }}>{user?.name || 'User'}</h2>
@@ -207,12 +224,192 @@ const FieldRow = ({ children }) => (
   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>{children}</div>
 );
 
+/* ─── Recommendation Highlight Card ───────────────── */
+const RecommendationCard = ({ type, courier, onSelect, loading }) => {
+  if (!courier) return null;
+
+  const configs = {
+    cheapest: {
+      label: '💰 Cheapest',
+      tagClass: 'rec-tag rec-tag-cheapest',
+      cardClass: 'rec-card rec-card-cheapest',
+      icon: DollarSign,
+      iconColor: '#4ade80',
+      subtitle: 'Lowest price option',
+    },
+    fastest: {
+      label: '⚡ Fastest',
+      tagClass: 'rec-tag rec-tag-fastest',
+      cardClass: 'rec-card rec-card-fastest',
+      icon: Zap,
+      iconColor: '#fbbf24',
+      subtitle: 'Quickest delivery',
+    },
+    recommended: {
+      label: '🏆 Best Overall',
+      tagClass: 'rec-tag rec-tag-best',
+      cardClass: 'rec-card rec-card-best',
+      icon: Award,
+      iconColor: '#c084fc',
+      subtitle: 'Top rated by score',
+    },
+  };
+
+  const cfg = configs[type] || configs.recommended;
+  const Icon = cfg.icon;
+
+  return (
+    <div className={cfg.cardClass} onClick={() => onSelect(courier.courierId)}>
+      <div style={{ padding: '1.35rem' }}>
+        {/* Tag + Icon */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+          <span className={cfg.tagClass}>{cfg.label}</span>
+          <div style={{ width: 36, height: 36, borderRadius: 10, background: `${cfg.iconColor}15`, border: `1px solid ${cfg.iconColor}30`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Icon size={16} color={cfg.iconColor} />
+          </div>
+        </div>
+
+        {/* Provider */}
+        <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-1)', margin: '0 0 0.2rem' }}>{courier.provider}</h3>
+        <p style={{ fontSize: '0.75rem', color: 'var(--text-3)', margin: '0 0 1rem' }}>{cfg.subtitle}</p>
+
+        {/* Stats */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1rem' }}>
+          <div>
+            <p style={{ fontSize: '0.62rem', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 0.2rem' }}>Price</p>
+            <p style={{ fontSize: '1.35rem', fontWeight: 900, color: 'var(--text-1)', margin: 0 }}>₹{Math.round(courier.price)}</p>
+          </div>
+          <div>
+            <p style={{ fontSize: '0.62rem', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 0.2rem' }}>ETA</p>
+            <p style={{ fontSize: '1.35rem', fontWeight: 900, color: 'var(--text-1)', margin: 0 }}>{courier.eta} Day{courier.eta !== 1 ? 's' : ''}</p>
+          </div>
+        </div>
+
+        {/* Rating + Score */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+          {courier.rating != null && <StarRating rating={courier.rating} />}
+          <span style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-2)' }}>Score: {courier.score}</span>
+        </div>
+
+        <ScoreBar score={courier.score} />
+
+        {/* Select button */}
+        <button
+          onClick={(e) => { e.stopPropagation(); onSelect(courier.courierId); }}
+          disabled={loading}
+          className="btn-primary"
+          style={{ width: '100%', marginTop: '1rem', padding: '0.7rem', borderRadius: 14 }}
+        >
+          {loading ? <Spinner small /> : <>Select <ChevronRight size={16} /></>}
+        </button>
+      </div>
+    </div>
+  );
+};
+
+/* ─── All Couriers Card ───────────────────────────── */
+const AllCourierCard = ({ courier, onSelect, loading }) => (
+  <div className="glass-card" style={{ overflow: 'hidden' }}>
+    <div style={{ height: 3, background: 'linear-gradient(90deg, var(--accent), var(--purple))' }} />
+    <div style={{ padding: '1.25rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+        <span style={{ fontWeight: 800, fontSize: '1rem' }}>{courier.provider}</span>
+        <span className="badge badge-blue"><CheckCircle size={10} /> Active</span>
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem', marginBottom: '0.75rem' }}>
+        <div style={{ display: 'flex', gap: '0.5rem', fontSize: '0.82rem', color: 'var(--text-2)' }}><Clock size={14} color="var(--text-3)" />{courier.eta} Day{courier.eta !== 1 ? 's' : ''} Delivery</div>
+        <div style={{ display: 'flex', gap: '0.5rem', fontSize: '0.82rem', color: 'var(--text-2)' }}><CreditCard size={14} color="var(--text-3)" />₹{Math.round(courier.price)}</div>
+      </div>
+
+      {/* Rating + Score */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.6rem' }}>
+        {courier.rating != null && <StarRating rating={courier.rating} />}
+        <span style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-3)' }}>Score: {courier.score}</span>
+      </div>
+      <ScoreBar score={courier.score} />
+
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '1rem', marginTop: '0.75rem', borderTop: '1px solid var(--border)' }}>
+        <div>
+          <p style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 0.15rem' }}>Total</p>
+          <p style={{ fontSize: '1.45rem', fontWeight: 900, color: 'var(--text-1)', margin: 0 }}>₹{Math.round(courier.price)}</p>
+        </div>
+        <button onClick={() => onSelect(courier.courierId)} disabled={loading} className="btn-primary" style={{ padding: '0.6rem 1rem', minWidth: 'auto', borderRadius: 10 }}>
+          {loading ? <Spinner small /> : <ChevronRight size={18} />}
+        </button>
+      </div>
+    </div>
+  </div>
+);
+
+/* ─── Address Form Section ────────────────────────── */
+const AddressFields = ({ prefix, label, emoji, color, address, onChange }) => {
+  const handleChange = (field) => (e) => {
+    onChange({ ...address, [field]: e.target.value });
+  };
+
+  const pincodeValid = address.pincode.length === 6 && /^\d{6}$/.test(address.pincode);
+  const pincodeClass = address.pincode.length === 0 ? '' : (pincodeValid ? 'pincode-valid' : 'pincode-invalid');
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+      <p style={{ fontWeight: 700, fontSize: '0.85rem', color, margin: 0 }}>{emoji} {label}</p>
+
+      <div className="address-grid">
+        <div className="full-width">
+          <Field label="Full Address">
+            <textarea
+              value={address.fullAddress}
+              onChange={handleChange('fullAddress')}
+              className="input-field"
+              rows={2}
+              placeholder="House/Building No., Street, Area…"
+              required
+            />
+          </Field>
+        </div>
+        <Field label="Landmark">
+          <input type="text" value={address.landmark} onChange={handleChange('landmark')} className="input-field no-icon" placeholder="Near…" />
+        </Field>
+        <Field label="City">
+          <input type="text" value={address.city} onChange={handleChange('city')} className="input-field no-icon" placeholder="Mumbai" required />
+        </Field>
+        <Field label="State">
+          <input type="text" value={address.state} onChange={handleChange('state')} className="input-field no-icon" placeholder="Maharashtra" required />
+        </Field>
+        <div className="pincode-field">
+          <Field label="Pincode ✱">
+            <input
+              type="text"
+              maxLength={6}
+              value={address.pincode}
+              onChange={handleChange('pincode')}
+              className={`input-field no-icon ${pincodeClass}`}
+              placeholder="400001"
+              pattern="[0-9]{6}"
+              required
+            />
+          </Field>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+
+/* ─── Main Booking View ───────────────────────────── */
 const BookingView = ({ onBooked, walletBalance, walletLoading, refreshWalletBalance, rechargeWallet, onWalletBalanceUpdate }) => {
   const [step, setStep] = useState(1);
-  const [parcelData, setParcelData] = useState({ senderName:'', senderEmail:'', senderPhoneNumber:'', senderAddress:'', recieverName:'', recieverPhone:'', recieverAddress:'', DelevarableType:'', weight:'' });
+  const [parcelData, setParcelData] = useState({
+    senderName: '', senderEmail: '', senderPhoneNumber: '',
+    senderAddress: { fullAddress: '', landmark: '', city: '', state: '', pincode: '' },
+    receiverName: '', receiverPhone: '',
+    receiverAddress: { fullAddress: '', landmark: '', city: '', state: '', pincode: '' },
+    DelevarableType: '', weight: ''
+  });
   const [createdParcelId, setCreatedParcelId] = useState(null);
   const [selectedCourierId, setSelectedCourierId] = useState(null);
-  const [couriers, setCouriers]  = useState([]);
+  const [recommendations, setRecommendations] = useState({ cheapest: null, fastest: null, recommended: null });
+  const [allCouriers, setAllCouriers] = useState([]);
   const [pendingShipment, setPendingShipment] = useState(null);
   const [paymentInfo, setPaymentInfo] = useState(null);
   const [utr, setUtr] = useState('');
@@ -220,11 +417,13 @@ const BookingView = ({ onBooked, walletBalance, walletLoading, refreshWalletBala
   const [walletTopup, setWalletTopup] = useState('');
   const [walletMessage, setWalletMessage] = useState('');
   const [downloading, setDownloading] = useState(false);
-  const [loading, setLoading]    = useState(false);
-  const [error, setError]        = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const [successData, setSuccessData] = useState(null);
 
-  const onChange = e => setParcelData({ ...parcelData, [e.target.name]: e.target.value });
+  const onFieldChange = e => setParcelData({ ...parcelData, [e.target.name]: e.target.value });
+  const onSenderAddressChange = (addr) => setParcelData({ ...parcelData, senderAddress: addr });
+  const onReceiverAddressChange = (addr) => setParcelData({ ...parcelData, receiverAddress: addr });
 
   useEffect(() => {
     if (step === 3 && refreshWalletBalance) {
@@ -232,21 +431,58 @@ const BookingView = ({ onBooked, walletBalance, walletLoading, refreshWalletBala
     }
   }, [step, refreshWalletBalance]);
 
+  /* Step 1: Create Parcel */
   const handleCreateParcel = async (e) => {
     e.preventDefault(); setLoading(true); setError('');
+
+    // Validate pincodes
+    if (parcelData.senderAddress.pincode.length !== 6 || !/^\d{6}$/.test(parcelData.senderAddress.pincode)) {
+      setError('Sender pincode must be exactly 6 digits.'); setLoading(false); return;
+    }
+    if (parcelData.receiverAddress.pincode.length !== 6 || !/^\d{6}$/.test(parcelData.receiverAddress.pincode)) {
+      setError('Receiver pincode must be exactly 6 digits.'); setLoading(false); return;
+    }
+
     try {
-      const r = await api.post('/user/parcel', { ...parcelData, weight: Number(parcelData.weight) });
-      setCreatedParcelId(r.data.parcel._id);
-      const cr = await api.post(`/user/courier/${r.data.parcel._id}`);
-      setCouriers(cr.data.data); setStep(2);
-    } catch (err) { setError(err.response?.data?.response || 'Failed to create parcel'); }
-    finally { setLoading(false); }
+      const payload = {
+        senderName: parcelData.senderName,
+        senderEmail: parcelData.senderEmail,
+        senderPhoneNumber: parcelData.senderPhoneNumber,
+        senderAddress: parcelData.senderAddress,
+        receiverName: parcelData.receiverName,
+        receiverPhone: parcelData.receiverPhone,
+        receiverAddress: parcelData.receiverAddress,
+        DelevarableType: parcelData.DelevarableType,
+        weight: Number(parcelData.weight),
+      };
+
+      const r = await api.post('/user/parcel', payload);
+      const parcelId = r.data.parcel._id;
+      setCreatedParcelId(parcelId);
+
+      // Get courier options (returns { parcel, couriers: { cheapest, fastest, recommended, all } })
+      const cr = await api.post(`/user/courier/${parcelId}`);
+      const couriersData = cr.data.couriers;
+
+      setRecommendations({
+        cheapest: couriersData.cheapest || null,
+        fastest: couriersData.fastest || null,
+        recommended: couriersData.recommended || null,
+      });
+      setAllCouriers(couriersData.all || []);
+      setStep(2);
+    } catch (err) {
+      setError(err.response?.data?.response || 'Failed to create parcel');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleConfirm = async (courierId) => {
+  /* Step 2: Confirm Courier */
+  const handleConfirm = async (courierId, recommendationType) => {
     setLoading(true); setError('');
     try {
-      const r = await api.post('/user/parcel/confirmOrder', { parcelId: createdParcelId, courierId });
+      const r = await api.post('/user/parcel/confirmOrder', { parcelId: createdParcelId, courierId, recommendationType });
       setSelectedCourierId(courierId);
       setPendingShipment(r.data.shipment);
       setPaymentInfo(r.data.payment);
@@ -264,8 +500,8 @@ const BookingView = ({ onBooked, walletBalance, walletLoading, refreshWalletBala
     setLoading(true); setError('');
     try {
       const r = await api.post('/user/payment/verify', {
-        shipmentId: pendingShipment?._id,
-        utr,
+        shipmentId: pendingShipment?.shipmentId || pendingShipment?._id,
+        utrNumber: utr,
         paymentScreenshot: paymentScreenshot || '',
       });
       setSuccessData(r.data.shipment);
@@ -302,7 +538,7 @@ const BookingView = ({ onBooked, walletBalance, walletLoading, refreshWalletBala
         setError('Courier selection is missing.');
         return;
       }
-      const payableAmount = Number(paymentInfo?.amount || pendingShipment?.price || 0);
+      const payableAmount = Number(paymentInfo?.amount || pendingShipment?.amount || pendingShipment?.price || 0);
       if (walletBalance == null) {
         setError('Wallet balance not loaded yet.');
         return;
@@ -315,7 +551,7 @@ const BookingView = ({ onBooked, walletBalance, walletLoading, refreshWalletBala
       const successPayload = {
         _id: r.data.shipmentId,
         awb: r.data.awb,
-        courierPartner: pendingShipment?.courierPartner,
+        courierPartner: pendingShipment?.courier || pendingShipment?.courierPartner,
         price: payableAmount,
         eta: pendingShipment?.eta,
         paymentStatus: 'PAID',
@@ -334,17 +570,18 @@ const BookingView = ({ onBooked, walletBalance, walletLoading, refreshWalletBala
   };
 
   const handleDownloadReceipt = async () => {
-    if (!successData?._id) return;
+    const shipId = successData?.shipmentId || successData?._id;
+    if (!shipId) return;
     setDownloading(true);
     setError('');
     try {
-      const response = await api.post(`/user/payment/recipt/${successData._id}`, {}, { responseType: 'blob' });
+      const response = await api.post(`/user/payment/recipt/${shipId}`, {}, { responseType: 'blob' });
       const blob = new Blob([response.data], { type: 'application/pdf' });
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       const disposition = response.headers?.['content-disposition'] || '';
       const match = /filename=([^;]+)/i.exec(disposition);
-      const filename = match ? match[1].replace(/"/g, '').trim() : `shipment-${successData.awb || successData._id}.pdf`;
+      const filename = match ? match[1].replace(/"/g, '').trim() : `shipment-${successData.awb || shipId}.pdf`;
       link.href = url;
       link.download = filename;
       document.body.appendChild(link);
@@ -362,7 +599,8 @@ const BookingView = ({ onBooked, walletBalance, walletLoading, refreshWalletBala
     setStep(1);
     setCreatedParcelId(null);
     setSelectedCourierId(null);
-    setCouriers([]);
+    setRecommendations({ cheapest: null, fastest: null, recommended: null });
+    setAllCouriers([]);
     setPendingShipment(null);
     setPaymentInfo(null);
     setUtr('');
@@ -371,17 +609,23 @@ const BookingView = ({ onBooked, walletBalance, walletLoading, refreshWalletBala
     setWalletMessage('');
     setDownloading(false);
     setSuccessData(null);
-    setParcelData({ senderName:'', senderEmail:'', senderPhoneNumber:'', senderAddress:'', recieverName:'', recieverPhone:'', recieverAddress:'', DelevarableType:'', weight:'' });
+    setParcelData({
+      senderName: '', senderEmail: '', senderPhoneNumber: '',
+      senderAddress: { fullAddress: '', landmark: '', city: '', state: '', pincode: '' },
+      receiverName: '', receiverPhone: '',
+      receiverAddress: { fullAddress: '', landmark: '', city: '', state: '', pincode: '' },
+      DelevarableType: '', weight: ''
+    });
   };
 
-  const payableAmount = Number(paymentInfo?.amount || pendingShipment?.price || 0);
+  const payableAmount = Number(paymentInfo?.amount || pendingShipment?.amount || pendingShipment?.price || 0);
   const walletCanPay = walletBalance != null && walletBalance >= payableAmount;
 
   return (
     <div>
       {/* Step indicator */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '2rem', justifyContent: 'center' }}>
-        {['Details', 'Select Courier', 'Payment', 'Confirmed'].map((label, i) => (
+        {['Parcel Details', 'Select Courier', 'Payment', 'Confirmed'].map((label, i) => (
           <Fragment key={label}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
               <div style={{ width: 28, height: 28, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 800, background: step > i + 1 ? 'var(--green)' : step === i + 1 ? 'var(--accent)' : 'rgba(255,255,255,0.05)', color: step >= i + 1 ? '#fff' : 'var(--text-3)', border: step < i + 1 ? '1px solid var(--border)' : 'none' }}>
@@ -394,40 +638,84 @@ const BookingView = ({ onBooked, walletBalance, walletLoading, refreshWalletBala
         ))}
       </div>
 
-      {error && <div className="alert alert-error" style={{ maxWidth: 700, margin: '0 auto 1.5rem' }}><AlertCircle size={16} /><span>{error}</span></div>}
+      {error && <div className="alert alert-error" style={{ maxWidth: 900, margin: '0 auto 1.5rem' }}><AlertCircle size={16} /><span>{error}</span></div>}
 
-      {/* Step 1 */}
+      {/* ═══ Step 1: Parcel Details ═══ */}
       {step === 1 && (
-        <div className="glass-card" style={{ padding: 0, overflow: 'hidden', maxWidth: 900, margin: '0 auto' }}>
+        <div className="glass-card" style={{ padding: 0, overflow: 'hidden', maxWidth: 960, margin: '0 auto' }}>
           <div style={{ padding: '1.25rem 1.75rem', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-            <MapPin size={18} color="var(--accent)" />
-            <h2 style={{ fontSize: '1rem', fontWeight: 700, margin: 0 }}>New Consignment</h2>
+            <div style={{ width: 34, height: 34, borderRadius: 10, background: 'linear-gradient(135deg, var(--accent), var(--purple))', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Package size={16} color="#fff" />
+            </div>
+            <div>
+              <h2 style={{ fontSize: '1.05rem', fontWeight: 800, margin: 0 }}>New Consignment</h2>
+              <p style={{ fontSize: '0.72rem', color: 'var(--text-3)', margin: 0 }}>Fill in sender & receiver details with pincode</p>
+            </div>
           </div>
           <form onSubmit={handleCreateParcel}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(300px,1fr))', gap: '1.75rem', padding: '1.75rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(340px,1fr))', gap: '2rem', padding: '1.75rem' }}>
+
+              {/* Sender side */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                <p style={{ fontWeight: 700, fontSize: '0.85rem', color: 'var(--accent)', margin: 0 }}>📦 Pickup Details</p>
                 <FieldRow>
-                  <Field label="Sender Name"><input type="text" name="senderName" value={parcelData.senderName} onChange={onChange} className="input-field no-icon" placeholder="Jane Smith" required /></Field>
-                  <Field label="Phone"><input type="text" name="senderPhoneNumber" value={parcelData.senderPhoneNumber} onChange={onChange} className="input-field no-icon" placeholder="9876543210" required /></Field>
+                  <Field label="Sender Name">
+                    <input type="text" name="senderName" value={parcelData.senderName} onChange={onFieldChange} className="input-field no-icon" placeholder="Jane Smith" required />
+                  </Field>
+                  <Field label="Phone">
+                    <input type="text" name="senderPhoneNumber" value={parcelData.senderPhoneNumber} onChange={onFieldChange} className="input-field no-icon" placeholder="9876543210" required />
+                  </Field>
                 </FieldRow>
-                <Field label="Email"><input type="email" name="senderEmail" value={parcelData.senderEmail} onChange={onChange} className="input-field no-icon" placeholder="jane@example.com" required /></Field>
-                <Field label="Pickup Address"><textarea name="senderAddress" value={parcelData.senderAddress} onChange={onChange} className="input-field" rows={3} placeholder="Full address…" required /></Field>
+                <Field label="Email">
+                  <input type="email" name="senderEmail" value={parcelData.senderEmail} onChange={onFieldChange} className="input-field no-icon" placeholder="jane@example.com" required />
+                </Field>
+                <AddressFields
+                  prefix="sender"
+                  label="Pickup Address"
+                  emoji="📦"
+                  color="var(--accent)"
+                  address={parcelData.senderAddress}
+                  onChange={onSenderAddressChange}
+                />
               </div>
+
+              {/* Receiver side */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                <p style={{ fontWeight: 700, fontSize: '0.85rem', color: 'var(--green)', margin: 0 }}>🏠 Delivery Details</p>
                 <FieldRow>
-                  <Field label="Receiver Name"><input type="text" name="recieverName" value={parcelData.recieverName} onChange={onChange} className="input-field no-icon" placeholder="John Doe" required /></Field>
-                  <Field label="Phone"><input type="text" name="recieverPhone" value={parcelData.recieverPhone} onChange={onChange} className="input-field no-icon" placeholder="9876543210" required /></Field>
+                  <Field label="Receiver Name">
+                    <input type="text" name="receiverName" value={parcelData.receiverName} onChange={onFieldChange} className="input-field no-icon" placeholder="John Doe" required />
+                  </Field>
+                  <Field label="Phone">
+                    <input type="text" name="receiverPhone" value={parcelData.receiverPhone} onChange={onFieldChange} className="input-field no-icon" placeholder="9876543210" required />
+                  </Field>
                 </FieldRow>
-                <Field label="Delivery Address"><textarea name="recieverAddress" value={parcelData.recieverAddress} onChange={onChange} className="input-field" rows={3} placeholder="Full address…" required /></Field>
+                <AddressFields
+                  prefix="receiver"
+                  label="Delivery Address"
+                  emoji="🏠"
+                  color="var(--green)"
+                  address={parcelData.receiverAddress}
+                  onChange={onReceiverAddressChange}
+                />
                 <FieldRow>
-                  <Field label="Package Type"><input type="text" name="DelevarableType" value={parcelData.DelevarableType} onChange={onChange} className="input-field no-icon" placeholder="Document, Electronics…" required /></Field>
-                  <Field label="Weight (kg)"><input type="number" step="0.1" min="0.1" name="weight" value={parcelData.weight} onChange={onChange} className="input-field no-icon" placeholder="0.5" required /></Field>
+                  <Field label="Package Type">
+                    <input type="text" name="DelevarableType" value={parcelData.DelevarableType} onChange={onFieldChange} className="input-field no-icon" placeholder="Document, Electronics…" required />
+                  </Field>
+                  <Field label="Weight (kg)">
+                    <input type="number" step="0.1" min="0.1" name="weight" value={parcelData.weight} onChange={onFieldChange} className="input-field no-icon" placeholder="0.5" required />
+                  </Field>
                 </FieldRow>
               </div>
+
             </div>
-            <div style={{ padding: '1rem 1.75rem', borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'flex-end' }}>
+            <div style={{ padding: '1rem 1.75rem', borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginRight: 'auto' }}>
+                <Navigation size={14} color="var(--text-3)" />
+                <span style={{ fontSize: '0.78rem', color: 'var(--text-3)' }}>
+                  {parcelData.senderAddress.pincode && parcelData.receiverAddress.pincode
+                    ? `${parcelData.senderAddress.pincode} → ${parcelData.receiverAddress.pincode}`
+                    : 'Enter pincodes to find couriers'}
+                </span>
+              </div>
               <button type="submit" disabled={loading} className="btn-primary" style={{ minWidth: 180 }}>
                 {loading ? <><Spinner /> Searching…</> : <><Search size={16} /> Find Couriers</>}
               </button>
@@ -436,56 +724,63 @@ const BookingView = ({ onBooked, walletBalance, walletLoading, refreshWalletBala
         </div>
       )}
 
-      {/* Step 2 */}
+      {/* ═══ Step 2: Courier Selection ═══ */}
       {step === 2 && (
-        <div>
+        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-            <h2 style={{ fontSize: '1.3rem', fontWeight: 800, margin: 0 }}>Available Couriers</h2>
+            <h2 style={{ fontSize: '1.3rem', fontWeight: 800, margin: 0 }}>Choose Your Courier</h2>
             <button onClick={() => setStep(1)} className="btn-ghost" style={{ gap: '0.4rem' }}><ArrowLeft size={14} /> Edit Details</button>
           </div>
-          {couriers.length === 0 ? (
+
+          {/* No couriers */}
+          {allCouriers.length === 0 && !recommendations.cheapest && (
             <div className="glass-card" style={{ padding: '4rem', textAlign: 'center' }}>
               <Truck size={32} color="var(--text-3)" style={{ margin: '0 auto 1rem' }} />
-              <p style={{ color: 'var(--text-2)' }}>No couriers found for this route.</p>
-              <button onClick={() => setStep(1)} className="btn-ghost" style={{ marginTop: '1rem' }}>Try different addresses</button>
+              <p style={{ color: 'var(--text-2)' }}>No couriers found for this pincode route.</p>
+              <button onClick={() => setStep(1)} className="btn-ghost" style={{ marginTop: '1rem' }}>Try different pincodes</button>
             </div>
-          ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(260px,1fr))', gap: '1.25rem' }}>
-              {couriers.map(c => (
-                <div key={c._id} className="glass-card" style={{ overflow: 'hidden' }}>
-                  <div style={{ height: 3, background: 'var(--accent)' }} />
-                  <div style={{ padding: '1.25rem' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-                      <span style={{ fontWeight: 800, fontSize: '1rem' }}>{c.provider}</span>
-                      <span className="badge badge-green"><CheckCircle size={10} /> Active</span>
-                    </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem', marginBottom: '1rem' }}>
-                      <div style={{ display: 'flex', gap: '0.5rem', fontSize: '0.82rem', color: 'var(--text-2)' }}><Clock size={14} color="var(--text-3)" />{c.eta_days} Day{c.eta_days !== 1 ? 's' : ''} Delivery</div>
-                      <div style={{ display: 'flex', gap: '0.5rem', fontSize: '0.82rem', color: 'var(--text-2)' }}><CreditCard size={14} color="var(--text-3)" />Base ₹{c.base_price}</div>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '1rem', borderTop: '1px solid var(--border)' }}>
-                      <div>
-                        <p style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 0.15rem' }}>Total</p>
-                        <p style={{ fontSize: '1.45rem', fontWeight: 900, color: 'var(--text-1)', margin: 0 }}>₹{c.price}</p>
-                      </div>
-                      <button onClick={() => handleConfirm(c._id)} disabled={loading} className="btn-primary" style={{ padding: '0.6rem 1rem', minWidth: 'auto', borderRadius: 10 }}>
-                        {loading ? <Spinner small /> : <ChevronRight size={18} />}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+          )}
+
+          {/* Recommendations Section */}
+          {(recommendations.cheapest || recommendations.fastest || recommendations.recommended) && (
+            <>
+              <div className="section-header">
+                <Star size={18} color="var(--orange)" />
+                <h3 style={{ fontSize: '1rem', fontWeight: 700, margin: 0, color: 'var(--text-1)' }}>🌟 Recommended For You</h3>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.25rem', marginBottom: '2.5rem' }}>
+                <RecommendationCard type="cheapest" courier={recommendations.cheapest} onSelect={(id) => handleConfirm(id, 'cheapest')} loading={loading} />
+                <RecommendationCard type="fastest" courier={recommendations.fastest} onSelect={(id) => handleConfirm(id, 'fastest')} loading={loading} />
+                <RecommendationCard type="recommended" courier={recommendations.recommended} onSelect={(id) => handleConfirm(id, 'recommended')} loading={loading} />
+              </div>
+            </>
+          )}
+
+          {/* All Couriers Section */}
+          {allCouriers.length > 0 && (
+            <>
+              <div className="section-header">
+                <List size={18} color="var(--accent)" />
+                <h3 style={{ fontSize: '1rem', fontWeight: 700, margin: 0, color: 'var(--text-1)' }}>📋 All Available Couriers</h3>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(280px,1fr))', gap: '1.25rem' }}>
+                {allCouriers.map((c, i) => (
+                  <AllCourierCard key={c.courierId || i} courier={c} onSelect={(id) => handleConfirm(id, 'all')} loading={loading} />
+                ))}
+              </div>
+            </>
           )}
         </div>
       )}
 
-      {/* Step 3 */}
+      {/* ═══ Step 3: Payment ═══ */}
       {step === 3 && pendingShipment && (
         <div style={{ maxWidth: 640, margin: '0 auto' }}>
           <div className="glass-card" style={{ padding: '2rem', textAlign: 'left' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1rem' }}>
-              <CreditCard size={18} color="var(--accent)" />
+              <div style={{ width: 34, height: 34, borderRadius: 10, background: 'rgba(59,130,246,0.15)', border: '1px solid rgba(59,130,246,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <CreditCard size={16} color="var(--accent)" />
+              </div>
               <h2 style={{ fontSize: '1.2rem', fontWeight: 800, margin: 0 }}>Complete Payment</h2>
             </div>
             <p style={{ color: 'var(--text-2)', fontSize: '0.9rem', marginBottom: '1.25rem' }}>
@@ -494,11 +789,11 @@ const BookingView = ({ onBooked, walletBalance, walletLoading, refreshWalletBala
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.25rem' }}>
               <div className="glass-card" style={{ padding: '1rem' }}>
                 <p style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 0.35rem' }}>Amount</p>
-                <p style={{ fontSize: '1.4rem', fontWeight: 900, color: 'var(--accent)', margin: 0 }}>₹{paymentInfo?.amount || pendingShipment.price}</p>
+                <p style={{ fontSize: '1.4rem', fontWeight: 900, color: 'var(--accent)', margin: 0 }}>₹{paymentInfo?.amount || pendingShipment.amount || pendingShipment.price}</p>
               </div>
               <div className="glass-card" style={{ padding: '1rem' }}>
                 <p style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 0.35rem' }}>Courier</p>
-                <p style={{ fontSize: '1rem', fontWeight: 700, margin: 0 }}>{pendingShipment.courierPartner}</p>
+                <p style={{ fontSize: '1rem', fontWeight: 700, margin: 0 }}>{pendingShipment.courier || pendingShipment.courierPartner}</p>
                 <p style={{ fontSize: '0.8rem', color: 'var(--text-2)', margin: '0.2rem 0 0' }}>ETA {pendingShipment.eta} days</p>
               </div>
             </div>
@@ -550,9 +845,9 @@ const BookingView = ({ onBooked, walletBalance, walletLoading, refreshWalletBala
         </div>
       )}
 
-      {/* Step 4 */}
+      {/* ═══ Step 4: Confirmation ═══ */}
       {step === 4 && successData && (
-        <div style={{ maxWidth: 520, margin: '0 auto' }}>
+        <div style={{ maxWidth: 560, margin: '0 auto' }}>
           <div className="glass-card" style={{ padding: '2.5rem', textAlign: 'center', overflow: 'hidden', position: 'relative' }}>
             <div style={{ position: 'absolute', top: -60, left: '50%', transform: 'translateX(-50%)', width: 220, height: 220, background: 'rgba(34,197,94,0.12)', borderRadius: '50%', pointerEvents: 'none' }} />
             <div style={{ width: 72, height: 72, borderRadius: '50%', background: 'rgba(16,185,129,0.12)', border: '2px solid rgba(16,185,129,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.25rem', boxShadow: '0 0 28px var(--green-glow)' }}>
@@ -564,7 +859,12 @@ const BookingView = ({ onBooked, walletBalance, walletLoading, refreshWalletBala
               <p style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 0.25rem' }}>Tracking Number (AWB)</p>
               <p style={{ fontFamily: 'monospace', fontWeight: 800, fontSize: '1.4rem', color: 'var(--accent)', margin: '0 0 1rem' }}>{successData.awb}</p>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.9rem' }}>
-                {[{ l: 'Provider', v: successData.courierPartner }, { l: 'Amount Paid', v: `₹${successData.price}` }, { l: 'Status', v: successData.shipmentStatus || successData.status }, { l: 'ETA', v: `${successData.eta} Days` }].map(({ l, v }) => (
+                {[
+                  { l: 'Provider', v: successData.courierPartner || successData.courier },
+                  { l: 'Amount Paid', v: `₹${successData.price || successData.amount}` },
+                  { l: 'Status', v: successData.shipmentStatus || successData.status },
+                  { l: 'ETA', v: `${successData.eta} Days` }
+                ].map(({ l, v }) => (
                   <div key={l}>
                     <p style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.04em', margin: '0 0 0.15rem' }}>{l}</p>
                     <p style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--text-1)', margin: 0 }}>{v}</p>
