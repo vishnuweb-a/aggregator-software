@@ -24,22 +24,42 @@ const parcelSchema = new mongoose.Schema({
     required : true,
    
   },
-  senderAddress : {
-    type : String,
-    required :  true,
-  },
-  recieverName : {
+senderAddress:{
+
+fullAddress:String,
+
+landmark:String,
+
+city:String,
+
+state:String,
+
+pincode:String
+
+},
+
+receiverAddress:{
+
+fullAddress:String,
+
+landmark:String,
+
+city:String,
+
+state:String,
+
+pincode:String
+
+} ,
+  receiverName : {
     type : String,
     required : true
   },
-  recieverPhone : {
+  receiverPhone : {
     type : String,
     required : true
   },
-  recieverAddress : {
-    type :String,
-    required : true
-  },
+
   DelevarableType : {
     type : String,
     required : true

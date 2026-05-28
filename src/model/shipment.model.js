@@ -55,13 +55,25 @@ upiUrl:String,
 receiver:{
 name:String,
 phone:String,
-address:String
+address:{
+fullAddress:String,
+landmark:String,
+city:String,
+state:String,
+pincode:String
+}
 },
 
 sender:{
 name:String,
 phone:String,
-address:String
+address:{
+fullAddress:String,
+landmark:String,
+city:String,
+state:String,
+pincode:String
+}
 },
 
 trackingHistory:[

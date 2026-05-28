@@ -132,7 +132,7 @@ doc.text(
 );
 
 doc.text(
-`Address : ${shipment.sender.address}`
+`Address : ${shipment.sender.address.fullAddress}, ${shipment.sender.address.city}, ${shipment.sender.address.state} - ${shipment.sender.address.pincode}`
 );
 
 doc.moveDown();
@@ -158,7 +158,7 @@ doc.text(
 );
 
 doc.text(
-`Address : ${shipment.receiver.address}`
+`Address : ${shipment.receiver.address.fullAddress}, ${shipment.receiver.address.city}, ${shipment.receiver.address.state} - ${shipment.receiver.address.pincode}`
 );
 
 doc.moveDown();

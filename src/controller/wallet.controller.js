@@ -335,7 +335,7 @@ status:
 "BOOKED",
 
 location:
-parcel.senderAddress
+`${parcel.senderAddress.city}, ${parcel.senderAddress.pincode}`
 
 }
 

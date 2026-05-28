@@ -9,11 +9,11 @@ type:String,
 required:true
 },
 
-pickup_supported:[
+pickup_pincodes:[
 String
 ],
 
-delivery_supported:[
+delivery_pincodes:[
 String
 ],
 
