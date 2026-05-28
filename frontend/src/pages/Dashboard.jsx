@@ -341,10 +341,78 @@ const AllCourierCard = ({ courier, onSelect, loading }) => (
   </div>
 );
 
-/* ─── Address Form Section ────────────────────────── */
+/* ─── Address Form Section (with auto-fill) ───────── */
 const AddressFields = ({ prefix, label, emoji, color, address, onChange }) => {
+  const [pincodeLoading, setPincodeLoading] = useState(false);
+  const [pincodeMsg, setPincodeMsg] = useState('');
+  const [citySuggestions, setCitySuggestions] = useState([]);
+  const [showCitySuggestions, setShowCitySuggestions] = useState(false);
+  const [citySearchLoading, setCitySearchLoading] = useState(false);
+
   const handleChange = (field) => (e) => {
-    onChange({ ...address, [field]: e.target.value });
+    const val = e.target.value;
+    onChange({ ...address, [field]: val });
+
+    // Auto-fill city/state when pincode reaches 6 digits
+    if (field === 'pincode' && /^\d{6}$/.test(val)) {
+      lookupPincode(val);
+    }
+    if (field === 'pincode' && val.length < 6) {
+      setPincodeMsg('');
+    }
+
+    // Search pincodes when city is typed (3+ chars)
+    if (field === 'city' && val.length >= 3) {
+      searchCity(val);
+    }
+    if (field === 'city' && val.length < 3) {
+      setCitySuggestions([]);
+      setShowCitySuggestions(false);
+    }
+  };
+
+  const lookupPincode = async (pincode) => {
+    setPincodeLoading(true);
+    setPincodeMsg('');
+    try {
+      const r = await api.get(`/pincode/lookup/${pincode}`);
+      onChange({
+        ...address,
+        pincode,
+        city: r.data.city || address.city,
+        state: r.data.state || address.state,
+      });
+      setPincodeMsg(`✓ ${r.data.city}, ${r.data.state}`);
+    } catch {
+      setPincodeMsg('Pincode not found in database');
+    } finally {
+      setPincodeLoading(false);
+    }
+  };
+
+  const searchCity = async (cityName) => {
+    setCitySearchLoading(true);
+    try {
+      const r = await api.get(`/pincode/search?city=${encodeURIComponent(cityName)}`);
+      setCitySuggestions(r.data.results || []);
+      setShowCitySuggestions(true);
+    } catch {
+      setCitySuggestions([]);
+    } finally {
+      setCitySearchLoading(false);
+    }
+  };
+
+  const selectCitySuggestion = (item) => {
+    onChange({
+      ...address,
+      pincode: item.pincode,
+      city: item.city,
+      state: item.state,
+    });
+    setPincodeMsg(`✓ ${item.city}, ${item.state}`);
+    setCitySuggestions([]);
+    setShowCitySuggestions(false);
   };
 
   const pincodeValid = address.pincode.length === 6 && /^\d{6}$/.test(address.pincode);
@@ -370,25 +438,90 @@ const AddressFields = ({ prefix, label, emoji, color, address, onChange }) => {
         <Field label="Landmark">
           <input type="text" value={address.landmark} onChange={handleChange('landmark')} className="input-field no-icon" placeholder="Near…" />
         </Field>
-        <Field label="City">
-          <input type="text" value={address.city} onChange={handleChange('city')} className="input-field no-icon" placeholder="Mumbai" required />
-        </Field>
-        <Field label="State">
-          <input type="text" value={address.state} onChange={handleChange('state')} className="input-field no-icon" placeholder="Maharashtra" required />
-        </Field>
-        <div className="pincode-field">
-          <Field label="Pincode ✱">
+
+        {/* City with suggestions dropdown */}
+        <div style={{ position: 'relative' }}>
+          <Field label="City">
             <input
               type="text"
-              maxLength={6}
-              value={address.pincode}
-              onChange={handleChange('pincode')}
-              className={`input-field no-icon ${pincodeClass}`}
-              placeholder="400001"
-              pattern="[0-9]{6}"
+              value={address.city}
+              onChange={handleChange('city')}
+              onFocus={() => citySuggestions.length > 0 && setShowCitySuggestions(true)}
+              onBlur={() => setTimeout(() => setShowCitySuggestions(false), 200)}
+              className="input-field no-icon"
+              placeholder="Mumbai"
               required
             />
           </Field>
+          {showCitySuggestions && citySuggestions.length > 0 && (
+            <div style={{
+              position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 20,
+              background: 'rgba(18,24,41,0.98)', border: '1px solid var(--border)',
+              borderRadius: 14, marginTop: 4, maxHeight: 200, overflowY: 'auto',
+              boxShadow: '0 12px 40px rgba(0,0,0,0.5)',
+              backdropFilter: 'blur(20px)',
+            }}>
+              {citySuggestions.map((item, i) => (
+                <div
+                  key={`${item.pincode}-${i}`}
+                  onClick={() => selectCitySuggestion(item)}
+                  style={{
+                    padding: '0.65rem 1rem', cursor: 'pointer',
+                    borderBottom: i < citySuggestions.length - 1 ? '1px solid rgba(59,130,246,0.1)' : 'none',
+                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                    transition: 'background 0.15s',
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(59,130,246,0.12)'}
+                  onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                >
+                  <div>
+                    <span style={{ fontWeight: 700, fontSize: '0.85rem', color: 'var(--text-1)' }}>{item.city}</span>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-3)', marginLeft: '0.5rem' }}>{item.state}</span>
+                  </div>
+                  <span style={{ fontFamily: 'monospace', fontWeight: 700, fontSize: '0.8rem', color: 'var(--accent)' }}>{item.pincode}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <Field label="State">
+          <input type="text" value={address.state} onChange={handleChange('state')} className="input-field no-icon" placeholder="Maharashtra" required />
+        </Field>
+
+        {/* Pincode with auto-fill indicator */}
+        <div className="pincode-field">
+          <Field label="Pincode ✱">
+            <div style={{ position: 'relative' }}>
+              <input
+                type="text"
+                maxLength={6}
+                value={address.pincode}
+                onChange={handleChange('pincode')}
+                className={`input-field no-icon ${pincodeClass}`}
+                placeholder="400001"
+                pattern="[0-9]{6}"
+                required
+              />
+              {pincodeLoading && (
+                <span style={{
+                  position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)',
+                  width: 14, height: 14, border: '2px solid rgba(59,130,246,0.3)',
+                  borderTopColor: 'var(--accent)', borderRadius: '50%',
+                  display: 'inline-block', animation: 'spin 0.7s linear infinite',
+                }} />
+              )}
+            </div>
+          </Field>
+          {pincodeMsg && (
+            <p style={{
+              fontSize: '0.72rem', marginTop: '0.25rem',
+              color: pincodeMsg.startsWith('✓') ? 'var(--green)' : 'var(--text-3)',
+              fontWeight: 600,
+            }}>
+              {pincodeMsg}
+            </p>
+          )}
         </div>
       </div>
     </div>

@@ -7,6 +7,7 @@ import authRouter from './routes/user.auth.js';
 import {swaggerUi,specs} from "./config/swagger.js";
 import parcelRouter from './routes/courier.route.js';
 import Wallet from './routes/wallet.route.js'
+import pincodeRouter from './routes/pincode.route.js'
 import credential from './config/config.js'
 
 
@@ -35,6 +36,7 @@ app.use("/api-docs",swaggerUi.serve,   swaggerUi.setup(specs));
 app.use('/api/auth',authRouter)
 app.use('/api/user',parcelRouter)
 app.use('/api/wallet',Wallet)
+app.use('/api/pincode',pincodeRouter)
 
 
 export default app
