@@ -181,15 +181,20 @@ response:
 
 }
 
-/* price calculation */
+/* price calculation (mode-based) */
+
+const pricing = parcel.mode === 'AIRWAY' && courier.air ? courier.air : courier.surface;
+const basePrice = pricing?.base_price || 0;
+const perKg = pricing?.per_kg || 0;
+const etaDays = pricing?.eta_days || 0;
 
 const amount=
 
-courier.base_price+
+basePrice+
 
 (
 parcel.weight*
-courier.per_kg
+perKg
 );
 
 /* wallet */
@@ -291,7 +296,7 @@ price:
 amount,
 
 eta:
-courier.eta_days,
+etaDays,
 
 awb,
 
@@ -304,13 +309,13 @@ shipmentStatus:
 receiver:{
 
 name:
-parcel.recieverName,
+parcel.receiverName,
 
 phone:
-parcel.recieverPhone,
+parcel.receiverPhone,
 
 address:
-parcel.recieverAddress
+parcel.receiverAddress
 
 },
 
@@ -326,6 +331,9 @@ address:
 parcel.senderAddress
 
 },
+
+mode:
+parcel.mode,
 
 trackingHistory:[
 

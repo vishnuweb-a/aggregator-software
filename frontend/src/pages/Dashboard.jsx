@@ -6,7 +6,7 @@ import {
   Clock, CreditCard, ChevronRight, User,
   AlertCircle, ArrowLeft, Truck, Zap, Phone, Mail,
   ShieldCheck, PlusCircle, List, Home, Wallet, Download,
-  Star, DollarSign, Award, Navigation,
+  Star, DollarSign, Award, Navigation, Shield,
 } from 'lucide-react';
 
 /* ─── Navbar ─────────────────────────────────────── */
@@ -36,6 +36,9 @@ const Navbar = ({ logout, view, setView }) => (
         </button>
         <button onClick={() => setView('book')} className="btn-ghost" style={{ gap: '0.4rem', padding: '0.4rem 0.8rem', color: view === 'book' ? 'var(--accent)' : undefined }}>
           <PlusCircle size={14} /> New Booking
+        </button>
+        <button onClick={() => setView('insurance')} className="btn-ghost" style={{ gap: '0.4rem', padding: '0.4rem 0.8rem', color: view === 'insurance' ? '#a78bfa' : undefined }}>
+          <Shield size={14} /> Insurance
         </button>
         <button onClick={logout} className="btn-ghost" style={{ gap: '0.4rem', padding: '0.4rem 0.8rem' }}>
           <LogOut size={14} /> Sign Out
@@ -75,7 +78,7 @@ const ScoreBar = ({ score = 0, maxScore = 100 }) => (
 );
 
 /* ─── Shipment History Card ───────────────────────── */
-const ShipmentCard = ({ s }) => {
+const ShipmentCard = ({ s, onAddInsurance }) => {
   const status = s.shipmentStatus || s.status || 'PENDING'
   return (
     <div className="glass-card" style={{ padding: 0, overflow: 'hidden' }}>
@@ -100,13 +103,31 @@ const ShipmentCard = ({ s }) => {
             </div>
           ))}
         </div>
+        {/* Add Insurance button */}
+        {s._id && (
+          <button
+            onClick={() => onAddInsurance && onAddInsurance(s._id)}
+            style={{
+              marginTop: '0.85rem', width: '100%', display: 'flex', alignItems: 'center',
+              justifyContent: 'center', gap: '0.4rem', padding: '0.5rem 0.75rem',
+              borderRadius: 10, border: '1px solid rgba(167,139,250,0.35)',
+              background: 'rgba(167,139,250,0.08)', color: '#a78bfa',
+              fontSize: '0.78rem', fontWeight: 700, cursor: 'pointer',
+              transition: 'all 0.18s',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(167,139,250,0.18)'; e.currentTarget.style.borderColor = 'rgba(167,139,250,0.6)'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(167,139,250,0.08)'; e.currentTarget.style.borderColor = 'rgba(167,139,250,0.35)'; }}
+          >
+            <Shield size={13} /> Add Insurance
+          </button>
+        )}
       </div>
     </div>
   )
 };
 
 /* ─── Profile View (two columns) ─────────────────── */
-const ProfileView = ({ user, shipments, loadingShipments, walletBalance }) => (
+const ProfileView = ({ user, shipments, loadingShipments, walletBalance, onAddInsurance }) => (
   <div style={{ display: 'grid', gridTemplateColumns: '320px 1fr', gap: '2rem', alignItems: 'start' }}>
 
     {/* LEFT — User Info */}
@@ -148,7 +169,7 @@ const ProfileView = ({ user, shipments, loadingShipments, walletBalance }) => (
         </div>
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(260px,1fr))', gap: '1rem' }}>
-          {shipments.map((s, i) => <ShipmentCard key={s._id || i} s={s} />)}
+          {shipments.map((s, i) => <ShipmentCard key={s._id || i} s={s} onAddInsurance={onAddInsurance} />)}
         </div>
       )}
     </div>
@@ -1035,6 +1056,314 @@ const BookingView = ({ onBooked, walletBalance, walletLoading, refreshWalletBala
   );
 };
 
+/* ─── Insurance View ─────────────────────────────── */
+const InsuranceView = ({ prefillShipmentId = '' }) => {
+  const [step, setStep] = useState(1);
+  const [form, setForm] = useState({
+    shipmentId: prefillShipmentId,
+    amount: '',
+    mode: 'SURFACE',
+    deligacy: 'Normal',
+  });
+  const [createdInsurance, setCreatedInsurance] = useState(null);
+  const [upiUrl, setUpiUrl] = useState('');
+  const [insuranceAmount, setInsuranceAmount] = useState(null);
+  const [utr, setUtr] = useState('');
+  const [screenshot, setScreenshot] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [confirmedInsurance, setConfirmedInsurance] = useState(null);
+
+  // Sync prefill if parent changes it
+  useEffect(() => {
+    setForm(f => ({ ...f, shipmentId: prefillShipmentId }));
+    setStep(1);
+    setCreatedInsurance(null);
+    setError('');
+  }, [prefillShipmentId]);
+
+  const rateLabel = { Normal: '5%', Fragile: '10%', Electronics: '20%' };
+
+  /* Step 1: Create Insurance */
+  const handleCreate = async (e) => {
+    e.preventDefault();
+    setLoading(true); setError('');
+    try {
+      const r = await api.post('/insurance', {
+        shipmentId: form.shipmentId.trim(),
+        amount: Number(form.amount),
+        mode: form.mode,
+        deligacy: form.deligacy,
+      });
+      setCreatedInsurance(r.data.insurance);
+      setInsuranceAmount(r.data.insuranceAmount);
+      setUpiUrl(r.data.upiUrl);
+      setStep(2);
+    } catch (err) {
+      setError(err.response?.data?.response || 'Failed to create insurance');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /* Step 2: Verify Payment */
+  const handleVerify = async (e) => {
+    e.preventDefault();
+    setLoading(true); setError('');
+    try {
+      const r = await api.post('/insurance/validate', {
+        insuranceId: createdInsurance._id,
+        utrNumber: utr,
+        paymentScreenshot: screenshot || undefined,
+      });
+      setConfirmedInsurance(r.data.insurance);
+      setStep(3);
+    } catch (err) {
+      setError(err.response?.data?.response || 'Payment verification failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const reset = () => {
+    setStep(1);
+    setForm({ shipmentId: '', amount: '', mode: 'SURFACE', deligacy: 'Normal' });
+    setCreatedInsurance(null); setUpiUrl(''); setInsuranceAmount(null);
+    setUtr(''); setScreenshot(''); setError(''); setConfirmedInsurance(null);
+  };
+
+  const steps = ['Create Insurance', 'Pay Premium', 'Confirmed'];
+
+  return (
+    <div style={{ maxWidth: 640, margin: '0 auto' }}>
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '2rem' }}>
+        <div style={{ width: 44, height: 44, borderRadius: 14, background: 'linear-gradient(135deg, #7c3aed, #a78bfa)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 10px 24px rgba(124,58,237,0.35)' }}>
+          <Shield size={20} color="#fff" />
+        </div>
+        <div>
+          <h2 style={{ fontSize: '1.3rem', fontWeight: 900, margin: 0, color: 'var(--text-1)' }}>Shipment Insurance</h2>
+          <p style={{ fontSize: '0.78rem', color: 'var(--text-3)', margin: 0 }}>Protect your consignment against loss or damage</p>
+        </div>
+      </div>
+
+      {/* Step Indicator */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '2rem', justifyContent: 'center' }}>
+        {steps.map((label, i) => (
+          <Fragment key={label}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <div style={{
+                width: 28, height: 28, borderRadius: '50%', display: 'flex', alignItems: 'center',
+                justifyContent: 'center', fontSize: '0.75rem', fontWeight: 800,
+                background: step > i + 1 ? '#7c3aed' : step === i + 1 ? '#a78bfa' : 'rgba(255,255,255,0.05)',
+                color: step >= i + 1 ? '#fff' : 'var(--text-3)',
+                border: step < i + 1 ? '1px solid var(--border)' : 'none',
+                transition: 'all 0.3s',
+              }}>
+                {step > i + 1 ? <CheckCircle size={14} /> : i + 1}
+              </div>
+              <span style={{ fontSize: '0.78rem', fontWeight: 600, color: step === i + 1 ? '#a78bfa' : 'var(--text-3)' }}>{label}</span>
+            </div>
+            {i < steps.length - 1 && <div style={{ flex: 1, height: 1, background: step > i + 1 ? '#7c3aed' : 'var(--border)', maxWidth: 60, transition: 'all 0.3s' }} />}
+          </Fragment>
+        ))}
+      </div>
+
+      {error && (
+        <div className="alert alert-error" style={{ marginBottom: '1.25rem' }}>
+          <AlertCircle size={16} /><span>{error}</span>
+        </div>
+      )}
+
+      {/* ═══ Step 1: Create ═══ */}
+      {step === 1 && (
+        <div className="glass-card" style={{ padding: 0, overflow: 'hidden' }}>
+          <div style={{ height: 4, background: 'linear-gradient(90deg, #7c3aed, #a78bfa)' }} />
+          <div style={{ padding: '2rem' }}>
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-2)', marginBottom: '1.5rem' }}>
+              Fill in the details below. Your insurance premium is calculated based on the declared value and delicacy of the goods.
+            </p>
+            <form onSubmit={handleCreate} style={{ display: 'grid', gap: '1rem' }}>
+              <div>
+                <label className="field-label">Shipment ID</label>
+                <input
+                  type="text"
+                  value={form.shipmentId}
+                  onChange={e => setForm({ ...form, shipmentId: e.target.value })}
+                  className="input-field no-icon"
+                  placeholder="Paste the MongoDB shipment _id"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="field-label">Declared Value (₹)</label>
+                <input
+                  type="number" min="1" step="1"
+                  value={form.amount}
+                  onChange={e => setForm({ ...form, amount: e.target.value })}
+                  className="input-field no-icon"
+                  placeholder="e.g. 5000"
+                  required
+                />
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                <div>
+                  <label className="field-label">Mode</label>
+                  <select value={form.mode} onChange={e => setForm({ ...form, mode: e.target.value })} className="input-field no-icon" required>
+                    <option value="SURFACE">Surface</option>
+                    <option value="AIRWAY">Airway</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="field-label">Delicacy</label>
+                  <select value={form.deligacy} onChange={e => setForm({ ...form, deligacy: e.target.value })} className="input-field no-icon" required>
+                    <option value="Normal">Normal ({rateLabel.Normal} premium)</option>
+                    <option value="Fragile">Fragile ({rateLabel.Fragile} premium)</option>
+                    <option value="Electronics">Electronics ({rateLabel.Electronics} premium)</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Premium Preview */}
+              {form.amount && Number(form.amount) > 0 && (
+                <div style={{
+                  padding: '1rem', borderRadius: 12,
+                  background: 'rgba(124,58,237,0.08)', border: '1px solid rgba(167,139,250,0.25)',
+                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                }}>
+                  <div>
+                    <p style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 0.2rem' }}>Estimated Premium</p>
+                    <p style={{ fontSize: '1.5rem', fontWeight: 900, color: '#a78bfa', margin: 0 }}>
+                      ₹{(Number(form.amount) * (form.deligacy === 'Electronics' ? 0.2 : form.deligacy === 'Fragile' ? 0.1 : 0.05)).toFixed(2)}
+                    </p>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <p style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 0.2rem' }}>Rate</p>
+                    <p style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-1)', margin: 0 }}>{rateLabel[form.deligacy]} of ₹{form.amount}</p>
+                  </div>
+                </div>
+              )}
+
+              <button type="submit" disabled={loading} className="btn-primary" style={{ width: '100%', marginTop: '0.5rem', background: 'linear-gradient(135deg, #7c3aed, #a78bfa)' }}>
+                {loading ? <><Spinner /> Calculating…</> : <><Shield size={16} /> Get Insurance</>}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ═══ Step 2: Pay ═══ */}
+      {step === 2 && createdInsurance && (
+        <div className="glass-card" style={{ padding: 0, overflow: 'hidden' }}>
+          <div style={{ height: 4, background: 'linear-gradient(90deg, #7c3aed, #a78bfa)' }} />
+          <div style={{ padding: '2rem' }}>
+            {/* Summary */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
+              <div className="glass-card" style={{ padding: '1rem' }}>
+                <p style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 0.35rem' }}>Insurance Premium</p>
+                <p style={{ fontSize: '1.6rem', fontWeight: 900, color: '#a78bfa', margin: 0 }}>₹{insuranceAmount}</p>
+              </div>
+              <div className="glass-card" style={{ padding: '1rem' }}>
+                <p style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 0.35rem' }}>Coverage</p>
+                <p style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-1)', margin: 0 }}>₹{createdInsurance.amount}</p>
+                <p style={{ fontSize: '0.75rem', color: 'var(--text-3)', margin: '0.15rem 0 0' }}>{createdInsurance.deligacy} · {createdInsurance.mode}</p>
+              </div>
+            </div>
+
+            {/* UPI Link */}
+            <div style={{ marginBottom: '1.25rem' }}>
+              <p style={{ fontSize: '0.78rem', color: 'var(--text-2)', marginBottom: '0.5rem', fontWeight: 600 }}>Pay via UPI</p>
+              <a
+                href={upiUrl}
+                className="btn-ghost"
+                style={{ width: '100%', justifyContent: 'center', borderColor: 'rgba(167,139,250,0.4)', color: '#a78bfa' }}
+              >
+                🔗 Open UPI Payment Link
+              </a>
+            </div>
+
+            <div style={{ padding: '0.75rem 1rem', borderRadius: 10, background: 'rgba(167,139,250,0.07)', border: '1px solid rgba(167,139,250,0.2)', marginBottom: '1.5rem' }}>
+              <p style={{ fontSize: '0.75rem', color: 'var(--text-3)', margin: 0 }}>
+                📋 Insurance ID: <span style={{ fontFamily: 'monospace', color: '#a78bfa', fontWeight: 700 }}>{createdInsurance._id}</span>
+              </p>
+            </div>
+
+            <form onSubmit={handleVerify} style={{ display: 'grid', gap: '1rem' }}>
+              <div>
+                <label className="field-label">UTR / Transaction ID</label>
+                <input
+                  type="text" value={utr}
+                  onChange={e => setUtr(e.target.value)}
+                  className="input-field no-icon"
+                  placeholder="Enter your UPI transaction reference"
+                  required
+                />
+              </div>
+              <div>
+                <label className="field-label">Payment Screenshot URL <span style={{ color: 'var(--text-3)', fontWeight: 400 }}>(optional)</span></label>
+                <input
+                  type="text" value={screenshot}
+                  onChange={e => setScreenshot(e.target.value)}
+                  className="input-field no-icon"
+                  placeholder="https://…"
+                />
+              </div>
+              <button type="submit" disabled={loading} className="btn-primary" style={{ width: '100%', background: 'linear-gradient(135deg, #7c3aed, #a78bfa)' }}>
+                {loading ? <><Spinner /> Verifying…</> : <><ShieldCheck size={16} /> Submit Payment Proof</>}
+              </button>
+            </form>
+
+            <button onClick={() => setStep(1)} className="btn-ghost" style={{ width: '100%', marginTop: '0.75rem', justifyContent: 'center' }}>
+              <ArrowLeft size={14} /> Back
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ═══ Step 3: Confirmed ═══ */}
+      {step === 3 && confirmedInsurance && (
+        <div className="glass-card" style={{ padding: '2.5rem', textAlign: 'center', overflow: 'hidden', position: 'relative' }}>
+          <div style={{ position: 'absolute', top: -60, left: '50%', transform: 'translateX(-50%)', width: 220, height: 220, background: 'rgba(124,58,237,0.1)', borderRadius: '50%', pointerEvents: 'none' }} />
+          <div style={{
+            width: 72, height: 72, borderRadius: '50%',
+            background: 'rgba(167,139,250,0.12)', border: '2px solid rgba(167,139,250,0.4)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            margin: '0 auto 1.25rem', boxShadow: '0 0 32px rgba(124,58,237,0.3)',
+          }}>
+            <ShieldCheck size={34} color="#a78bfa" strokeWidth={2} />
+          </div>
+          <h2 style={{ fontSize: '1.75rem', fontWeight: 900, margin: '0 0 0.5rem', color: 'var(--text-1)' }}>Insurance Active!</h2>
+          <p style={{ color: 'var(--text-2)', marginBottom: '1.75rem', fontSize: '0.9rem' }}>Your shipment is now covered. Keep the insurance ID for your records.</p>
+
+          <div style={{ background: 'rgba(167,139,250,0.06)', border: '1px solid rgba(167,139,250,0.2)', borderRadius: 14, padding: '1.25rem', textAlign: 'left', marginBottom: '1.75rem' }}>
+            <p style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 0.25rem' }}>Insurance ID</p>
+            <p style={{ fontFamily: 'monospace', fontWeight: 800, fontSize: '1rem', color: '#a78bfa', margin: '0 0 1rem', wordBreak: 'break-all' }}>{confirmedInsurance._id}</p>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.9rem' }}>
+              {[
+                { l: 'Premium Paid', v: `₹${confirmedInsurance.insuranceAmount}` },
+                { l: 'Coverage', v: `₹${confirmedInsurance.amount}` },
+                { l: 'Delicacy', v: confirmedInsurance.deligacy },
+                { l: 'Status', v: confirmedInsurance.insuranceStatus },
+              ].map(({ l, v }) => (
+                <div key={l}>
+                  <p style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.04em', margin: '0 0 0.15rem' }}>{l}</p>
+                  <p style={{ fontWeight: 700, fontSize: '0.9rem', color: v === 'PAID' ? 'var(--green)' : 'var(--text-1)', margin: 0 }}>{v}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <button onClick={reset} className="btn-primary" style={{ width: '100%', background: 'linear-gradient(135deg, #7c3aed, #a78bfa)' }}>
+            <Shield size={15} /> Insure Another Shipment
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
+
 /* ─── Main Dashboard ─────────────────────────────── */
 const Dashboard = () => {
   const { user, logout } = useAuth();
@@ -1045,6 +1374,13 @@ const Dashboard = () => {
   const [walletLoading, setWalletLoading] = useState(false);
   const [walletNotice, setWalletNotice] = useState('');
   const [walletError, setWalletError] = useState('');
+  const [insurancePrefillId, setInsurancePrefillId] = useState('');
+
+  // Called from ShipmentCard → navigates to Insurance view with pre-filled shipmentId
+  const handleAddInsurance = (shipmentId) => {
+    setInsurancePrefillId(shipmentId);
+    setView('insurance');
+  };
 
   const fetchWalletBalance = useCallback(async () => {
     setWalletLoading(true);
@@ -1118,7 +1454,7 @@ const Dashboard = () => {
       <div className="bg-mesh" />
       <Navbar logout={logout} view={view} setView={setView} />
       <main style={{ maxWidth: 1200, margin: '0 auto', padding: '2.5rem 1.5rem', position: 'relative', zIndex: 1 }}>
-        {view === 'profile' && <ProfileView user={user} shipments={shipments} loadingShipments={loadingShipments} walletBalance={walletBalance} />}
+        {view === 'profile' && <ProfileView user={user} shipments={shipments} loadingShipments={loadingShipments} walletBalance={walletBalance} onAddInsurance={handleAddInsurance} />}
         {view === 'wallet' && <WalletView balance={walletBalance} loading={walletLoading} notice={walletNotice} error={walletError} onRecharge={rechargeWallet} />}
         {view === 'book'    && (
           <BookingView
@@ -1128,6 +1464,12 @@ const Dashboard = () => {
             refreshWalletBalance={fetchWalletBalance}
             rechargeWallet={rechargeWallet}
             onWalletBalanceUpdate={setWalletBalance}
+          />
+        )}
+        {view === 'insurance' && (
+          <InsuranceView
+            key={insurancePrefillId}
+            prefillShipmentId={insurancePrefillId}
           />
         )}
       </main>

@@ -68,9 +68,18 @@ pincode:String
     type : Number,
     required : true
   },
+  courierType : {
+    type : String,
+    enum : ["docx","nonDocx"],
+    default : "docx"
+  },
   status : {
     type : String,
     enum : ['CREATED' ,'BOOKED']
+  },
+  mode :{
+    type : String,
+    enum : ['AIRWAY','SURFACE']
   }
 },{
   timestamps : true

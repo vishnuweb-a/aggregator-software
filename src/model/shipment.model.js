@@ -75,16 +75,27 @@ state:String,
 pincode:String
 }
 },
+mode :{
+  type : String,
+  required : true
+},
 
 trackingHistory:[
+
 {
+
 status:String,
+
+title:String,
+
+description:String,
+
 location:String,
-time:{
-type:Date,
-default:Date.now
+
+timestamp:Date
+
 }
-}
+
 ]
 
 },{timestamps:true});

@@ -1,56 +1,73 @@
 import mongoose from 'mongoose'
 
-
+// Pricing sub-schema for each mode (surface / air)
+const pricingSchema = new mongoose.Schema({
+  base_price: { type: Number, default: 0 },
+  per_kg:     { type: Number, default: 0 },
+  eta_days:   { type: Number, default: 0 }
+}, { _id: false });
 
 const courierSchema = new mongoose.Schema({
 
-provider:{
-type:String,
-required:true
-},
+  provider: {
+    type: String,
+    required: true
+  },
 
-pickup_pincodes:[
-String
-],
+  pickup_pincodes: [String],
 
-delivery_pincodes:[
-String
-],
+  delivery_pincodes: [String],
 
-base_price:Number,
+  // ── Backward-compatible flat fields (legacy) ──
+  base_price: Number,
+  per_kg:     Number,
+  eta_days:   Number,
 
-per_kg:Number,
+  // ── Mode-based nested pricing ──
+  surface: pricingSchema,
+  air:     pricingSchema,
 
-eta_days:Number,
+  // ── Courier type support ──
+  // Which shipment types this courier handles: "docx", "nonDocx", or both
+  supported_types: {
+    type: [String],
+    enum: ['docx', 'nonDocx'],
+    default: ['docx', 'nonDocx']
+  },
 
-active:Boolean,
+  active: Boolean,
 
-success_rate:{
-type:Number,
-default:95
-},
+  rating: {
+    type: Number,
+    default: 4
+  },
 
-on_time_rate:{
-type:Number,
-default:90
-},
+  success_rate: {
+    type: Number,
+    default: 95
+  },
 
-damage_rate:{
-type:Number,
-default:2
-},
+  on_time_rate: {
+    type: Number,
+    default: 90
+  },
 
-coverage_score:{
-type:Number,
-default:80
-},
+  damage_rate: {
+    type: Number,
+    default: 2
+  },
 
-priority:{
-type:Number,
-default:1
-}
+  coverage_score: {
+    type: Number,
+    default: 80
+  },
+
+  priority: {
+    type: Number,
+    default: 1
+  }
 
 });
 
-const Courier = mongoose.model('courier',courierSchema,"courierProviders")
-export default Courier 
+const Courier = mongoose.model('courier', courierSchema, "courierProviders")
+export default Courier

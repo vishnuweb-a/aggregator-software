@@ -9,6 +9,11 @@ import parcelRouter from './routes/courier.route.js';
 import Wallet from './routes/wallet.route.js'
 import pincodeRouter from './routes/pincode.route.js'
 import credential from './config/config.js'
+import insuranceRoute from './routes/insurance.route.js'
+import TrackingOrder from './routes/shipmentTracking.routes.js'
+
+
+
 
 
 
@@ -37,6 +42,8 @@ app.use('/api/auth',authRouter)
 app.use('/api/user',parcelRouter)
 app.use('/api/wallet',Wallet)
 app.use('/api/pincode',pincodeRouter)
+app.use('/api',insuranceRoute)
+app.use('/api/order',TrackingOrder)
 
 
 export default app

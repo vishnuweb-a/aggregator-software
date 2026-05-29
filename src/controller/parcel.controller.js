@@ -15,7 +15,9 @@ export const createParcel = async (req, res) => {
       receiverPhone,
       receiverAddress,
       DelevarableType,
-      weight
+      weight,
+      courierType ,
+      mode
     } = req.body;
 
     // VALIDATION
@@ -55,6 +57,8 @@ export const createParcel = async (req, res) => {
       },
       DelevarableType,
       weight,
+      courierType ,
+      mode,
       status: "CREATED"
     });
 
@@ -70,11 +74,31 @@ export const createParcel = async (req, res) => {
     }
 }
 
+/**
+ * Resolve pricing from a courier document.
+ * Supports BOTH legacy flat fields (base_price, per_kg, eta_days)
+ * AND new nested mode objects (surface / air).
+ */
+function resolvePricing(courier, mode) {
+  // Try nested first (new schema)
+  if (mode === 'AIRWAY' && courier.air && courier.air.base_price != null) {
+    return courier.air;
+  }
+  if (courier.surface && courier.surface.base_price != null) {
+    return courier.surface;
+  }
+  // Fallback to legacy flat fields
+  return {
+    base_price: courier.base_price || 0,
+    per_kg:     courier.per_kg     || 0,
+    eta_days:   courier.eta_days   || 0
+  };
+}
+
   export  const courierOption = async (req,res)=>{
 
       const userId = req.user
       const parcelId  = req.params.parcelId
-    //  console.log("here is the prcelid", parcelId.parcelId)
 
       try{
       
@@ -86,14 +110,24 @@ export const createParcel = async (req, res) => {
       }
      console.log(parcel)
 
-
-    // FIND COURIERS
-    const couriers = await Courier.find({
+    // Build query – filter by courierType if the courier has supported_types
+    const query = {
       active: true,
       pickup_pincodes: { $in: [parcel.senderAddress.pincode] },
-      delivery_pincodes: { $in: [parcel.receiverAddress.pincode] },
-      max_weight: { $gte: parcel.weight }
-    });
+      delivery_pincodes: { $in: [parcel.receiverAddress.pincode] }
+    };
+
+    // Only add type filter when the parcel specifies a courierType
+    if (parcel.courierType) {
+      query.$or = [
+        { supported_types: { $in: [parcel.courierType] } },
+        { supported_types: { $exists: false } },   // legacy docs without this field
+        { supported_types: { $size: 0 } }           // legacy docs with empty array
+      ];
+    }
+
+    // FIND COURIERS
+    const couriers = await Courier.find(query);
 
     // NO COURIER
     if (!couriers.length) {
@@ -105,27 +139,34 @@ export const createParcel = async (req, res) => {
 
     // SMART RECOMMENDATION
     const recommendation = couriers.map(c => {
-      const price = c.base_price + (parcel.weight * c.per_kg);
+      const pricing = resolvePricing(c, parcel.mode);
+      const basePrice = pricing.base_price || 0;
+      const perKg     = pricing.per_kg     || 0;
+      const etaDays   = pricing.eta_days   || 0;
+
+      const price = basePrice + (parcel.weight * perKg);
       const priceScore = 100 - Math.min(price, 100);
-      const etaScore = 100 - (c.eta_days * 10);
-      const safetyScore = 100 - (c.damage_rate * 5);
+      const etaScore = 100 - (etaDays * 10);
+      const safetyScore = 100 - ((c.damage_rate || 0) * 5);
 
       const finalScore = 
         (priceScore * 0.30) + 
         (etaScore * 0.25) + 
-        (c.success_rate * 0.20) + 
-        (c.on_time_rate * 0.15) + 
+        ((c.success_rate || 0) * 0.20) + 
+        ((c.on_time_rate || 0) * 0.15) + 
         (safetyScore * 0.05) + 
-        (c.coverage_score * 0.05) + 
-        c.priority;
+        ((c.coverage_score || 0) * 0.05) + 
+        (c.priority || 0);
 
       return {
         courierId: c._id,
         provider: c.provider,
         price,
-        eta: c.eta_days,
+        eta: etaDays,
         score: Math.round(finalScore),
-        rating: c.rating
+        rating: c.rating,
+        mode: parcel.mode,
+        courierType: parcel.courierType
       };
     });
 
@@ -136,7 +177,7 @@ export const createParcel = async (req, res) => {
 
     // RESPONSE
     return res.status(201).json({
-      response: "parcel created",
+      response: "couriers found",
       parcel,
       couriers: {
         cheapest,
@@ -189,8 +230,13 @@ export const confirmCourier = async (req, res) => {
       return res.status(400).json({ response: "courier not serviceable" });
     }
 
-    // PRICE CALCULATION
-    const totalAmount = courierData.base_price + (parcelData.weight * courierData.per_kg);
+    // MODE-BASED PRICE CALCULATION (handles both legacy + new schema)
+    const pricing = resolvePricing(courierData, parcelData.mode);
+    const basePrice = pricing.base_price || 0;
+    const perKg = pricing.per_kg || 0;
+    const etaDays = pricing.eta_days || 0;
+
+    const totalAmount = basePrice + (parcelData.weight * perKg);
 
     // ORDER ID
     const orderId = "ORD_" + Date.now();
@@ -205,9 +251,10 @@ export const confirmCourier = async (req, res) => {
       courierId: courierData._id,
       courierPartner: courierData.provider,
       price: totalAmount,
-      eta: courierData.eta_days,
+      eta: etaDays,
       paymentStatus: "PENDING",
       shipmentStatus: "PAYMENT_PENDING",
+      mode: parcelData.mode,
       upiUrl,
       receiver: {
         name: parcelData.receiverName,
