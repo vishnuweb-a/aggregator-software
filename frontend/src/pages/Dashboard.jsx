@@ -537,7 +537,7 @@ const BookingView = ({ onBooked, walletBalance, walletLoading, refreshWalletBala
     senderAddress: { fullAddress: '', landmark: '', city: '', state: '', pincode: '' },
     receiverName: '', receiverPhone: '',
     receiverAddress: { fullAddress: '', landmark: '', city: '', state: '', pincode: '' },
-    DelevarableType: '', weight: ''
+    DelevarableType: '', weight: '', courierType: 'docx', mode: 'SURFACE'
   });
   const [createdParcelId, setCreatedParcelId] = useState(null);
   const [selectedCourierId, setSelectedCourierId] = useState(null);
@@ -587,6 +587,8 @@ const BookingView = ({ onBooked, walletBalance, walletLoading, refreshWalletBala
         receiverAddress: parcelData.receiverAddress,
         DelevarableType: parcelData.DelevarableType,
         weight: Number(parcelData.weight),
+        courierType: parcelData.courierType,
+        mode: parcelData.mode,
       };
 
       const r = await api.post('/user/parcel', payload);
@@ -747,7 +749,7 @@ const BookingView = ({ onBooked, walletBalance, walletLoading, refreshWalletBala
       senderAddress: { fullAddress: '', landmark: '', city: '', state: '', pincode: '' },
       receiverName: '', receiverPhone: '',
       receiverAddress: { fullAddress: '', landmark: '', city: '', state: '', pincode: '' },
-      DelevarableType: '', weight: ''
+      DelevarableType: '', weight: '', courierType: 'docx', mode: 'SURFACE'
     });
   };
 
@@ -835,6 +837,20 @@ const BookingView = ({ onBooked, walletBalance, walletLoading, refreshWalletBala
                   </Field>
                   <Field label="Weight (kg)">
                     <input type="number" step="0.1" min="0.1" name="weight" value={parcelData.weight} onChange={onFieldChange} className="input-field no-icon" placeholder="0.5" required />
+                  </Field>
+                </FieldRow>
+                <FieldRow>
+                  <Field label="Courier Type">
+                    <select name="courierType" value={parcelData.courierType} onChange={onFieldChange} className="input-field no-icon" required>
+                      <option value="docx">Document (docx)</option>
+                      <option value="nonDocx">Non-Document (nonDocx)</option>
+                    </select>
+                  </Field>
+                  <Field label="Mode">
+                    <select name="mode" value={parcelData.mode} onChange={onFieldChange} className="input-field no-icon" required>
+                      <option value="SURFACE">Surface (Standard)</option>
+                      <option value="AIRWAY">Airway (Fast, 1.5x Cost)</option>
+                    </select>
                   </Field>
                 </FieldRow>
               </div>
