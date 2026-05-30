@@ -65,7 +65,7 @@ const Login = () => {
     setIsLoading(true);
     try {
       await login(email, password);
-      navigate('/');
+      navigate('/dashboard');
     } catch (err) {
       setError(err.response?.data?.response || err.response?.data?.message || 'Failed to login. Please check your credentials.');
     } finally {

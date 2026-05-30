@@ -82,7 +82,7 @@ const Register = () => {
       await validateOtp(formData.email, Number(otp));
       setMessage('Registration successful! Redirecting to your dashboard…');
       // Redirect to home (dashboard) — user is now auto-logged in via AuthContext
-      setTimeout(() => navigate('/'), 1500);
+      setTimeout(() => navigate('/dashboard'), 1500);
     } catch (err) {
       setError(err.response?.data?.response || 'OTP validation failed');
     } finally {

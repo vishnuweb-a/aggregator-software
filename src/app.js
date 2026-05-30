@@ -18,6 +18,7 @@ import TrackingOrder from './routes/shipmentTracking.routes.js'
 
 
 
+
 const app = express()
 
 connectDB()
@@ -44,6 +45,7 @@ app.use('/api/wallet',Wallet)
 app.use('/api/pincode',pincodeRouter)
 app.use('/api',insuranceRoute)
 app.use('/api/order',TrackingOrder)
+
 
 
 export default app

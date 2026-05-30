@@ -17,7 +17,7 @@ const parcelSchema = new mongoose.Schema({
     type :String,
     required : true,
    
-    index : true
+  
   },
   senderPhoneNumber : {
     type : Number,
