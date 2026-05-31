@@ -73,6 +73,7 @@ pincode:String
     enum : ["docx","nonDocx"],
     default : "docx"
   },
+ 
   status : {
     type : String,
     enum : ['CREATED' ,'BOOKED']

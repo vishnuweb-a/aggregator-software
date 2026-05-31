@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -10,46 +12,46 @@
 }
 
 :root {
-  --bg-deep:    #0b1020;
-  --bg-card:    #121829;
-  --bg-glass:   rgba(18, 24, 41, 0.78);
-  --border:     rgba(59, 130, 246, 0.2);
-  --border-glow:rgba(59, 130, 246, 0.45);
-  --accent:     #3b82f6;
-  --accent-2:   #2563eb;
-  --accent-3:   #1d4ed8;
-  --accent-glow:rgba(59, 130, 246, 0.35);
+  --bg-deep:    #f8f9fa;
+  --bg-card:    #ffffff;
+  --bg-glass:   rgba(255, 255, 255, 0.95);
+  --border:     #dec1b1;
+  --border-glow:#8b7265;
+  --accent:     #f47a20; /* Gangetic Saffron */
+  --accent-2:   #9a4600; /* Deep Saffron */
+  --accent-3:   #582500;
+  --accent-glow:rgba(244, 122, 32, 0.3);
   --green:      #22c55e;
-  --green-glow: rgba(34, 197, 94, 0.35);
-  --red:        #f43f5e;
-  --orange:     #f59e0b;
-  --orange-glow:rgba(245, 158, 11, 0.30);
-  --purple:     #a855f7;
-  --purple-glow:rgba(168, 85, 247, 0.30);
-  --text-1:     #e5e7eb;
-  --text-2:     #b9c0cf;
-  --text-3:     #7b8598;
-  --radius-sm:  14px;
-  --radius-md:  20px;
-  --radius-lg:  28px;
-  --radius-xl:  38px;
-  --shadow-card:0 12px 40px rgba(10,6,28,0.55);
-  --shadow-glow:0 0 50px rgba(168,85,247,0.25);
-  --header-bg:  rgba(10, 8, 24, 0.72);
-  --header-border: rgba(168, 85, 247, 0.18);
+  --green-glow: rgba(34, 197, 94, 0.25);
+  --red:        #ba1a1a;
+  --orange:     #f47a20;
+  --orange-glow:rgba(244, 122, 32, 0.25);
+  --purple:     #1b2a4e; /* Bhojpuri Indigo */
+  --purple-glow:rgba(27, 42, 78, 0.25);
+  --text-1:     #191c1d;
+  --text-2:     #574237;
+  --text-3:     #8b7265;
+  --radius-sm:  4px;
+  --radius-md:  8px;
+  --radius-lg:  12px;
+  --radius-xl:  20px;
+  --shadow-card:0 6px 24px rgba(87, 66, 55, 0.08);
+  --shadow-glow:0 0 30px rgba(244, 122, 32, 0.12);
+  --header-bg:  #f8f9fa;
+  --header-border: #dec1b1;
   --trans:      all 0.24s cubic-bezier(.4,0,.2,1);
 }
 
 html { scroll-behavior: smooth; }
 
 body {
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: 'Work Sans', system-ui, sans-serif;
   background: var(--bg-deep);
   color: var(--text-1);
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  color-scheme: dark;
+  color-scheme: light;
   overflow-x: hidden;
 }
 
@@ -73,57 +75,73 @@ body {
   content: '';
   position: absolute;
   border-radius: 50%;
-  filter: blur(100px);
-  opacity: 0.22;
-  animation: float 12s ease-in-out infinite alternate;
+  filter: blur(120px);
+  opacity: 0.12;
+  animation: float 15s ease-in-out infinite alternate;
 }
 
 .bg-mesh::before {
-  width: 560px;
-  height: 560px;
-  background: rgba(59, 130, 246, 0.30);
-  top: -220px;
-  left: -170px;
+  width: 600px;
+  height: 600px;
+  background: rgba(244, 122, 32, 0.35); /* Saffron */
+  top: -200px;
+  left: -150px;
 }
 
 .bg-mesh::after {
-  width: 520px;
-  height: 520px;
-  background: rgba(168, 85, 247, 0.22);
-  bottom: -180px;
-  right: -140px;
-  animation-duration: 15s;
+  width: 550px;
+  height: 550px;
+  background: rgba(27, 42, 78, 0.25); /* Bhojpuri Indigo */
+  bottom: -150px;
+  right: -100px;
+  animation-duration: 20s;
   animation-delay: -5s;
 }
 
 @keyframes float {
   0%   { transform: translate(0, 0) scale(1); }
-  50%  { transform: translate(40px, 30px) scale(1.08); }
-  100% { transform: translate(-20px, 60px) scale(0.95); }
+  50%  { transform: translate(50px, 40px) scale(1.05); }
+  100% { transform: translate(-30px, 80px) scale(0.95); }
 }
 
-/* ── Glass card ── */
+/* ── Glass card / Premium Container ── */
 .glass-card {
-  background: rgba(18, 24, 41, 0.92);
+  background: rgba(255, 255, 255, 0.94);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
   box-shadow: var(--shadow-card);
   transition: var(--trans);
+  position: relative;
+}
+
+.glass-card::before {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border: 1px dashed rgba(244, 122, 32, 0.15);
+  border-radius: calc(var(--radius-lg) + 3px);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.glass-card:hover::before {
+  opacity: 1;
 }
 
 .glass-card:hover {
-  border-color: var(--border-glow);
-  box-shadow: var(--shadow-card), 0 0 30px rgba(59,130,246,0.12);
+  border-color: var(--accent);
+  box-shadow: var(--shadow-card), 0 8px 30px rgba(244, 122, 32, 0.08);
 }
 
 /* ── Input field ── */
 .input-field {
   width: 100%;
-  background: rgba(255,255,255,0.045);
-  border: 1px solid rgba(59, 130, 246, 0.3);
-  border-radius: 999px;
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
   color: var(--text-1);
   font-size: 0.92rem;
   padding: 0.78rem 1rem 0.78rem 2.8rem;
@@ -134,12 +152,13 @@ body {
 
 .input-field::placeholder {
   color: var(--text-3);
+  opacity: 0.6;
 }
 
 .input-field:focus {
   border-color: var(--accent);
-  background: rgba(59,130,246,0.12);
-  box-shadow: 0 0 0 3px rgba(59,130,246,0.2);
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(244, 122, 32, 0.15);
 }
 
 .input-field.no-icon {
@@ -195,11 +214,11 @@ textarea.input-field {
   font-weight: 700;
   font-size: 0.92rem;
   padding: 0.8rem 1.8rem;
-  border-radius: 999px;
+  border-radius: var(--radius-sm);
   border: none;
   cursor: pointer;
   transition: var(--trans);
-  box-shadow: 0 10px 28px var(--accent-glow);
+  box-shadow: 0 4px 14px var(--accent-glow);
   font-family: inherit;
   letter-spacing: 0.01em;
 }
@@ -207,7 +226,7 @@ textarea.input-field {
 .btn-primary:hover:not(:disabled) {
   transform: translateY(-2px);
   background: var(--accent-2);
-  box-shadow: 0 14px 34px var(--accent-glow);
+  box-shadow: 0 6px 20px var(--accent-glow);
 }
 
 .btn-primary:active:not(:disabled) {
@@ -225,13 +244,13 @@ textarea.input-field {
   align-items: center;
   justify-content: center;
   gap: 0.4rem;
-  background: rgba(59,130,246,0.1);
-  border: 1px solid rgba(59,130,246,0.3);
-  color: #dbeafe;
+  background: rgba(27, 42, 78, 0.06);
+  border: 1px solid rgba(27, 42, 78, 0.25);
+  color: var(--purple);
   font-weight: 600;
   font-size: 0.82rem;
   padding: 0.55rem 1rem;
-  border-radius: 999px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   transition: var(--trans);
   font-family: inherit;
@@ -239,8 +258,8 @@ textarea.input-field {
 
 .btn-ghost:hover {
   border-color: var(--accent);
-  color: #fff;
-  background: rgba(59,130,246,0.18);
+  color: var(--accent-2);
+  background: rgba(244, 122, 32, 0.08);
 }
 
 /* ── Badge ── */
@@ -502,6 +521,24 @@ textarea.input-field {
 .pincode-invalid {
   border-color: rgba(244,63,94,0.5) !important;
   box-shadow: 0 0 0 2px rgba(244,63,94,0.15) !important;
+}
+
+/* ── Madhubani-inspired hatching pattern (Kachni style) ── */
+.kachni-pattern {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    transparent,
+    transparent 6px,
+    rgba(154, 70, 0, 0.05) 6px,
+    rgba(154, 70, 0, 0.05) 7px
+  );
+}
+
+/* ── Double border inspired by Mithila Art ── */
+.mithila-border {
+  border: 1px solid var(--border);
+  outline: 2px solid var(--border);
+  outline-offset: 4px;
 }
 
 /* ── Utility: shimmer loading ── */

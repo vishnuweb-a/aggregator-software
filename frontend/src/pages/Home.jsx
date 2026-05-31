@@ -1,4 +1,8 @@
 import { useNavigate } from 'react-router-dom';
+import {
+  Truck, ArrowRight, Shield, RefreshCw, MapPin,
+  Award, Star, Heart, CheckCircle2, ChevronRight
+} from 'lucide-react';
 
 const Home = () => {
   const navigate = useNavigate();
@@ -8,18 +12,25 @@ const Home = () => {
       {/* TopNavBar */}
       <header className="home-header">
         <div className="home-header-inner">
-          <div className="home-logo-text">Apna Courier</div>
+          <div className="home-logo-wrap" onClick={() => navigate('/')}>
+            <div className="home-logo-icon">
+              <Truck size={20} color="#ffffff" strokeWidth={2.5} />
+            </div>
+            <span className="home-logo-text">ship<span className="text-saffron">Bihar</span></span>
+          </div>
+
           <nav className="home-nav-links">
-            <a href="#how-it-works">How it Works</a>
             <a href="#features">Features</a>
+            <a href="#how-it-works">How It Works</a>
             <a href="#our-story">Our Story</a>
           </nav>
+
           <button
             className="home-signin-btn"
             onClick={() => navigate('/login')}
           >
             Sign In
-            <span className="material-symbols-outlined" style={{ fontSize: 18 }}>login</span>
+            <ChevronRight size={16} />
           </button>
         </div>
       </header>
@@ -28,18 +39,22 @@ const Home = () => {
         {/* Hero Section */}
         <section className="home-hero-section">
           <div className="home-hero-text">
+            <div className="home-badge kachni-pattern">
+              <span className="home-badge-text">Bihar ka Apna Logistics Portal</span>
+            </div>
             <h1 className="home-hero-title">
-              Your Bridge to Every Courier Service
+              Connecting Bihar's Businesses to the World.
             </h1>
             <p className="home-hero-subtitle">
-              Apna Courier connects you to the world's best delivery providers in one click. Simple, fast, and reliable logistics management.
+              shipBihar is a modern logistics middleware that connects you to India's top courier services in one click. Fast, secure, and culturally rooted.
             </p>
             <div className="home-hero-buttons">
               <button
                 className="home-btn-getstarted"
                 onClick={() => navigate('/register')}
               >
-                Get Started
+                Get Started Free
+                <ArrowRight size={18} style={{ marginLeft: 6 }} />
               </button>
               <button
                 className="home-btn-viewrates"
@@ -49,13 +64,13 @@ const Home = () => {
               </button>
             </div>
           </div>
+
           <div className="home-hero-image-wrap">
-            {/* Layered Creative Frame */}
             <div className="home-hero-frame-bg1"></div>
             <div className="home-hero-frame-bg2"></div>
-            <div className="home-hero-frame-main">
+            <div className="home-hero-frame-main mithila-border">
               <img
-                alt="Collage of logistics operations including vans, airplanes, and package scanning"
+                alt="Logistics operations collage"
                 src="https://lh3.googleusercontent.com/aida-public/AB6AXuCGgzTmjxZar94XHxl7ZMslxq53RYnqgn4gLuMt6YafP98XXL9wxAe5W0GHI3BXQjCw7oahCbrSdtVooIqM4DPWOnteoKXIim6acU1EqO-Job-eA-1zxHCSgWuFw-1nGyHwvV-D2XggmX81NmRHbJTBd7pV1w-0dP8JrHb-bjGxdswuXG2Jcu0rzqJHsCY6bvWyeUxGlTEUWci5UmvFxYTWY3PxI21ieZPgjMuB-5FLl1saOsimh3FZqW_Kyy41uXoHJ7QZAlYVrIIZ"
               />
             </div>
@@ -66,84 +81,90 @@ const Home = () => {
         <section className="home-features-section" id="features">
           <div className="home-container">
             <div className="home-section-header">
-              <h2 className="home-section-title">Our Services</h2>
+              <h2 className="home-section-title">Logistics Engineered for Reliability</h2>
               <p className="home-section-desc">
-                Streamlined middleware solutions designed for high-performance delivery management.
+                Streamlined solutions that merge cultural pride with high-performance tracking and delivery tools.
               </p>
             </div>
             <div className="home-features-grid">
               {[
                 {
-                  icon: 'location_on',
-                  title: 'Real-time Global Tracking',
-                  desc: 'Monitor shipments across multiple carriers through a single, unified dashboard.',
+                  icon: MapPin,
+                  title: 'Real-time Tracking',
+                  desc: 'Monitor every single shipment across multiple carriers through a single, clean dashboard.',
                   accent: true,
                 },
                 {
-                  icon: 'compare_arrows',
-                  title: 'Multi-carrier Comparisons',
-                  desc: 'Instantly compare rates, speeds, and reliability metrics to choose the optimal provider.',
+                  icon: RefreshCw,
+                  title: 'Multi-carrier Comparison',
+                  desc: 'Compare shipping rates, speeds, and service reliability instantly to find the best deal.',
                   accent: false,
                 },
                 {
-                  icon: 'local_shipping',
-                  title: 'Instant Pickup Requests',
-                  desc: 'Schedule dispatches with local and international partners seamlessly from our platform.',
+                  icon: Truck,
+                  title: 'Instant Pickup Bookings',
+                  desc: 'Schedule rapid doorstep dispatches with top-tier courier partners instantly from your account.',
                   accent: false,
                 },
                 {
-                  icon: 'shield',
-                  title: 'Secure Logistics Network',
-                  desc: 'Enterprise-grade security ensuring your package data and routing information is protected.',
+                  icon: Shield,
+                  title: 'Secure Routing Network',
+                  desc: 'Modern encryption guarantees your package data and client databases are kept safe.',
                   accent: false,
                 },
-              ].map((f, i) => (
-                <div key={i} className={`home-feature-card${f.accent ? ' home-feature-card--accent' : ''}`}>
-                  <div className="home-feature-icon">
-                    <span className="material-symbols-outlined">{f.icon}</span>
+              ].map((f, i) => {
+                const Icon = f.icon;
+                return (
+                  <div key={i} className={`home-feature-card${f.accent ? ' home-feature-card--accent' : ''}`}>
+                    <div className="home-feature-icon">
+                      <Icon size={24} />
+                    </div>
+                    <h3 className="home-feature-title">{f.title}</h3>
+                    <p className="home-feature-desc">{f.desc}</p>
                   </div>
-                  <h3 className="home-feature-title">{f.title}</h3>
-                  <p className="home-feature-desc">{f.desc}</p>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </section>
 
-        {/* About & Story Section */}
+        {/* Our Story Section */}
         <section className="home-story-section" id="our-story">
           <div className="home-container">
             <div className="home-story-grid">
               <div className="home-story-text">
-                <span className="home-story-label">Our Origins</span>
+                <span className="home-story-label">Our Story & Heritage</span>
                 <h2 className="home-section-title" style={{ textAlign: 'left' }}>
-                  The Journey of Apna Courier
+                  Rooted in Bihar, Built for the Future
                 </h2>
                 <div className="home-story-body">
                   <p>
-                    We started as a simple middleware solution designed to bridge the gap between small businesses and global logistics giants. Recognizing the complexity of navigating multiple shipping APIs, we set out to build a unified layer.
+                    shipBihar began with a clear vision: to empower small local enterprises, artisans, and distributors across Bihar by providing world-class logistics technology.
                   </p>
                   <p>
-                    Today, Apna Courier empowers thousands of users by seamlessly integrating with industry leaders like FedEx, DHL, and extensive local provider networks. We abstract the complexity, leaving you with simple, dependable delivery management.
+                    Inspired by the intricate geometry and resilience of Mithila art, we designed shipBihar to represent absolute stability and dynamic momentum. Today, we bridge the gap between traditional craftsmanship and global supply chains.
                   </p>
                 </div>
               </div>
               <div className="home-story-awards">
                 {[
-                  { icon: 'military_tech', title: 'Tech Logistics Award 2023', sub: 'Industry Recognition', colorClass: 'primary' },
-                  { icon: 'verified', title: 'Most Trusted Middleware', sub: 'Global Shipping Alliance', colorClass: 'secondary' },
-                  { icon: 'lightbulb', title: 'Innovation in Delivery', sub: 'Excellence Awards', colorClass: 'tertiary' },
-                ].map((a, i) => (
-                  <div key={i} className="home-award-card">
-                    <div className={`home-award-icon home-award-icon--${a.colorClass}`}>
-                      <span className="material-symbols-outlined">{a.icon}</span>
+                  { icon: Award, title: 'State Tech Logistics Award', sub: 'Honorable Mention', colorClass: 'primary' },
+                  { icon: Star, title: 'Most Trusted Regional Middleware', sub: 'Regional Cargo Association', colorClass: 'secondary' },
+                  { icon: Heart, title: 'Made in Bihar Initiative', sub: 'Cultural Heritage Support', colorClass: 'tertiary' },
+                ].map((a, i) => {
+                  const Icon = a.icon;
+                  return (
+                    <div key={i} className="home-award-card">
+                      <div className={`home-award-icon home-award-icon--${a.colorClass}`}>
+                        <Icon size={20} />
+                      </div>
+                      <div>
+                        <div className="home-award-title">{a.title}</div>
+                        <div className="home-award-sub">{a.sub}</div>
+                      </div>
                     </div>
-                    <div>
-                      <div className="home-award-title">{a.title}</div>
-                      <div className="home-award-sub">{a.sub}</div>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -155,14 +176,14 @@ const Home = () => {
             <div className="home-section-header">
               <h2 className="home-section-title">How It Works</h2>
               <p className="home-section-desc">
-                Get started in three simple steps and ship your first parcel within minutes.
+                Three basic steps to completely streamline your shipping operations and dispatch packages instantly.
               </p>
             </div>
             <div className="home-steps-grid">
               {[
-                { step: '01', title: 'Create Your Account', desc: 'Sign up with your business details and get instant access to our platform.' },
-                { step: '02', title: 'Compare & Book', desc: 'Enter shipment details, compare rates across top couriers, and book instantly.' },
-                { step: '03', title: 'Track & Deliver', desc: 'Monitor every shipment in real-time from a single, unified dashboard.' },
+                { step: '01', title: 'Register in Seconds', desc: 'Create a free business account using your email and mobile number.' },
+                { step: '02', title: 'Compare & Select', desc: 'Input delivery addresses to compare live rates across multiple carriers instantly.' },
+                { step: '03', title: 'Book & Track', desc: 'Book your delivery with a single click and monitor status live in your panel.' },
               ].map((s, i) => (
                 <div key={i} className="home-step-card">
                   <div className="home-step-number">{s.step}</div>
@@ -175,21 +196,24 @@ const Home = () => {
         </section>
 
         {/* CTA Section */}
-        <section className="home-cta-section">
-          <div className="home-container" style={{ textAlign: 'center' }}>
-            <h2 className="home-section-title">Ready to streamline your shipping?</h2>
-            <p className="home-section-desc" style={{ maxWidth: 520, margin: '0 auto 2rem' }}>
-              Join thousands of sellers who trust Apna Courier for their logistics needs. Start shipping smarter today.
+        <section className="home-cta-section kachni-pattern">
+          <div className="home-container" style={{ textAlign: 'center', position: 'relative', zIndex: 1 }}>
+            <h2 className="home-section-title text-white">Start Dispatching Smarter Today</h2>
+            <p className="home-section-desc text-white-50" style={{ maxWidth: 520, margin: '0 auto 2rem' }}>
+              Join hundreds of high-growth distributors who trust shipBihar to manage their supply lines and local shipping.
             </p>
             <div className="home-hero-buttons" style={{ justifyContent: 'center' }}>
               <button
                 className="home-btn-getstarted"
+                style={{ background: '#ffffff', color: 'var(--accent-2)' }}
                 onClick={() => navigate('/register')}
               >
-                Get Started — It's Free
+                Get Started Free
+                <ArrowRight size={18} style={{ marginLeft: 6 }} />
               </button>
               <button
                 className="home-btn-viewrates"
+                style={{ borderColor: '#ffffff', color: '#ffffff' }}
                 onClick={() => navigate('/login')}
               >
                 Sign In
@@ -203,42 +227,46 @@ const Home = () => {
       <footer className="home-footer">
         <div className="home-footer-inner">
           <div className="home-footer-brand">
-            <div className="home-footer-logo">Apna Courier</div>
+            <div className="home-footer-logo">
+              ship<span className="text-saffron">Bihar</span>
+            </div>
             <p className="home-footer-tagline">
-              Connecting global logistics through intelligent middleware solutions.
+              Connecting local craft, industrial hubs, and modern businesses with smart logistics solutions.
             </p>
             <div className="home-footer-address">
-              <p>123 Logistics Way</p>
-              <p>Suite 400, Tech District</p>
-              <p>contact@apnacourier.com</p>
+              <p>Patna IT Hub, Tech Zone</p>
+              <p>Patna, Bihar, India</p>
+              <p>contact@shipbihar.com</p>
             </div>
           </div>
           <div className="home-footer-col">
             <span className="home-footer-col-title">Legal</span>
-            <a href="#">Terms of Service</a>
-            <a href="#">Privacy Policy</a>
+            <a href="#terms">Terms of Service</a>
+            <a href="#privacy">Privacy Policy</a>
           </div>
           <div className="home-footer-col">
             <span className="home-footer-col-title">Company</span>
-            <a href="#">Contact Us</a>
-            <a href="#">Careers</a>
+            <a href="#contact">Contact Us</a>
+            <a href="#careers">Careers</a>
           </div>
           <div className="home-footer-bottom">
-            <p>© {new Date().getFullYear()} Apna Courier. All rights reserved. Connecting global logistics.</p>
+            <p>© {new Date().getFullYear()} shipBihar Logistics Portal. Built with local pride.</p>
           </div>
         </div>
       </footer>
 
-      {/* ── Scoped Styles (matches Stitch design) ── */}
+      {/* Scoped Styles for Home.jsx */}
       <style>{`
-        /* ── Reset for Home page only ── */
         .home-page {
-          font-family: 'Inter', system-ui, sans-serif;
-          background: #f8f9ff;
-          color: #0b1c30;
+          background: var(--bg-deep);
+          color: var(--text-1);
           min-height: 100vh;
           -webkit-font-smoothing: antialiased;
           overflow-x: hidden;
+        }
+
+        .text-saffron {
+          color: var(--accent);
         }
 
         /* ── Header ── */
@@ -246,8 +274,9 @@ const Home = () => {
           position: fixed;
           top: 0; left: 0; right: 0;
           z-index: 50;
-          background: #f8f9ff;
-          border-bottom: 1px solid #c6c6cd;
+          background: rgba(248, 249, 250, 0.96);
+          border-bottom: 1px solid var(--border);
+          backdrop-filter: blur(12px);
           height: 80px;
         }
 
@@ -261,172 +290,176 @@ const Home = () => {
           height: 100%;
         }
 
+        .home-logo-wrap {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          cursor: pointer;
+        }
+
+        .home-logo-icon {
+          width: 36px;
+          height: 36px;
+          background: var(--accent-2);
+          border-radius: 6px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 4px 10px rgba(154, 70, 0, 0.2);
+        }
+
         .home-logo-text {
-          font-size: 24px;
+          font-size: 22px;
           font-weight: 800;
-          color: #000;
-          letter-spacing: -0.01em;
+          color: var(--purple);
+          letter-spacing: -0.02em;
         }
 
         .home-nav-links {
           display: flex;
-          gap: 24px;
+          gap: 32px;
           align-items: center;
         }
 
         .home-nav-links a {
-          font-family: 'Geist', 'Inter', sans-serif;
           font-size: 14px;
-          font-weight: 500;
-          color: #45464d;
+          font-weight: 600;
+          color: var(--text-2);
           text-decoration: none;
           letter-spacing: 0.02em;
           transition: color 0.2s;
         }
 
         .home-nav-links a:hover {
-          color: #9d4300;
+          color: var(--accent);
         }
 
         .home-signin-btn {
           display: flex;
           align-items: center;
-          gap: 0.25rem;
-          background: #131b2e;
-          color: #7c839b;
-          padding: 0.5rem 1.5rem;
-          border-radius: 0.5rem;
-          font-family: 'Geist', 'Inter', sans-serif;
+          gap: 4px;
+          background: var(--purple);
+          color: #ffffff;
+          padding: 0.6rem 1.4rem;
+          border-radius: var(--radius-sm);
           font-size: 14px;
-          font-weight: 500;
-          letter-spacing: 0.02em;
+          font-weight: 600;
           border: none;
           cursor: pointer;
-          transition: all 0.25s cubic-bezier(.4,0,.2,1);
+          transition: var(--trans);
         }
 
         .home-signin-btn:hover {
-          opacity: 0.9;
+          background: var(--accent-2);
           transform: translateY(-1px);
-          box-shadow: 0 4px 12px rgba(19,27,46,0.25);
+          box-shadow: 0 4px 12px rgba(154, 70, 0, 0.25);
         }
 
-        .home-signin-btn:active {
-          transform: translateY(0);
-        }
-
-        /* ── Hero ── */
+        /* ── Hero Section ── */
         .home-hero-section {
           max-width: 1280px;
           margin: 0 auto;
-          padding: 2.5rem 16px;
+          padding: 4.5rem 24px;
           display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 2.5rem;
+          grid-template-columns: 1.1fr 0.9fr;
+          gap: 3.5rem;
           align-items: center;
         }
 
         .home-hero-text {
           display: flex;
           flex-direction: column;
+          align-items: flex-start;
           gap: 1.5rem;
-          z-index: 10;
           animation: homeFadeUp 0.7s ease-out both;
         }
 
         @keyframes homeFadeUp {
-          from { opacity: 0; transform: translateY(24px); }
+          from { opacity: 0; transform: translateY(20px); }
           to   { opacity: 1; transform: translateY(0); }
         }
 
-        .home-hero-title {
-          font-size: 48px;
+        .home-badge {
+          background: rgba(244, 122, 32, 0.08);
+          border: 1px solid var(--border);
+          padding: 0.4rem 1.1rem;
+          border-radius: 999px;
+        }
+
+        .home-badge-text {
+          font-size: 12px;
           font-weight: 700;
-          line-height: 56px;
+          color: var(--accent-2);
+          letter-spacing: 0.06em;
+          text-transform: uppercase;
+        }
+
+        .home-hero-title {
+          font-size: 46px;
+          font-weight: 800;
+          line-height: 54px;
           letter-spacing: -0.02em;
-          color: #000;
-          text-wrap: balance;
+          color: var(--purple);
         }
 
         .home-hero-subtitle {
-          font-size: 18px;
-          line-height: 28px;
-          color: #45464d;
-          max-width: 560px;
+          font-size: 17px;
+          line-height: 26px;
+          color: var(--text-2);
+          max-width: 580px;
         }
 
         .home-hero-buttons {
           display: flex;
           gap: 1rem;
           margin-top: 0.5rem;
+          width: 100%;
         }
 
         .home-btn-getstarted {
-          background: #fd761a;
-          color: #5c2400;
-          padding: 1rem 2.5rem;
-          border-radius: 0.5rem;
-          font-family: 'Geist', 'Inter', sans-serif;
+          display: inline-flex;
+          align-items: center;
+          background: var(--accent);
+          color: #ffffff;
+          padding: 0.9rem 2.2rem;
+          border-radius: var(--radius-sm);
           font-size: 14px;
           font-weight: 700;
-          letter-spacing: 0.02em;
           border: none;
           cursor: pointer;
-          transition: all 0.3s cubic-bezier(.4,0,.2,1);
-          position: relative;
-          overflow: hidden;
-        }
-
-        .home-btn-getstarted::before {
-          content: '';
-          position: absolute;
-          top: 0; left: -100%;
-          width: 100%; height: 100%;
-          background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-          transition: left 0.5s ease;
-        }
-
-        .home-btn-getstarted:hover::before {
-          left: 100%;
+          transition: var(--trans);
+          box-shadow: 0 4px 14px var(--accent-glow);
         }
 
         .home-btn-getstarted:hover {
-          box-shadow: 0 8px 24px rgba(253,118,26,0.35);
+          background: var(--accent-2);
+          box-shadow: 0 6px 20px var(--accent-glow);
           transform: translateY(-2px);
-        }
-
-        .home-btn-getstarted:active {
-          transform: translateY(0);
         }
 
         .home-btn-viewrates {
+          display: inline-flex;
+          align-items: center;
           background: transparent;
-          color: #0b1c30;
-          padding: 1rem 2.5rem;
-          border-radius: 0.5rem;
-          font-family: 'Geist', 'Inter', sans-serif;
+          color: var(--purple);
+          padding: 0.9rem 2.2rem;
+          border-radius: var(--radius-sm);
           font-size: 14px;
-          font-weight: 500;
-          letter-spacing: 0.02em;
-          border: 1px solid #76777d;
+          font-weight: 600;
+          border: 1.5px solid var(--purple);
           cursor: pointer;
-          transition: all 0.3s cubic-bezier(.4,0,.2,1);
+          transition: var(--trans);
         }
 
         .home-btn-viewrates:hover {
-          background: #d3e4fe;
+          background: rgba(27, 42, 78, 0.05);
           transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba(0,0,0,0.08);
         }
 
-        .home-btn-viewrates:active {
-          transform: translateY(0);
-        }
-
-        /* ── Hero Image Frame ── */
+        /* Hero Image Frame */
         .home-hero-image-wrap {
           position: relative;
-          height: 400px;
+          height: 380px;
           width: 100%;
           display: flex;
           align-items: center;
@@ -437,79 +470,69 @@ const Home = () => {
         .home-hero-frame-bg1 {
           position: absolute;
           inset: 0;
-          background: #dce9ff;
-          border-radius: 0.75rem;
-          transform: rotate(3deg) scale(0.95);
-          opacity: 0.5;
-          box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+          background: #ffdbc9; /* primary-fixed */
+          border-radius: var(--radius-lg);
+          transform: rotate(3deg) scale(0.96);
+          opacity: 0.45;
+          box-shadow: var(--shadow-card);
         }
 
         .home-hero-frame-bg2 {
           position: absolute;
           inset: 0;
-          background: #131b2e;
-          border-radius: 0.75rem;
-          transform: rotate(-2deg) scale(0.95);
-          opacity: 0.1;
+          background: var(--purple);
+          border-radius: var(--radius-lg);
+          transform: rotate(-2deg) scale(0.96);
+          opacity: 0.08;
         }
 
         .home-hero-frame-main {
           position: relative;
           width: 100%;
           height: 100%;
-          border-radius: 0.75rem;
+          border-radius: var(--radius-lg);
           overflow: hidden;
-          border: 1px solid #c6c6cd;
-          box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
-          background: #fff;
+          background: #ffffff;
           z-index: 10;
           display: flex;
           align-items: center;
           justify-content: center;
-          padding: 0.5rem;
+          padding: 6px;
         }
 
         .home-hero-frame-main img {
           width: 100%;
           height: 100%;
           object-fit: cover;
-          border-radius: 0.5rem;
+          border-radius: calc(var(--radius-lg) - 4px);
         }
 
-        /* ── Container ── */
-        .home-container {
-          max-width: 1280px;
-          margin: 0 auto;
-          padding: 0 24px;
+        /* ── Features ── */
+        .home-features-section {
+          background: #ffffff;
+          padding: 5rem 24px;
+          border-top: 1px solid var(--border);
         }
 
-        /* ── Section Headers ── */
         .home-section-header {
           text-align: center;
           max-width: 640px;
-          margin: 0 auto 2.5rem;
+          margin: 0 auto 3.5rem;
         }
 
         .home-section-title {
           font-size: 32px;
-          font-weight: 600;
+          font-weight: 800;
           line-height: 40px;
           letter-spacing: -0.01em;
-          color: #000;
-          margin-bottom: 0.5rem;
+          color: var(--purple);
+          margin-bottom: 0.75rem;
         }
 
         .home-section-desc {
           font-size: 16px;
           line-height: 24px;
-          color: #45464d;
-        }
-
-        /* ── Features ── */
-        .home-features-section {
-          background: #fff;
-          padding: 2.5rem 16px;
-          border-top: 1px solid rgba(198,198,205,0.5);
+          color: var(--text-2);
         }
 
         .home-features-grid {
@@ -519,98 +542,78 @@ const Home = () => {
         }
 
         .home-feature-card {
-          background: #f8f9ff;
-          padding: 1.5rem;
-          border-radius: 0.75rem;
-          border: 1px solid #c6c6cd;
-          transition: all 0.3s cubic-bezier(.4,0,.2,1);
-          cursor: default;
+          background: var(--bg-deep);
+          padding: 2rem;
+          border-radius: var(--radius-lg);
+          border: 1px solid var(--border);
+          transition: var(--trans);
         }
 
         .home-feature-card--accent {
-          border-top: 2px solid #fd761a;
+          border-top: 3px solid var(--accent);
         }
 
         .home-feature-card:hover {
-          box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+          box-shadow: var(--shadow-card), 0 8px 30px rgba(244, 122, 32, 0.06);
           transform: translateY(-4px);
+          border-color: var(--accent);
         }
 
         .home-feature-icon {
           width: 48px;
           height: 48px;
-          background: #d3e4fe;
-          border-radius: 0.5rem;
+          background: rgba(244, 122, 32, 0.1);
+          color: var(--accent-2);
+          border-radius: var(--radius-md);
           display: flex;
           align-items: center;
           justify-content: center;
-          margin-bottom: 1rem;
-          transition: background 0.2s;
-        }
-
-        .home-feature-card--accent .home-feature-icon {
-          background: rgba(253,118,26,0.1);
-        }
-
-        .home-feature-card--accent .home-feature-icon .material-symbols-outlined {
-          color: #fd761a;
-        }
-
-        .home-feature-card:hover .home-feature-icon {
-          background: rgba(253,118,26,0.1);
-        }
-
-        .home-feature-icon .material-symbols-outlined {
-          color: #131b2e;
-          font-size: 24px;
+          margin-bottom: 1.25rem;
         }
 
         .home-feature-title {
-          font-size: 18px;
-          font-weight: 600;
-          color: #000;
-          margin-bottom: 0.25rem;
+          font-size: 19px;
+          font-weight: 700;
+          color: var(--purple);
+          margin-bottom: 0.5rem;
         }
 
         .home-feature-desc {
-          font-size: 14px;
-          line-height: 20px;
-          color: #45464d;
+          font-size: 14.5px;
+          line-height: 22px;
+          color: var(--text-2);
         }
 
-        /* ── Story / About ── */
+        /* ── Story Section ── */
         .home-story-section {
-          padding: 2.5rem 16px;
-          max-width: 1280px;
-          margin: 0 auto;
+          padding: 5rem 24px;
         }
 
         .home-story-grid {
           display: grid;
-          grid-template-columns: 7fr 5fr;
-          gap: 2.5rem;
+          grid-template-columns: 1.1fr 0.9fr;
+          gap: 3.5rem;
+          align-items: center;
         }
 
         .home-story-text {
           display: flex;
           flex-direction: column;
-          justify-content: center;
+          gap: 0.5rem;
         }
 
         .home-story-label {
-          font-family: 'Geist', 'Inter', sans-serif;
           font-size: 12px;
-          font-weight: 500;
-          color: #fd761a;
+          font-weight: 700;
+          color: var(--accent-2);
           text-transform: uppercase;
-          letter-spacing: 0.05em;
-          margin-bottom: 0.5rem;
+          letter-spacing: 0.08em;
         }
 
         .home-story-body {
           font-size: 16px;
-          line-height: 24px;
-          color: #45464d;
+          line-height: 25px;
+          color: var(--text-2);
           display: flex;
           flex-direction: column;
           gap: 1rem;
@@ -620,29 +623,29 @@ const Home = () => {
         .home-story-awards {
           display: flex;
           flex-direction: column;
-          gap: 0.5rem;
-          justify-content: center;
+          gap: 12px;
         }
 
         .home-award-card {
-          background: #f8f9ff;
-          padding: 1rem;
-          border-radius: 0.5rem;
-          border: 1px solid #c6c6cd;
+          background: #ffffff;
+          padding: 1.25rem;
+          border-radius: var(--radius-md);
+          border: 1px solid var(--border);
           display: flex;
           align-items: center;
           gap: 1rem;
-          transition: all 0.25s;
+          transition: var(--trans);
         }
 
         .home-award-card:hover {
-          box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+          box-shadow: var(--shadow-card);
           transform: translateY(-2px);
+          border-color: var(--accent);
         }
 
         .home-award-icon {
-          width: 40px;
-          height: 40px;
+          width: 44px;
+          height: 44px;
           border-radius: 50%;
           display: flex;
           align-items: center;
@@ -651,41 +654,37 @@ const Home = () => {
         }
 
         .home-award-icon--primary {
-          background: #dae2fd;
-          color: #131b2e;
+          background: rgba(244, 122, 32, 0.1);
+          color: var(--accent-2);
         }
 
         .home-award-icon--secondary {
-          background: #ffdbca;
-          color: #341100;
+          background: rgba(27, 42, 78, 0.08);
+          color: var(--purple);
         }
 
         .home-award-icon--tertiary {
-          background: #d8e2ff;
-          color: #001a42;
+          background: rgba(0, 91, 192, 0.08);
+          color: #005bc0;
         }
 
         .home-award-title {
-          font-family: 'Geist', 'Inter', sans-serif;
           font-size: 14px;
           font-weight: 700;
-          color: #000;
-          letter-spacing: 0.02em;
+          color: var(--purple);
         }
 
         .home-award-sub {
-          font-family: 'Geist', 'Inter', sans-serif;
           font-size: 12px;
-          font-weight: 500;
-          color: #45464d;
-          letter-spacing: 0.05em;
+          color: var(--text-2);
+          margin-top: 1px;
         }
 
         /* ── How It Works ── */
         .home-howitworks-section {
-          background: #fff;
-          padding: 4rem 16px;
-          border-top: 1px solid rgba(198,198,205,0.5);
+          background: #ffffff;
+          padding: 5rem 24px;
+          border-top: 1px solid var(--border);
         }
 
         .home-steps-grid {
@@ -696,16 +695,17 @@ const Home = () => {
 
         .home-step-card {
           text-align: center;
-          padding: 2rem 1.5rem;
-          border-radius: 0.75rem;
-          border: 1px solid #c6c6cd;
-          background: #f8f9ff;
-          transition: all 0.3s;
+          padding: 2.5rem 1.5rem;
+          border-radius: var(--radius-lg);
+          border: 1px solid var(--border);
+          background: var(--bg-deep);
+          transition: var(--trans);
         }
 
         .home-step-card:hover {
-          box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+          box-shadow: var(--shadow-card);
           transform: translateY(-4px);
+          border-color: var(--accent);
         }
 
         .home-step-number {
@@ -716,129 +716,151 @@ const Home = () => {
           height: 52px;
           border-radius: 50%;
           font-size: 18px;
-          font-weight: 700;
-          color: #fff;
-          background: #131b2e;
+          font-weight: 800;
+          color: #ffffff;
+          background: var(--accent-2);
           margin-bottom: 1.25rem;
+          box-shadow: 0 4px 10px var(--accent-glow);
         }
 
         .home-step-title {
           font-size: 18px;
-          font-weight: 600;
-          color: #000;
+          font-weight: 700;
+          color: var(--purple);
           margin-bottom: 0.5rem;
         }
 
         .home-step-desc {
           font-size: 14px;
-          line-height: 20px;
-          color: #45464d;
+          line-height: 21px;
+          color: var(--text-2);
         }
 
-        /* ── CTA ── */
+        /* ── CTA Section ── */
         .home-cta-section {
-          padding: 4rem 16px;
-          background: #e5eeff;
-          border-top: 1px solid rgba(198,198,205,0.5);
+          padding: 5.5rem 24px;
+          background: var(--purple);
+          border-top: 1px solid var(--border);
+          position: relative;
+        }
+
+        .home-cta-section::after {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(135deg, rgba(244, 122, 32, 0.15) 0%, transparent 100%);
+          pointer-events: none;
+        }
+
+        .text-white {
+          color: #ffffff !important;
+        }
+
+        .text-white-50 {
+          color: rgba(255, 255, 255, 0.7) !important;
         }
 
         /* ── Footer ── */
         .home-footer {
-          background: #131b2e;
+          background: #111827;
+          border-top: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .home-footer-inner {
           max-width: 1280px;
           margin: 0 auto;
-          padding: 2.5rem 24px;
+          padding: 4rem 24px;
           display: grid;
           grid-template-columns: 2fr 1fr 1fr;
-          gap: 24px;
-          color: #7c839b;
+          gap: 3.5rem;
+          color: rgba(255, 255, 255, 0.6);
         }
 
         .home-footer-logo {
-          font-size: 18px;
-          font-weight: 900;
-          color: #c6c6cd;
+          font-size: 22px;
+          font-weight: 800;
+          color: #ffffff;
+          letter-spacing: -0.02em;
         }
 
         .home-footer-tagline {
           font-size: 14px;
-          line-height: 20px;
-          opacity: 0.8;
-          margin-top: 0.25rem;
-          max-width: 280px;
+          line-height: 21px;
+          margin-top: 0.5rem;
+          max-width: 320px;
         }
 
         .home-footer-address {
-          margin-top: 1rem;
+          margin-top: 1.5rem;
           font-size: 14px;
-          line-height: 20px;
+          line-height: 22px;
           opacity: 0.8;
         }
 
         .home-footer-col {
           display: flex;
           flex-direction: column;
-          gap: 0.5rem;
+          gap: 0.65rem;
         }
 
         .home-footer-col-title {
-          font-family: 'Geist', 'Inter', sans-serif;
           font-size: 14px;
           font-weight: 700;
-          color: #fff;
-          letter-spacing: 0.02em;
-          margin-bottom: 0.25rem;
+          color: #ffffff;
+          text-transform: uppercase;
+          letter-spacing: 0.08em;
+          margin-bottom: 0.5rem;
         }
 
         .home-footer-col a {
-          font-family: 'Geist', 'Inter', sans-serif;
-          font-size: 12px;
-          font-weight: 500;
-          color: #7c839b;
+          font-size: 13px;
+          color: rgba(255, 255, 255, 0.6);
           text-decoration: none;
-          letter-spacing: 0.05em;
-          opacity: 0.8;
-          transition: opacity 0.2s;
+          transition: color 0.2s;
         }
 
         .home-footer-col a:hover {
-          opacity: 1;
-          color: #ffb690;
+          color: var(--accent);
         }
 
         .home-footer-bottom {
           grid-column: 1 / -1;
-          margin-top: 1.5rem;
-          border-top: 1px solid rgba(124,131,155,0.2);
-          padding-top: 1rem;
+          margin-top: 2rem;
+          border-top: 1px solid rgba(255, 255, 255, 0.1);
+          padding-top: 1.5rem;
         }
 
         .home-footer-bottom p {
-          font-size: 14px;
-          opacity: 0.8;
+          font-size: 13px;
+          opacity: 0.7;
         }
 
-        /* ── Responsive ── */
+        /* ── Responsive breakpoints ── */
         @media (max-width: 1024px) {
           .home-hero-section {
             grid-template-columns: 1fr;
-            padding: 2.5rem 16px;
+            padding: 3rem 24px;
+            text-align: center;
+          }
+
+          .home-hero-text {
+            align-items: center;
           }
 
           .home-hero-image-wrap {
-            height: 300px;
+            height: 320px;
+            max-width: 480px;
+            margin: 0 auto;
           }
 
           .home-hero-title {
-            font-size: 36px;
-            line-height: 44px;
+            font-size: 38px;
+            line-height: 46px;
           }
 
           .home-story-grid {
             grid-template-columns: 1fr;
+            gap: 2.5rem;
           }
         }
 
@@ -857,28 +879,17 @@ const Home = () => {
 
           .home-footer-inner {
             grid-template-columns: 1fr;
-          }
-
-          .home-hero-title {
-            font-size: 28px;
-            line-height: 36px;
-          }
-
-          .home-hero-subtitle {
-            font-size: 16px;
-            line-height: 24px;
+            gap: 2.5rem;
           }
 
           .home-hero-buttons {
             flex-direction: column;
+            align-items: stretch;
           }
 
           .home-hero-buttons button {
             width: 100%;
-          }
-
-          .home-hero-image-wrap {
-            height: 240px;
+            justify-content: center;
           }
         }
       `}</style>

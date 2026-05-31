@@ -13,10 +13,8 @@ const Navbar = () => (
     top: 0, left: 0, right: 0,
     zIndex: 100,
     background: 'var(--header-bg)',
-    backdropFilter: 'blur(24px)',
-    WebkitBackdropFilter: 'blur(24px)',
     borderBottom: '1px solid var(--header-border)',
-    boxShadow: '0 10px 30px rgba(8,6,20,0.35)',
+    boxShadow: '0 4px 20px rgba(154, 70, 0, 0.05)',
     height: 64,
     display: 'flex',
     alignItems: 'center',
@@ -24,18 +22,18 @@ const Navbar = () => (
   }}>
     <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
       <div style={{
-        width: 40, height: 40, borderRadius: 14,
-        background: 'var(--accent)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        boxShadow: '0 10px 22px rgba(59,130,246,0.35)',
+        width: 36, height: 36, borderRadius: 'var(--radius-sm)',
+        background: 'var(--accent-2)',
+        display: 'flex', alignItems: 'center', justify: 'center',
+        boxShadow: '0 4px 10px rgba(154, 70, 0, 0.2)',
       }}>
         <Truck size={18} color="#fff" strokeWidth={2.5} />
       </div>
       <span style={{
-        fontSize: '1.05rem', fontWeight: 800, letterSpacing: '-0.01em',
-        color: 'var(--text-1)',
+        fontSize: '1.2rem', fontWeight: 800, letterSpacing: '-0.02em',
+        color: 'var(--purple)',
       }}>
-        Apna Courier Service
+        ship<span style={{ color: 'var(--accent)' }}>Bihar</span>
       </span>
     </div>
   </nav>
@@ -181,7 +179,7 @@ const Login = () => {
         {/* ── MODE: Login ── */}
         {mode === 'login' && renderCard(
           'Welcome back',
-          <><span style={{ color: 'var(--accent)', fontWeight: 600 }}>Apna Courier Service</span> — Sign in to continue</>,
+          <><span style={{ color: 'var(--accent-2)', fontWeight: 700 }}>shipBihar</span> — Sign in to continue</>,
           <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
             <div>
               <label className="field-label">Email Address</label>

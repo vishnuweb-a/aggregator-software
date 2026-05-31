@@ -16,5 +16,6 @@ parcelRouter.get('/shipments',authCheck,getUserShipments)
 parcelRouter.post('/payment/verify',verifyPayment)
 parcelRouter.post('/payment/wallet',authCheck,payWallet)
 parcelRouter.post('/payment/recipt/:shipmentId',authCheck,downloadReceipt)
+parcelRouter.get('/parcel//getAllParcel',authCheck,)
 
 export default parcelRouter
