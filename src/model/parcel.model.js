@@ -68,6 +68,43 @@ pincode:String
     type : Number,
     required : true
   },
+  no_of_parcel : {
+    type :Number,
+    required : true
+  },
+  length : {
+    type : Number ,
+    required : true
+  },
+  width : {
+    type : Number,
+    required : true
+  },
+  height : {
+    type : Number,
+    required : true
+  },
+   declaredValue : {
+    type : Number,
+    required : true
+   },
+   riskType: {
+  type: String,
+  enum: [
+    "COURIER_RISK",
+    "OWNER_RISK",
+    "NO_RISK"
+  ],
+  required: true
+},
+riskCharge: {
+  type: Number,
+  default: 0
+},
+volumePrice : {
+   type :  Number ,
+   default : 0 
+},
   courierType : {
     type : String,
     enum : ["docx","nonDocx"],
@@ -81,6 +118,11 @@ pincode:String
   mode :{
     type : String,
     enum : ['AIRWAY','SURFACE']
+  },
+  description : {
+    type :String,
+    maxLength : 200,
+    default : ""
   }
 },{
   timestamps : true

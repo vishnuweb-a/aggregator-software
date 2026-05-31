@@ -2,6 +2,9 @@ import Parcel from "../model/parcel.model.js";
 import Courier from "../model/courier.model.js";
 import Shipment from "../model/shipment.model.js";
 import { bookingConfirmation } from '../services/mail.service.js';
+import { insuranceAmount_cal } from "../logic/insurance.logic.js";
+import { volumePrice_cal } from "../logic/volumePrice.logic.js";
+import insurance from "../model/insurance.model.js";
 
 export const createParcel = async (req, res) => {
   try {
@@ -16,8 +19,16 @@ export const createParcel = async (req, res) => {
       receiverAddress,
       DelevarableType,
       weight,
+      no_of_parcel,
+      length,
+      width,
+      height,
+      declaredValue,
+      riskType,
+      
       courierType ,
-      mode
+      mode,
+      description
     } = req.body;
 
     // VALIDATION
@@ -32,6 +43,15 @@ export const createParcel = async (req, res) => {
     if (weight <= 0) {
       return res.status(400).json({ response: "invalid weight" });
     }
+
+   const amnt_insurance = insuranceAmount_cal(declaredValue,riskType)
+   console.log(amnt_insurance)
+
+   const volumePrice = volumePrice_cal(length,width,height,mode)
+   console.log(volumePrice)
+
+
+   
 
     // CREATE PARCEL
     const parcel = await Parcel.create({
@@ -57,8 +77,17 @@ export const createParcel = async (req, res) => {
       },
       DelevarableType,
       weight,
+      no_of_parcel,
+      length,
+      width,
+      height,
+      declaredValue,
+      riskType,
+      riskCharge:amnt_insurance,
+      volumePrice:volumePrice,
       courierType ,
       mode,
+      description,
       status: "CREATED"
     });
 
@@ -144,7 +173,7 @@ function resolvePricing(courier, mode) {
       const perKg     = pricing.per_kg     || 0;
       const etaDays   = pricing.eta_days   || 0;
 
-      const price = basePrice + (parcel.weight * perKg);
+      const price = basePrice + (parcel.weight * perKg) + parcel.riskCharge + parcel.volumePrice;
       const priceScore = 100 - Math.min(price, 100);
       const etaScore = 100 - (etaDays * 10);
       const safetyScore = 100 - ((c.damage_rate || 0) * 5);
@@ -236,7 +265,7 @@ export const confirmCourier = async (req, res) => {
     const perKg = pricing.per_kg || 0;
     const etaDays = pricing.eta_days || 0;
 
-    const totalAmount = basePrice + (parcelData.weight * perKg);
+    const totalAmount = basePrice + (parcelData.weight * perKg) + parcelData.riskCharge + parcelData.volumePrice;
 
     // ORDER ID
     const orderId = "ORD_" + Date.now();
@@ -251,6 +280,7 @@ export const confirmCourier = async (req, res) => {
       courierId: courierData._id,
       courierPartner: courierData.provider,
       price: totalAmount,
+      description : description ,
       eta: etaDays,
       paymentStatus: "PENDING",
       shipmentStatus: "PAYMENT_PENDING",
@@ -266,6 +296,13 @@ export const confirmCourier = async (req, res) => {
         phone: parcelData.senderPhoneNumber,
         address: parcelData.senderAddress
       }
+    });
+
+    await insurance.create({
+      shipmentId : shipment._id,
+      insuranceAmount : parcelData.riskCharge,
+      mode : parcelData.mode,
+      DelevarableType: parcelData.DelevarableType,
     });
 
     // RESPONSE
@@ -285,6 +322,7 @@ export const confirmCourier = async (req, res) => {
         status: shipment.shipmentStatus
       }
     });
+
   } catch (err) {
     console.log(err);
     return res.status(500).json({ response: err.message });
@@ -370,5 +408,3 @@ export const getUserShipments = async (req, res) => {
     return res.status(500).json({ response: err.message });
   }
 };
-
-

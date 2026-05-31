@@ -79,11 +79,13 @@ mode :{
   type : String,
   required : true
 },
-
+discription :  {
+  type :String,
+  maxLength : 200,
+  default : ""
+},
 trackingHistory:[
-
 {
-
 status:String,
 
 title:String,
