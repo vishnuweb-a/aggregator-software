@@ -195,7 +195,7 @@ basePrice+
 (
 parcel.weight*
 perKg
-);
+) + (parcel.riskCharge || 0) + (parcel.volumePrice || 0);
 
 /* wallet */
 

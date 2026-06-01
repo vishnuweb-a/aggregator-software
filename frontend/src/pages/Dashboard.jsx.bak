@@ -9,7 +9,6 @@ import {
   Star, DollarSign, Award, Navigation, Shield, Box, Ruler, FileText,
   AlertTriangle,
 } from 'lucide-react';
-import shipbiharLogo from '../assets/logo_ship_bihar.jpeg';
 
 /* ─── Navbar ─────────────────────────────────────── */
 const Navbar = ({ logout, view, setView }) => (
@@ -22,9 +21,11 @@ const Navbar = ({ logout, view, setView }) => (
   }}>
     <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 1.5rem', height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-        <img src={shipbiharLogo} alt="shipBihar" style={{ width: 40, height: 40, borderRadius: 10, objectFit: 'cover', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
+        <div style={{ width: 40, height: 40, borderRadius: 14, background: 'linear-gradient(135deg, var(--accent), var(--purple))', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 10px 22px rgba(244,122,32,0.25)' }}>
+          <Truck size={18} color="#fff" strokeWidth={2.5} />
+        </div>
         <span style={{ fontSize: '1.05rem', fontWeight: 800, letterSpacing: '-0.01em', color: 'var(--text-1)' }}>
-          ship<span style={{ color: 'var(--accent)' }}>Bihar</span>
+          Apna Courier Service
         </span>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
@@ -354,26 +355,26 @@ const RecommendationCard = ({ type, courier, onSelect, loading }) => {
   const configs = {
     cheapest: {
       label: '💰 Cheapest',
-      tagClass: 'rec-tag',
-      cardClass: 'rec-card',
+      tagClass: 'rec-tag rec-tag-cheapest',
+      cardClass: 'rec-card rec-card-cheapest',
       icon: DollarSign,
-      iconColor: 'var(--accent)',
+      iconColor: '#4ade80',
       subtitle: 'Lowest price option',
     },
     fastest: {
       label: '⚡ Fastest',
-      tagClass: 'rec-tag',
-      cardClass: 'rec-card',
+      tagClass: 'rec-tag rec-tag-fastest',
+      cardClass: 'rec-card rec-card-fastest',
       icon: Zap,
-      iconColor: 'var(--accent)',
+      iconColor: '#fbbf24',
       subtitle: 'Quickest delivery',
     },
     recommended: {
       label: '🏆 Best Overall',
-      tagClass: 'rec-tag',
-      cardClass: 'rec-card',
+      tagClass: 'rec-tag rec-tag-best',
+      cardClass: 'rec-card rec-card-best',
       icon: Award,
-      iconColor: 'var(--accent)',
+      iconColor: '#c084fc',
       subtitle: 'Top rated by score',
     },
   };

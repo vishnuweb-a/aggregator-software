@@ -647,7 +647,7 @@ textarea.input-field {
   inset: 0;
   border-radius: var(--radius-lg);
   padding: 1.5px;
-  background: linear-gradient(135deg, var(--rec-color-1, var(--accent)), var(--rec-color-2, var(--purple)));
+  background: linear-gradient(135deg, var(--accent), var(--purple));
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
@@ -662,25 +662,7 @@ textarea.input-field {
 
 .rec-card:hover {
   transform: translateY(-4px);
-  box-shadow: var(--shadow-card), 0 0 40px var(--rec-glow, rgba(59,130,246,0.2));
-}
-
-.rec-card-cheapest {
-  --rec-color-1: #22c55e;
-  --rec-color-2: #10b981;
-  --rec-glow: rgba(34,197,94,0.25);
-}
-
-.rec-card-fastest {
-  --rec-color-1: #f59e0b;
-  --rec-color-2: #f97316;
-  --rec-glow: rgba(245,158,11,0.25);
-}
-
-.rec-card-best {
-  --rec-color-1: #a855f7;
-  --rec-color-2: #3b82f6;
-  --rec-glow: rgba(168,85,247,0.25);
+  box-shadow: var(--shadow-card), 0 0 40px rgba(244,122,32,0.25);
 }
 
 /* ── Recommendation tag ── */

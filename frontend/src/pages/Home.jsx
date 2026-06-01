@@ -2,9 +2,9 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
-  Truck, ArrowRight, Mail, Lock, AlertCircle,
+  ArrowRight, Mail, Lock, AlertCircle,
 } from 'lucide-react';
-
+import shipbiharLogo from '../assets/logo_ship_bihar.jpeg';
 const Home = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -39,9 +39,7 @@ const Home = () => {
       <nav className="sb-nav">
         <div className="sb-nav-inner">
           <div className="sb-nav-left" onClick={() => navigate('/')}>
-            <div className="sb-nav-logo-icon">
-              <Truck size={18} color="#fff" strokeWidth={2.5} />
-            </div>
+            <img src={shipbiharLogo} alt="shipBihar" style={{ width: 36, height: 36, borderRadius: 8, objectFit: 'cover' }} />
             <span className="sb-nav-logo-text">
               ship<span className="sb-saffron">Bihar</span>
             </span>
