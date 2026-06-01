@@ -134,278 +134,72 @@ try{
 
 const userId=req.user;
 
-const {
-parcelId,
-courierId
-}=req.body;
+const { shipmentId } = req.body;
 
-/* parcel validation */
-
-const parcel=
-await Parcel.findOne({
-
-_id:parcelId,
-
-senderId:userId
-
-});
-
-if(!parcel){
-
-return res.status(404)
-.json({
-
-response:
-"parcel not found"
-
-});
-
+if (!shipmentId) {
+  return res.status(400).json({ response: "shipmentId is required" });
 }
 
-/* courier validation */
-
-const courier=
-await Courier.findById(
-courierId
-);
-
-if(!courier){
-
-return res.status(404)
-.json({
-
-response:
-"courier not found"
-
-});
-
+/* find shipment */
+const shipment = await Shipment.findOne({ _id: shipmentId, senderId: userId });
+if (!shipment) {
+  return res.status(404).json({ response: "shipment not found" });
 }
 
-/* price calculation (mode-based) */
+if (shipment.paymentStatus === "PAID") {
+  return res.status(400).json({ response: "Shipment is already paid" });
+}
 
-const pricing = parcel.mode === 'AIRWAY' && courier.air ? courier.air : courier.surface;
-const basePrice = pricing?.base_price || 0;
-const perKg = pricing?.per_kg || 0;
-const etaDays = pricing?.eta_days || 0;
-
-const amount=
-
-basePrice+
-
-(
-parcel.weight*
-perKg
-) + (parcel.riskCharge || 0) + (parcel.volumePrice || 0);
+const amount = shipment.price;
 
 /* wallet */
-
-const wallet=
-await Wallet.findOne({
-
-userId
-
-});
-
-if(!wallet){
-
-return res.status(404)
-.json({
-
-response:
-"wallet not found"
-
-});
-
+const wallet = await Wallet.findOne({ userId });
+if (!wallet) {
+  return res.status(404).json({ response: "wallet not found" });
 }
 
-if(
-wallet.balance < amount
-){
-
-return res.status(402)
-.json({
-
-response:
-"insufficient balance",
-
-balance:
-wallet.balance,
-
-required:
-amount
-
-});
-
-}
-
-/* freeze */
-
-let freeze=
-await Freezed.findOne({
-
-userId,
-parcelId
-
-});
-
-if(!freeze){
-
-freeze=
-await Freezed.create({
-
-userId,
-
-amount,
-
-parcelId,
-
-courierId,
-
-status:
-"FREEZED"
-
-});
-
+if (wallet.balance < amount) {
+  return res.status(402).json({
+    response: "insufficient balance",
+    balance: wallet.balance,
+    required: amount
+  });
 }
 
 /* debit */
-
 wallet.balance -= amount;
-
 await wallet.save();
 
-/* create shipment */
-
-const awb=
-"AWB"+
-Date.now();
-
-const shipment=
-await Shipment.create({
-
-senderId:userId,
-
-parcelId,
-
-courierId,
-
-courierPartner:
-courier.provider,
-
-price:
-amount,
-
-eta:
-etaDays,
-
-awb,
-
-paymentStatus:
-"PAID",
-
-shipmentStatus:
-"BOOKED",
-
-receiver:{
-
-name:
-parcel.receiverName,
-
-phone:
-parcel.receiverPhone,
-
-address:
-parcel.receiverAddress
-
-},
-
-sender:{
-
-name:
-parcel.senderName,
-
-phone:
-parcel.senderPhoneNumber,
-
-address:
-parcel.senderAddress
-
-},
-
-mode:
-parcel.mode,
-
-trackingHistory:[
-
-{
-
-status:
-"BOOKED",
-
-location:
-`${parcel.senderAddress.city}, ${parcel.senderAddress.pincode}`
-
-}
-
-]
-
+/* update shipment */
+shipment.paymentStatus = "PAID";
+shipment.shipmentStatus = "BOOKED";
+shipment.awb = "AWB" + Date.now();
+shipment.trackingHistory.push({
+  status: "BOOKED",
+  location: shipment.sender?.address?.city ? `${shipment.sender.address.city}, ${shipment.sender.address.pincode}` : "Pickup Location",
+  time: new Date()
 });
+await shipment.save();
 
 /* update parcel */
-
-parcel.status=
-"BOOKED";
-
-await parcel.save();
+await Parcel.findByIdAndUpdate(shipment.parcelId, { status: "BOOKED" });
 
 /* transaction */
-
 await WalletTransaction.create({
-
-userId,
-
-type:
-"DEBIT",
-
-amount,
-
-source:
-"COURIER",
-
-shipmentId:
-shipment._id,
-
-description:
-"wallet shipment booking"
-
+  userId,
+  type: "DEBIT",
+  amount,
+  source: "COURIER",
+  shipmentId: shipment._id,
+  description: "wallet shipment booking"
 });
 
-/* release freeze */
-
-freeze.status=
-"USED";
-
-await freeze.save();
-
-return res.status(200)
-.json({
-
-response:
-"payment successful",
-
-shipmentId:
-shipment._id,
-
-awb:
-shipment.awb,
-
-receiptUrl:
-
-`/api/receipt/${shipment._id}`,
-
-walletBalance:
-wallet.balance
-
+return res.status(200).json({
+  response: "payment successful",
+  shipmentId: shipment._id,
+  awb: shipment.awb,
+  receiptUrl: `/api/receipt/${shipment._id}`,
+  walletBalance: wallet.balance
 });
 
 }

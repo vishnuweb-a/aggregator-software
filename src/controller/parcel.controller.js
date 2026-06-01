@@ -173,7 +173,9 @@ function resolvePricing(courier, mode) {
       const perKg     = pricing.per_kg     || 0;
       const etaDays   = pricing.eta_days   || 0;
 
-      const price = basePrice + (parcel.weight * perKg) + parcel.riskCharge + parcel.volumePrice;
+      let price = basePrice + (parcel.weight * perKg) + parcel.riskCharge + parcel.volumePrice;
+      price = Math.round(price * 100) / 100;
+
       const priceScore = 100 - Math.min(price, 100);
       const etaScore = 100 - (etaDays * 10);
       const safetyScore = 100 - ((c.damage_rate || 0) * 5);
@@ -266,7 +268,14 @@ export const confirmCourier = async (req, res) => {
     const etaDays = pricing.eta_days || 0;
 
     const weightCharge = parcelData.weight * perKg;
-    const totalAmount = basePrice + weightCharge + parcelData.riskCharge + parcelData.volumePrice;
+    let totalAmount = basePrice + weightCharge + (parcelData.riskCharge || 0) + (parcelData.volumePrice || 0);
+    
+    // Round off to 2 decimal places
+    totalAmount = Math.round(totalAmount * 100) / 100;
+
+    if (totalAmount <= 0) {
+      return res.status(400).json({ response: "Invalid shipment price (₹0). Please check courier pricing configuration." });
+    }
 
     // ORDER ID
     const orderId = "ORD_" + Date.now();
@@ -342,7 +351,12 @@ export const confirmCourier = async (req, res) => {
  */
 export const verifyPayment = async (req, res) => {
   try {
-    const { shipmentId, utrNumber, paymentScreenshot } = req.body;
+    const { shipmentId, utrNumber, paymentScreenshot, amount } = req.body;
+
+    // VALIDATE REQUIRED FIELDS
+    if (!shipmentId || !utrNumber) {
+      return res.status(400).json({ response: "shipmentId and utrNumber are required" });
+    }
 
     // FIND SHIPMENT
     const shipment = await Shipment.findById(shipmentId);
@@ -355,6 +369,25 @@ export const verifyPayment = async (req, res) => {
     // ALREADY VERIFIED
     if (shipment.paymentStatus === "PAID") {
       return res.status(400).json({ response: "payment already verified" });
+    }
+
+    // AMOUNT VALIDATION — the paid amount must match the shipment price exactly
+    const expectedAmount = shipment.price;
+    const paidAmount = Number(amount);
+
+    if (!amount || isNaN(paidAmount)) {
+      return res.status(400).json({
+        response: "payment amount is required",
+        expectedAmount: expectedAmount
+      });
+    }
+
+    if (paidAmount !== expectedAmount) {
+      return res.status(400).json({
+        response: `Payment amount mismatch. Expected ₹${expectedAmount} but received ₹${paidAmount}`,
+        expectedAmount: expectedAmount,
+        receivedAmount: paidAmount
+      });
     }
 
     // UPDATE PAYMENT
