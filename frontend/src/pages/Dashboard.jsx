@@ -3,10 +3,11 @@ import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
 import {
   LogOut, Package, MapPin, Search, CheckCircle,
-  Clock, CreditCard, ChevronRight, User,
+  Clock, CreditCard, ChevronRight, ChevronDown, ChevronUp, User,
   AlertCircle, ArrowLeft, Truck, Zap, Phone, Mail,
   ShieldCheck, PlusCircle, List, Home, Wallet, Download,
-  Star, DollarSign, Award, Navigation, Shield,
+  Star, DollarSign, Award, Navigation, Shield, Box, Ruler, FileText,
+  AlertTriangle,
 } from 'lucide-react';
 
 /* ─── Navbar ─────────────────────────────────────── */
@@ -16,11 +17,11 @@ const Navbar = ({ logout, view, setView }) => (
     background: 'var(--header-bg)',
     backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)',
     borderBottom: '1px solid var(--header-border)',
-    boxShadow: '0 10px 30px rgba(8,6,20,0.35)',
+    boxShadow: '0 10px 30px rgba(8,6,20,0.08)',
   }}>
     <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 1.5rem', height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-        <div style={{ width: 40, height: 40, borderRadius: 14, background: 'linear-gradient(135deg, var(--accent), var(--purple))', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 10px 22px rgba(59,130,246,0.35)' }}>
+        <div style={{ width: 40, height: 40, borderRadius: 14, background: 'linear-gradient(135deg, var(--accent), var(--purple))', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 10px 22px rgba(244,122,32,0.25)' }}>
           <Truck size={18} color="#fff" strokeWidth={2.5} />
         </div>
         <span style={{ fontSize: '1.05rem', fontWeight: 800, letterSpacing: '-0.01em', color: 'var(--text-1)' }}>
@@ -37,9 +38,6 @@ const Navbar = ({ logout, view, setView }) => (
         <button onClick={() => setView('book')} className="btn-ghost" style={{ gap: '0.4rem', padding: '0.4rem 0.8rem', color: view === 'book' ? 'var(--accent)' : undefined }}>
           <PlusCircle size={14} /> New Booking
         </button>
-        <button onClick={() => setView('insurance')} className="btn-ghost" style={{ gap: '0.4rem', padding: '0.4rem 0.8rem', color: view === 'insurance' ? '#a78bfa' : undefined }}>
-          <Shield size={14} /> Insurance
-        </button>
         <button onClick={logout} className="btn-ghost" style={{ gap: '0.4rem', padding: '0.4rem 0.8rem' }}>
           <LogOut size={14} /> Sign Out
         </button>
@@ -50,8 +48,8 @@ const Navbar = ({ logout, view, setView }) => (
 
 /* ─── Info Row ───────────────────────────────────── */
 const InfoRow = ({ icon: Icon, label, value }) => (
-  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 0', borderBottom: '1px solid rgba(59,130,246,0.12)' }}>
-    <div style={{ width: 34, height: 34, borderRadius: 9, background: 'rgba(59,130,246,0.12)', border: '1px solid rgba(59,130,246,0.22)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 0', borderBottom: '1px solid rgba(244,122,32,0.12)' }}>
+    <div style={{ width: 34, height: 34, borderRadius: 9, background: 'rgba(244,122,32,0.1)', border: '1px solid rgba(244,122,32,0.22)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
       <Icon size={15} color="var(--accent)" />
     </div>
     <div>
@@ -77,9 +75,17 @@ const ScoreBar = ({ score = 0, maxScore = 100 }) => (
   </div>
 );
 
-/* ─── Shipment History Card ───────────────────────── */
-const ShipmentCard = ({ s, onAddInsurance }) => {
-  const status = s.shipmentStatus || s.status || 'PENDING'
+/* ─── Shipment History Card (with expandable details) ─── */
+const ShipmentCard = ({ s }) => {
+  const [expanded, setExpanded] = useState(false);
+  const status = s.shipmentStatus || s.status || 'PENDING';
+
+  const formatAddress = (addr) => {
+    if (!addr) return '—';
+    const parts = [addr.fullAddress, addr.landmark, addr.city, addr.state, addr.pincode].filter(Boolean);
+    return parts.join(', ') || '—';
+  };
+
   return (
     <div className="glass-card" style={{ padding: 0, overflow: 'hidden' }}>
       <div style={{ height: 3, background: 'linear-gradient(90deg, var(--accent), var(--purple))' }} />
@@ -103,38 +109,51 @@ const ShipmentCard = ({ s, onAddInsurance }) => {
             </div>
           ))}
         </div>
-        {/* Add Insurance button */}
-        {s._id && (
-          <button
-            onClick={() => onAddInsurance && onAddInsurance(s._id)}
-            style={{
-              marginTop: '0.85rem', width: '100%', display: 'flex', alignItems: 'center',
-              justifyContent: 'center', gap: '0.4rem', padding: '0.5rem 0.75rem',
-              borderRadius: 10, border: '1px solid rgba(167,139,250,0.35)',
-              background: 'rgba(167,139,250,0.08)', color: '#a78bfa',
-              fontSize: '0.78rem', fontWeight: 700, cursor: 'pointer',
-              transition: 'all 0.18s',
-            }}
-            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(167,139,250,0.18)'; e.currentTarget.style.borderColor = 'rgba(167,139,250,0.6)'; }}
-            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(167,139,250,0.08)'; e.currentTarget.style.borderColor = 'rgba(167,139,250,0.35)'; }}
-          >
-            <Shield size={13} /> Add Insurance
-          </button>
-        )}
+      </div>
+
+      {/* Expand/Collapse Button */}
+      <button className="shipment-expand-btn" onClick={() => setExpanded(!expanded)}>
+        {expanded ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+        {expanded ? 'Hide Details' : 'View Sender & Receiver Info'}
+      </button>
+
+      {/* Expandable Details */}
+      <div className={`shipment-details ${expanded ? 'open' : ''}`}>
+        {/* Sender Info */}
+        <div className="shipment-detail-block">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.4rem' }}>
+            <Package size={13} color="var(--accent)" />
+            <p className="shipment-detail-label" style={{ margin: 0 }}>Sender</p>
+          </div>
+          <p className="shipment-detail-value">{s.sender?.name || '—'}</p>
+          {s.sender?.phone && <p className="shipment-detail-value" style={{ fontSize: '0.78rem', color: 'var(--text-2)' }}>📞 {s.sender.phone}</p>}
+          {s.sender?.address && <p className="shipment-detail-value" style={{ fontSize: '0.75rem', color: 'var(--text-3)' }}>📍 {formatAddress(s.sender.address)}</p>}
+        </div>
+
+        {/* Receiver Info */}
+        <div className="shipment-detail-block">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.4rem' }}>
+            <MapPin size={13} color="var(--green)" />
+            <p className="shipment-detail-label" style={{ margin: 0 }}>Receiver</p>
+          </div>
+          <p className="shipment-detail-value">{s.receiver?.name || '—'}</p>
+          {s.receiver?.phone && <p className="shipment-detail-value" style={{ fontSize: '0.78rem', color: 'var(--text-2)' }}>📞 {s.receiver.phone}</p>}
+          {s.receiver?.address && <p className="shipment-detail-value" style={{ fontSize: '0.75rem', color: 'var(--text-3)' }}>📍 {formatAddress(s.receiver.address)}</p>}
+        </div>
       </div>
     </div>
-  )
+  );
 };
 
 /* ─── Profile View (two columns) ─────────────────── */
-const ProfileView = ({ user, shipments, loadingShipments, walletBalance, onAddInsurance }) => (
+const ProfileView = ({ user, shipments, loadingShipments, walletBalance }) => (
   <div style={{ display: 'grid', gridTemplateColumns: '320px 1fr', gap: '2rem', alignItems: 'start' }}>
 
     {/* LEFT — User Info */}
     <div className="glass-card" style={{ padding: '2rem' }}>
       {/* Avatar */}
       <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
-        <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'linear-gradient(135deg, var(--accent), var(--purple))', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem', boxShadow: '0 0 28px rgba(59,130,246,0.35)' }}>
+        <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'linear-gradient(135deg, var(--accent), var(--purple))', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem', boxShadow: '0 0 28px rgba(244,122,32,0.25)' }}>
           <span style={{ fontSize: '2rem', fontWeight: 900, color: '#fff' }}>{(user?.name || 'U')[0].toUpperCase()}</span>
         </div>
         <h2 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-1)', margin: '0 0 0.25rem' }}>{user?.name || 'User'}</h2>
@@ -146,7 +165,7 @@ const ProfileView = ({ user, shipments, loadingShipments, walletBalance, onAddIn
       <InfoRow icon={User} label="Account Status" value={user?.status || 'verified'} />
       <InfoRow icon={Wallet} label="Wallet Balance" value={walletBalance != null ? `₹${walletBalance}` : '—'} />
 
-      <div style={{ marginTop: '1.25rem', padding: '0.9rem', background: 'rgba(59,130,246,0.07)', borderRadius: 12, border: '1px solid rgba(59,130,246,0.18)', textAlign: 'center' }}>
+      <div style={{ marginTop: '1.25rem', padding: '0.9rem', background: 'rgba(244,122,32,0.06)', borderRadius: 12, border: '1px solid rgba(244,122,32,0.18)', textAlign: 'center' }}>
         <p style={{ fontSize: '0.72rem', color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 0.35rem', fontWeight: 700 }}>Total Shipments</p>
         <p style={{ fontSize: '2.2rem', fontWeight: 900, color: 'var(--accent)', margin: 0 }}>{shipments.length}</p>
       </div>
@@ -168,8 +187,8 @@ const ProfileView = ({ user, shipments, loadingShipments, walletBalance, onAddIn
           <p style={{ color: 'var(--text-2)', fontSize: '0.85rem' }}>Book your first courier to see it here.</p>
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(260px,1fr))', gap: '1rem' }}>
-          {shipments.map((s, i) => <ShipmentCard key={s._id || i} s={s} onAddInsurance={onAddInsurance} />)}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(280px,1fr))', gap: '1rem' }}>
+          {shipments.map((s, i) => <ShipmentCard key={s._id || i} s={s} />)}
         </div>
       )}
     </div>
@@ -244,6 +263,90 @@ const Field = ({ label, children }) => (
 const FieldRow = ({ children }) => (
   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>{children}</div>
 );
+
+/* ─── Risk Type Selection Cards ───────────────────── */
+const RiskTypeSelector = ({ value, onChange, declaredValue }) => {
+  const riskOptions = [
+    {
+      type: 'COURIER_RISK',
+      title: 'Carrier Risk',
+      desc: 'Courier partner covers damage or loss',
+      rate: '2% of declared value',
+      maxCharge: '₹10,000 max',
+      icon: Truck,
+      iconBg: 'rgba(244,122,32,0.12)',
+      iconColor: 'var(--accent)',
+    },
+    {
+      type: 'OWNER_RISK',
+      title: 'Owner Risk',
+      desc: 'Minimal coverage by parcel owner',
+      rate: '0.2% of declared value',
+      maxCharge: '₹3,000 max',
+      icon: User,
+      iconBg: 'rgba(27,42,78,0.1)',
+      iconColor: 'var(--purple)',
+    },
+    {
+      type: 'NO_RISK',
+      title: 'No Risk',
+      desc: 'No coverage — zero extra charge',
+      rate: 'Free',
+      maxCharge: '₹0',
+      icon: AlertTriangle,
+      iconBg: 'rgba(139,114,101,0.1)',
+      iconColor: 'var(--text-3)',
+    },
+  ];
+
+  const calcCharge = (riskType) => {
+    const dv = Number(declaredValue) || 0;
+    if (riskType === 'COURIER_RISK') {
+      const c = dv * 2 / 100;
+      return c > 3000 && c <= 10000 ? c : c > 10000 ? 10000 : c;
+    }
+    if (riskType === 'OWNER_RISK') {
+      const c = dv * 0.2 / 100;
+      return c <= 3000 ? c : 3000;
+    }
+    return 0;
+  };
+
+  return (
+    <div className="risk-cards-row">
+      {riskOptions.map((opt) => {
+        const isSelected = value === opt.type;
+        const charge = declaredValue ? calcCharge(opt.type) : null;
+        const Icon = opt.icon;
+        return (
+          <div
+            key={opt.type}
+            className={`risk-card ${isSelected ? 'risk-card-selected' : ''}`}
+            onClick={() => onChange(opt.type)}
+          >
+            <div className="risk-card-icon" style={{ background: opt.iconBg }}>
+              <Icon size={20} color={opt.iconColor} />
+            </div>
+            <p className="risk-card-title">{opt.title}</p>
+            <p className="risk-card-desc">{opt.desc}</p>
+            <p className="risk-card-rate">{opt.rate}</p>
+            <p style={{ fontSize: '0.65rem', color: 'var(--text-3)', margin: '0.15rem 0 0' }}>{opt.maxCharge}</p>
+            {charge != null && charge > 0 && (
+              <p style={{ marginTop: '0.5rem', fontSize: '0.82rem', fontWeight: 800, color: 'var(--accent)', background: 'rgba(244,122,32,0.06)', padding: '0.3rem 0.6rem', borderRadius: 8, display: 'inline-block' }}>
+                ≈ ₹{charge.toFixed(2)}
+              </p>
+            )}
+            {charge === 0 && declaredValue && (
+              <p style={{ marginTop: '0.5rem', fontSize: '0.82rem', fontWeight: 800, color: 'var(--green)', background: 'rgba(34,197,94,0.06)', padding: '0.3rem 0.6rem', borderRadius: 8, display: 'inline-block' }}>
+                ₹0 — Free
+              </p>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+};
 
 /* ─── Recommendation Highlight Card ───────────────── */
 const RecommendationCard = ({ type, courier, onSelect, loading }) => {
@@ -477,10 +580,9 @@ const AddressFields = ({ prefix, label, emoji, color, address, onChange }) => {
           {showCitySuggestions && citySuggestions.length > 0 && (
             <div style={{
               position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 20,
-              background: 'rgba(18,24,41,0.98)', border: '1px solid var(--border)',
+              background: 'rgba(255,255,255,0.98)', border: '1px solid var(--border)',
               borderRadius: 14, marginTop: 4, maxHeight: 200, overflowY: 'auto',
-              boxShadow: '0 12px 40px rgba(0,0,0,0.5)',
-              backdropFilter: 'blur(20px)',
+              boxShadow: '0 12px 40px rgba(0,0,0,0.12)',
             }}>
               {citySuggestions.map((item, i) => (
                 <div
@@ -488,11 +590,11 @@ const AddressFields = ({ prefix, label, emoji, color, address, onChange }) => {
                   onClick={() => selectCitySuggestion(item)}
                   style={{
                     padding: '0.65rem 1rem', cursor: 'pointer',
-                    borderBottom: i < citySuggestions.length - 1 ? '1px solid rgba(59,130,246,0.1)' : 'none',
+                    borderBottom: i < citySuggestions.length - 1 ? '1px solid rgba(244,122,32,0.1)' : 'none',
                     display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                     transition: 'background 0.15s',
                   }}
-                  onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(59,130,246,0.12)'}
+                  onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(244,122,32,0.06)'}
                   onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                 >
                   <div>
@@ -527,7 +629,7 @@ const AddressFields = ({ prefix, label, emoji, color, address, onChange }) => {
               {pincodeLoading && (
                 <span style={{
                   position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)',
-                  width: 14, height: 14, border: '2px solid rgba(59,130,246,0.3)',
+                  width: 14, height: 14, border: '2px solid rgba(244,122,32,0.3)',
                   borderTopColor: 'var(--accent)', borderRadius: '50%',
                   display: 'inline-block', animation: 'spin 0.7s linear infinite',
                 }} />
@@ -558,7 +660,10 @@ const BookingView = ({ onBooked, walletBalance, walletLoading, refreshWalletBala
     senderAddress: { fullAddress: '', landmark: '', city: '', state: '', pincode: '' },
     receiverName: '', receiverPhone: '',
     receiverAddress: { fullAddress: '', landmark: '', city: '', state: '', pincode: '' },
-    DelevarableType: '', weight: '', courierType: 'docx', mode: 'SURFACE'
+    DelevarableType: '', weight: '', courierType: 'docx', mode: 'SURFACE',
+    // New fields
+    no_of_parcel: '1', length: '', width: '', height: '',
+    declaredValue: '', riskType: '', description: '',
   });
   const [createdParcelId, setCreatedParcelId] = useState(null);
   const [selectedCourierId, setSelectedCourierId] = useState(null);
@@ -566,6 +671,8 @@ const BookingView = ({ onBooked, walletBalance, walletLoading, refreshWalletBala
   const [allCouriers, setAllCouriers] = useState([]);
   const [pendingShipment, setPendingShipment] = useState(null);
   const [paymentInfo, setPaymentInfo] = useState(null);
+  const [priceBreakdown, setPriceBreakdown] = useState(null);
+  const [showBreakdown, setShowBreakdown] = useState(false);
   const [utr, setUtr] = useState('');
   const [paymentScreenshot, setPaymentScreenshot] = useState('');
   const [walletTopup, setWalletTopup] = useState('');
@@ -596,6 +703,10 @@ const BookingView = ({ onBooked, walletBalance, walletLoading, refreshWalletBala
     if (parcelData.receiverAddress.pincode.length !== 6 || !/^\d{6}$/.test(parcelData.receiverAddress.pincode)) {
       setError('Receiver pincode must be exactly 6 digits.'); setLoading(false); return;
     }
+    // Validate risk type
+    if (!parcelData.riskType) {
+      setError('Please select a risk type before proceeding.'); setLoading(false); return;
+    }
 
     try {
       const payload = {
@@ -610,6 +721,14 @@ const BookingView = ({ onBooked, walletBalance, walletLoading, refreshWalletBala
         weight: Number(parcelData.weight),
         courierType: parcelData.courierType,
         mode: parcelData.mode,
+        // New fields
+        no_of_parcel: Number(parcelData.no_of_parcel) || 1,
+        length: Number(parcelData.length),
+        width: Number(parcelData.width),
+        height: Number(parcelData.height),
+        declaredValue: Number(parcelData.declaredValue),
+        riskType: parcelData.riskType,
+        description: parcelData.description,
       };
 
       const r = await api.post('/user/parcel', payload);
@@ -642,6 +761,7 @@ const BookingView = ({ onBooked, walletBalance, walletLoading, refreshWalletBala
       setSelectedCourierId(courierId);
       setPendingShipment(r.data.shipment);
       setPaymentInfo(r.data.payment);
+      setPriceBreakdown(r.data.priceBreakdown || null);
       setStep(3);
       setWalletMessage('');
       if (refreshWalletBalance) {
@@ -759,6 +879,8 @@ const BookingView = ({ onBooked, walletBalance, walletLoading, refreshWalletBala
     setAllCouriers([]);
     setPendingShipment(null);
     setPaymentInfo(null);
+    setPriceBreakdown(null);
+    setShowBreakdown(false);
     setUtr('');
     setPaymentScreenshot('');
     setWalletTopup('');
@@ -770,12 +892,17 @@ const BookingView = ({ onBooked, walletBalance, walletLoading, refreshWalletBala
       senderAddress: { fullAddress: '', landmark: '', city: '', state: '', pincode: '' },
       receiverName: '', receiverPhone: '',
       receiverAddress: { fullAddress: '', landmark: '', city: '', state: '', pincode: '' },
-      DelevarableType: '', weight: '', courierType: 'docx', mode: 'SURFACE'
+      DelevarableType: '', weight: '', courierType: 'docx', mode: 'SURFACE',
+      no_of_parcel: '1', length: '', width: '', height: '',
+      declaredValue: '', riskType: '', description: '',
     });
   };
 
   const payableAmount = Number(paymentInfo?.amount || pendingShipment?.amount || pendingShipment?.price || 0);
   const walletCanPay = walletBalance != null && walletBalance >= payableAmount;
+
+  const descCharCount = parcelData.description.length;
+  const descCharClass = descCharCount >= 200 ? 'at-limit' : descCharCount >= 160 ? 'near-limit' : '';
 
   return (
     <div>
@@ -784,7 +911,7 @@ const BookingView = ({ onBooked, walletBalance, walletLoading, refreshWalletBala
         {['Parcel Details', 'Select Courier', 'Payment', 'Confirmed'].map((label, i) => (
           <Fragment key={label}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-              <div style={{ width: 28, height: 28, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 800, background: step > i + 1 ? 'var(--green)' : step === i + 1 ? 'var(--accent)' : 'rgba(255,255,255,0.05)', color: step >= i + 1 ? '#fff' : 'var(--text-3)', border: step < i + 1 ? '1px solid var(--border)' : 'none' }}>
+              <div style={{ width: 28, height: 28, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 800, background: step > i + 1 ? 'var(--green)' : step === i + 1 ? 'var(--accent)' : 'rgba(255,255,255,0.6)', color: step >= i + 1 ? '#fff' : 'var(--text-3)', border: step < i + 1 ? '1px solid var(--border)' : 'none' }}>
                 {step > i + 1 ? <CheckCircle size={14} /> : i + 1}
               </div>
               <span style={{ fontSize: '0.78rem', fontWeight: 600, color: step === i + 1 ? 'var(--accent)' : 'var(--text-3)' }}>{label}</span>
@@ -877,7 +1004,104 @@ const BookingView = ({ onBooked, walletBalance, walletLoading, refreshWalletBala
               </div>
 
             </div>
-            <div style={{ padding: '1rem 1.75rem', borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', alignItems: 'center' }}>
+
+            {/* ═══ NEW SECTION: Package Specifications ═══ */}
+            <div style={{ padding: '0 1.75rem' }}>
+              <div className="spec-section">
+                <div className="spec-section-header">
+                  <div className="spec-section-icon" style={{ background: 'rgba(244,122,32,0.1)', border: '1px solid rgba(244,122,32,0.22)' }}>
+                    <Ruler size={16} color="var(--accent)" />
+                  </div>
+                  <div>
+                    <p className="spec-section-title">📐 Package Specifications</p>
+                    <p className="spec-section-subtitle">Dimensions, quantity, and declared value for accurate pricing</p>
+                  </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem', marginBottom: '1rem' }}>
+                  <Field label="No. of Parcels">
+                    <input type="number" min="1" step="1" name="no_of_parcel" value={parcelData.no_of_parcel} onChange={onFieldChange} className="input-field no-icon" placeholder="1" required />
+                  </Field>
+                  <Field label="Length (cm)">
+                    <input type="number" min="0.1" step="0.1" name="length" value={parcelData.length} onChange={onFieldChange} className="input-field no-icon" placeholder="30" required />
+                  </Field>
+                  <Field label="Width (cm)">
+                    <input type="number" min="0.1" step="0.1" name="width" value={parcelData.width} onChange={onFieldChange} className="input-field no-icon" placeholder="20" required />
+                  </Field>
+                  <Field label="Height (cm)">
+                    <input type="number" min="0.1" step="0.1" name="height" value={parcelData.height} onChange={onFieldChange} className="input-field no-icon" placeholder="15" required />
+                  </Field>
+                </div>
+
+                <FieldRow>
+                  <Field label="Declared Value (₹)">
+                    <input type="number" min="1" step="1" name="declaredValue" value={parcelData.declaredValue} onChange={onFieldChange} className="input-field no-icon" placeholder="5000" required />
+                  </Field>
+                  <div>
+                    {/* Volume preview */}
+                    {parcelData.length && parcelData.width && parcelData.height && (
+                      <div style={{ padding: '0.65rem 0.85rem', background: 'rgba(244,122,32,0.05)', borderRadius: 10, border: '1px solid rgba(244,122,32,0.15)', marginTop: '1.6rem' }}>
+                        <p style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.04em', margin: '0 0 0.2rem' }}>Vol. Weight</p>
+                        <p style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--accent)', margin: 0 }}>
+                          {((Number(parcelData.length) * Number(parcelData.width) * Number(parcelData.height)) / (parcelData.mode === 'AIRWAY' ? 5000 : 4750)).toFixed(2)} kg
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </FieldRow>
+
+                {/* Description Field */}
+                <div style={{ marginTop: '1rem' }}>
+                  <Field label="Description (optional)">
+                    <textarea
+                      name="description"
+                      value={parcelData.description}
+                      onChange={(e) => {
+                        if (e.target.value.length <= 200) {
+                          onFieldChange(e);
+                        }
+                      }}
+                      className="input-field"
+                      rows={2}
+                      placeholder="Brief description of parcel contents…"
+                      style={{ borderRadius: 10 }}
+                    />
+                  </Field>
+                  <p className={`char-counter ${descCharClass}`}>
+                    {descCharCount}/200
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* ═══ NEW SECTION: Risk & Protection ═══ */}
+            <div style={{ padding: '0 1.75rem' }}>
+              <div className="spec-section">
+                <div className="spec-section-header">
+                  <div className="spec-section-icon" style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)' }}>
+                    <Shield size={16} color="#ef4444" />
+                  </div>
+                  <div>
+                    <p className="spec-section-title">⚠️ Risk & Protection <span style={{ color: '#ef4444', fontSize: '0.75rem' }}>*required</span></p>
+                    <p className="spec-section-subtitle">Choose how you want your shipment protected — select one option</p>
+                  </div>
+                </div>
+
+                <RiskTypeSelector
+                  value={parcelData.riskType}
+                  onChange={(type) => setParcelData({ ...parcelData, riskType: type })}
+                  declaredValue={parcelData.declaredValue}
+                />
+
+                {!parcelData.riskType && (
+                  <p style={{ textAlign: 'center', marginTop: '0.75rem', fontSize: '0.78rem', color: '#ef4444', fontWeight: 600 }}>
+                    ⚠ Please select a risk type to continue
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <div style={{ padding: '1.25rem 1.75rem', borderTop: '1px solid var(--border)', marginTop: '1.5rem', display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', alignItems: 'center' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginRight: 'auto' }}>
                 <Navigation size={14} color="var(--text-3)" />
                 <span style={{ fontSize: '0.78rem', color: 'var(--text-3)' }}>
@@ -886,7 +1110,7 @@ const BookingView = ({ onBooked, walletBalance, walletLoading, refreshWalletBala
                     : 'Enter pincodes to find couriers'}
                 </span>
               </div>
-              <button type="submit" disabled={loading} className="btn-primary" style={{ minWidth: 180 }}>
+              <button type="submit" disabled={loading || !parcelData.riskType} className="btn-primary" style={{ minWidth: 180 }}>
                 {loading ? <><Spinner /> Searching…</> : <><Search size={16} /> Find Couriers</>}
               </button>
             </div>
@@ -948,7 +1172,7 @@ const BookingView = ({ onBooked, walletBalance, walletLoading, refreshWalletBala
         <div style={{ maxWidth: 640, margin: '0 auto' }}>
           <div className="glass-card" style={{ padding: '2rem', textAlign: 'left' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1rem' }}>
-              <div style={{ width: 34, height: 34, borderRadius: 10, background: 'rgba(59,130,246,0.15)', border: '1px solid rgba(59,130,246,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div style={{ width: 34, height: 34, borderRadius: 10, background: 'rgba(244,122,32,0.12)', border: '1px solid rgba(244,122,32,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <CreditCard size={16} color="var(--accent)" />
               </div>
               <h2 style={{ fontSize: '1.2rem', fontWeight: 800, margin: 0 }}>Complete Payment</h2>
@@ -967,6 +1191,46 @@ const BookingView = ({ onBooked, walletBalance, walletLoading, refreshWalletBala
                 <p style={{ fontSize: '0.8rem', color: 'var(--text-2)', margin: '0.2rem 0 0' }}>ETA {pendingShipment.eta} days</p>
               </div>
             </div>
+
+            {/* ═══ Price Breakdown ═══ */}
+            <button
+              type="button"
+              className="price-breakdown-toggle"
+              onClick={() => setShowBreakdown(!showBreakdown)}
+            >
+              <DollarSign size={15} />
+              {showBreakdown ? 'Hide Price Breakdown' : '💰 View Price Breakdown'}
+              {showBreakdown ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+            </button>
+            <div className={`price-breakdown-panel ${showBreakdown ? 'open' : ''}`}>
+              <div className="glass-card" style={{ padding: '1.25rem', marginBottom: '1.25rem' }}>
+                <table className="price-breakdown-table">
+                  <tbody>
+                    <tr>
+                      <td>🏷️ Base Price</td>
+                      <td>₹{priceBreakdown?.basePrice != null ? priceBreakdown.basePrice.toFixed(2) : '—'}</td>
+                    </tr>
+                    <tr>
+                      <td>⚖️ Weight Charge</td>
+                      <td>₹{priceBreakdown?.weightCharge != null ? priceBreakdown.weightCharge.toFixed(2) : '—'}</td>
+                    </tr>
+                    <tr>
+                      <td>📐 Volume Price</td>
+                      <td>₹{priceBreakdown?.volumePrice != null ? priceBreakdown.volumePrice.toFixed(2) : '—'}</td>
+                    </tr>
+                    <tr>
+                      <td>🛡️ Risk Charge</td>
+                      <td>₹{priceBreakdown?.riskCharge != null ? priceBreakdown.riskCharge.toFixed(2) : '—'}</td>
+                    </tr>
+                    <tr>
+                      <td>Total</td>
+                      <td>₹{priceBreakdown?.total != null ? priceBreakdown.total.toFixed(2) : (paymentInfo?.amount || pendingShipment.amount || pendingShipment.price)}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
             <div style={{ marginBottom: '1.25rem' }}>
               <p style={{ fontSize: '0.78rem', color: 'var(--text-2)', marginBottom: '0.4rem' }}>Pay using UPI</p>
               <a href={paymentInfo?.upiUrl || pendingShipment.upiUrl} className="btn-ghost" style={{ width: '100%', justifyContent: 'center' }}>
@@ -1019,13 +1283,13 @@ const BookingView = ({ onBooked, walletBalance, walletLoading, refreshWalletBala
       {step === 4 && successData && (
         <div style={{ maxWidth: 560, margin: '0 auto' }}>
           <div className="glass-card" style={{ padding: '2.5rem', textAlign: 'center', overflow: 'hidden', position: 'relative' }}>
-            <div style={{ position: 'absolute', top: -60, left: '50%', transform: 'translateX(-50%)', width: 220, height: 220, background: 'rgba(34,197,94,0.12)', borderRadius: '50%', pointerEvents: 'none' }} />
-            <div style={{ width: 72, height: 72, borderRadius: '50%', background: 'rgba(16,185,129,0.12)', border: '2px solid rgba(16,185,129,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.25rem', boxShadow: '0 0 28px var(--green-glow)' }}>
+            <div style={{ position: 'absolute', top: -60, left: '50%', transform: 'translateX(-50%)', width: 220, height: 220, background: 'rgba(34,197,94,0.08)', borderRadius: '50%', pointerEvents: 'none' }} />
+            <div style={{ width: 72, height: 72, borderRadius: '50%', background: 'rgba(16,185,129,0.1)', border: '2px solid rgba(16,185,129,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.25rem', boxShadow: '0 0 28px var(--green-glow)' }}>
               <CheckCircle size={34} color="var(--green)" strokeWidth={2} />
             </div>
             <h2 style={{ fontSize: '1.75rem', fontWeight: 900, margin: '0 0 0.5rem' }}>Booking Confirmed!</h2>
             <p style={{ color: 'var(--text-2)', marginBottom: '1.75rem', fontSize: '0.9rem' }}>Your shipment has been successfully scheduled.</p>
-            <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', borderRadius: 14, padding: '1.25rem', textAlign: 'left', marginBottom: '1.75rem' }}>
+            <div style={{ background: 'rgba(255,255,255,0.5)', border: '1px solid var(--border)', borderRadius: 14, padding: '1.25rem', textAlign: 'left', marginBottom: '1.75rem' }}>
               <p style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 0.25rem' }}>Tracking Number (AWB)</p>
               <p style={{ fontFamily: 'monospace', fontWeight: 800, fontSize: '1.4rem', color: 'var(--accent)', margin: '0 0 1rem' }}>{successData.awb}</p>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.9rem' }}>
@@ -1056,314 +1320,6 @@ const BookingView = ({ onBooked, walletBalance, walletLoading, refreshWalletBala
   );
 };
 
-/* ─── Insurance View ─────────────────────────────── */
-const InsuranceView = ({ prefillShipmentId = '' }) => {
-  const [step, setStep] = useState(1);
-  const [form, setForm] = useState({
-    shipmentId: prefillShipmentId,
-    amount: '',
-    mode: 'SURFACE',
-    deligacy: 'Normal',
-  });
-  const [createdInsurance, setCreatedInsurance] = useState(null);
-  const [upiUrl, setUpiUrl] = useState('');
-  const [insuranceAmount, setInsuranceAmount] = useState(null);
-  const [utr, setUtr] = useState('');
-  const [screenshot, setScreenshot] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [confirmedInsurance, setConfirmedInsurance] = useState(null);
-
-  // Sync prefill if parent changes it
-  useEffect(() => {
-    setForm(f => ({ ...f, shipmentId: prefillShipmentId }));
-    setStep(1);
-    setCreatedInsurance(null);
-    setError('');
-  }, [prefillShipmentId]);
-
-  const rateLabel = { Normal: '5%', Fragile: '10%', Electronics: '20%' };
-
-  /* Step 1: Create Insurance */
-  const handleCreate = async (e) => {
-    e.preventDefault();
-    setLoading(true); setError('');
-    try {
-      const r = await api.post('/insurance', {
-        shipmentId: form.shipmentId.trim(),
-        amount: Number(form.amount),
-        mode: form.mode,
-        deligacy: form.deligacy,
-      });
-      setCreatedInsurance(r.data.insurance);
-      setInsuranceAmount(r.data.insuranceAmount);
-      setUpiUrl(r.data.upiUrl);
-      setStep(2);
-    } catch (err) {
-      setError(err.response?.data?.response || 'Failed to create insurance');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  /* Step 2: Verify Payment */
-  const handleVerify = async (e) => {
-    e.preventDefault();
-    setLoading(true); setError('');
-    try {
-      const r = await api.post('/insurance/validate', {
-        insuranceId: createdInsurance._id,
-        utrNumber: utr,
-        paymentScreenshot: screenshot || undefined,
-      });
-      setConfirmedInsurance(r.data.insurance);
-      setStep(3);
-    } catch (err) {
-      setError(err.response?.data?.response || 'Payment verification failed');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const reset = () => {
-    setStep(1);
-    setForm({ shipmentId: '', amount: '', mode: 'SURFACE', deligacy: 'Normal' });
-    setCreatedInsurance(null); setUpiUrl(''); setInsuranceAmount(null);
-    setUtr(''); setScreenshot(''); setError(''); setConfirmedInsurance(null);
-  };
-
-  const steps = ['Create Insurance', 'Pay Premium', 'Confirmed'];
-
-  return (
-    <div style={{ maxWidth: 640, margin: '0 auto' }}>
-      {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '2rem' }}>
-        <div style={{ width: 44, height: 44, borderRadius: 14, background: 'linear-gradient(135deg, #7c3aed, #a78bfa)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 10px 24px rgba(124,58,237,0.35)' }}>
-          <Shield size={20} color="#fff" />
-        </div>
-        <div>
-          <h2 style={{ fontSize: '1.3rem', fontWeight: 900, margin: 0, color: 'var(--text-1)' }}>Shipment Insurance</h2>
-          <p style={{ fontSize: '0.78rem', color: 'var(--text-3)', margin: 0 }}>Protect your consignment against loss or damage</p>
-        </div>
-      </div>
-
-      {/* Step Indicator */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '2rem', justifyContent: 'center' }}>
-        {steps.map((label, i) => (
-          <Fragment key={label}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-              <div style={{
-                width: 28, height: 28, borderRadius: '50%', display: 'flex', alignItems: 'center',
-                justifyContent: 'center', fontSize: '0.75rem', fontWeight: 800,
-                background: step > i + 1 ? '#7c3aed' : step === i + 1 ? '#a78bfa' : 'rgba(255,255,255,0.05)',
-                color: step >= i + 1 ? '#fff' : 'var(--text-3)',
-                border: step < i + 1 ? '1px solid var(--border)' : 'none',
-                transition: 'all 0.3s',
-              }}>
-                {step > i + 1 ? <CheckCircle size={14} /> : i + 1}
-              </div>
-              <span style={{ fontSize: '0.78rem', fontWeight: 600, color: step === i + 1 ? '#a78bfa' : 'var(--text-3)' }}>{label}</span>
-            </div>
-            {i < steps.length - 1 && <div style={{ flex: 1, height: 1, background: step > i + 1 ? '#7c3aed' : 'var(--border)', maxWidth: 60, transition: 'all 0.3s' }} />}
-          </Fragment>
-        ))}
-      </div>
-
-      {error && (
-        <div className="alert alert-error" style={{ marginBottom: '1.25rem' }}>
-          <AlertCircle size={16} /><span>{error}</span>
-        </div>
-      )}
-
-      {/* ═══ Step 1: Create ═══ */}
-      {step === 1 && (
-        <div className="glass-card" style={{ padding: 0, overflow: 'hidden' }}>
-          <div style={{ height: 4, background: 'linear-gradient(90deg, #7c3aed, #a78bfa)' }} />
-          <div style={{ padding: '2rem' }}>
-            <p style={{ fontSize: '0.85rem', color: 'var(--text-2)', marginBottom: '1.5rem' }}>
-              Fill in the details below. Your insurance premium is calculated based on the declared value and delicacy of the goods.
-            </p>
-            <form onSubmit={handleCreate} style={{ display: 'grid', gap: '1rem' }}>
-              <div>
-                <label className="field-label">Shipment ID</label>
-                <input
-                  type="text"
-                  value={form.shipmentId}
-                  onChange={e => setForm({ ...form, shipmentId: e.target.value })}
-                  className="input-field no-icon"
-                  placeholder="Paste the MongoDB shipment _id"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="field-label">Declared Value (₹)</label>
-                <input
-                  type="number" min="1" step="1"
-                  value={form.amount}
-                  onChange={e => setForm({ ...form, amount: e.target.value })}
-                  className="input-field no-icon"
-                  placeholder="e.g. 5000"
-                  required
-                />
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-                <div>
-                  <label className="field-label">Mode</label>
-                  <select value={form.mode} onChange={e => setForm({ ...form, mode: e.target.value })} className="input-field no-icon" required>
-                    <option value="SURFACE">Surface</option>
-                    <option value="AIRWAY">Airway</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="field-label">Delicacy</label>
-                  <select value={form.deligacy} onChange={e => setForm({ ...form, deligacy: e.target.value })} className="input-field no-icon" required>
-                    <option value="Normal">Normal ({rateLabel.Normal} premium)</option>
-                    <option value="Fragile">Fragile ({rateLabel.Fragile} premium)</option>
-                    <option value="Electronics">Electronics ({rateLabel.Electronics} premium)</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Premium Preview */}
-              {form.amount && Number(form.amount) > 0 && (
-                <div style={{
-                  padding: '1rem', borderRadius: 12,
-                  background: 'rgba(124,58,237,0.08)', border: '1px solid rgba(167,139,250,0.25)',
-                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                }}>
-                  <div>
-                    <p style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 0.2rem' }}>Estimated Premium</p>
-                    <p style={{ fontSize: '1.5rem', fontWeight: 900, color: '#a78bfa', margin: 0 }}>
-                      ₹{(Number(form.amount) * (form.deligacy === 'Electronics' ? 0.2 : form.deligacy === 'Fragile' ? 0.1 : 0.05)).toFixed(2)}
-                    </p>
-                  </div>
-                  <div style={{ textAlign: 'right' }}>
-                    <p style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 0.2rem' }}>Rate</p>
-                    <p style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-1)', margin: 0 }}>{rateLabel[form.deligacy]} of ₹{form.amount}</p>
-                  </div>
-                </div>
-              )}
-
-              <button type="submit" disabled={loading} className="btn-primary" style={{ width: '100%', marginTop: '0.5rem', background: 'linear-gradient(135deg, #7c3aed, #a78bfa)' }}>
-                {loading ? <><Spinner /> Calculating…</> : <><Shield size={16} /> Get Insurance</>}
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* ═══ Step 2: Pay ═══ */}
-      {step === 2 && createdInsurance && (
-        <div className="glass-card" style={{ padding: 0, overflow: 'hidden' }}>
-          <div style={{ height: 4, background: 'linear-gradient(90deg, #7c3aed, #a78bfa)' }} />
-          <div style={{ padding: '2rem' }}>
-            {/* Summary */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
-              <div className="glass-card" style={{ padding: '1rem' }}>
-                <p style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 0.35rem' }}>Insurance Premium</p>
-                <p style={{ fontSize: '1.6rem', fontWeight: 900, color: '#a78bfa', margin: 0 }}>₹{insuranceAmount}</p>
-              </div>
-              <div className="glass-card" style={{ padding: '1rem' }}>
-                <p style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 0.35rem' }}>Coverage</p>
-                <p style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-1)', margin: 0 }}>₹{createdInsurance.amount}</p>
-                <p style={{ fontSize: '0.75rem', color: 'var(--text-3)', margin: '0.15rem 0 0' }}>{createdInsurance.deligacy} · {createdInsurance.mode}</p>
-              </div>
-            </div>
-
-            {/* UPI Link */}
-            <div style={{ marginBottom: '1.25rem' }}>
-              <p style={{ fontSize: '0.78rem', color: 'var(--text-2)', marginBottom: '0.5rem', fontWeight: 600 }}>Pay via UPI</p>
-              <a
-                href={upiUrl}
-                className="btn-ghost"
-                style={{ width: '100%', justifyContent: 'center', borderColor: 'rgba(167,139,250,0.4)', color: '#a78bfa' }}
-              >
-                🔗 Open UPI Payment Link
-              </a>
-            </div>
-
-            <div style={{ padding: '0.75rem 1rem', borderRadius: 10, background: 'rgba(167,139,250,0.07)', border: '1px solid rgba(167,139,250,0.2)', marginBottom: '1.5rem' }}>
-              <p style={{ fontSize: '0.75rem', color: 'var(--text-3)', margin: 0 }}>
-                📋 Insurance ID: <span style={{ fontFamily: 'monospace', color: '#a78bfa', fontWeight: 700 }}>{createdInsurance._id}</span>
-              </p>
-            </div>
-
-            <form onSubmit={handleVerify} style={{ display: 'grid', gap: '1rem' }}>
-              <div>
-                <label className="field-label">UTR / Transaction ID</label>
-                <input
-                  type="text" value={utr}
-                  onChange={e => setUtr(e.target.value)}
-                  className="input-field no-icon"
-                  placeholder="Enter your UPI transaction reference"
-                  required
-                />
-              </div>
-              <div>
-                <label className="field-label">Payment Screenshot URL <span style={{ color: 'var(--text-3)', fontWeight: 400 }}>(optional)</span></label>
-                <input
-                  type="text" value={screenshot}
-                  onChange={e => setScreenshot(e.target.value)}
-                  className="input-field no-icon"
-                  placeholder="https://…"
-                />
-              </div>
-              <button type="submit" disabled={loading} className="btn-primary" style={{ width: '100%', background: 'linear-gradient(135deg, #7c3aed, #a78bfa)' }}>
-                {loading ? <><Spinner /> Verifying…</> : <><ShieldCheck size={16} /> Submit Payment Proof</>}
-              </button>
-            </form>
-
-            <button onClick={() => setStep(1)} className="btn-ghost" style={{ width: '100%', marginTop: '0.75rem', justifyContent: 'center' }}>
-              <ArrowLeft size={14} /> Back
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* ═══ Step 3: Confirmed ═══ */}
-      {step === 3 && confirmedInsurance && (
-        <div className="glass-card" style={{ padding: '2.5rem', textAlign: 'center', overflow: 'hidden', position: 'relative' }}>
-          <div style={{ position: 'absolute', top: -60, left: '50%', transform: 'translateX(-50%)', width: 220, height: 220, background: 'rgba(124,58,237,0.1)', borderRadius: '50%', pointerEvents: 'none' }} />
-          <div style={{
-            width: 72, height: 72, borderRadius: '50%',
-            background: 'rgba(167,139,250,0.12)', border: '2px solid rgba(167,139,250,0.4)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            margin: '0 auto 1.25rem', boxShadow: '0 0 32px rgba(124,58,237,0.3)',
-          }}>
-            <ShieldCheck size={34} color="#a78bfa" strokeWidth={2} />
-          </div>
-          <h2 style={{ fontSize: '1.75rem', fontWeight: 900, margin: '0 0 0.5rem', color: 'var(--text-1)' }}>Insurance Active!</h2>
-          <p style={{ color: 'var(--text-2)', marginBottom: '1.75rem', fontSize: '0.9rem' }}>Your shipment is now covered. Keep the insurance ID for your records.</p>
-
-          <div style={{ background: 'rgba(167,139,250,0.06)', border: '1px solid rgba(167,139,250,0.2)', borderRadius: 14, padding: '1.25rem', textAlign: 'left', marginBottom: '1.75rem' }}>
-            <p style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 0.25rem' }}>Insurance ID</p>
-            <p style={{ fontFamily: 'monospace', fontWeight: 800, fontSize: '1rem', color: '#a78bfa', margin: '0 0 1rem', wordBreak: 'break-all' }}>{confirmedInsurance._id}</p>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.9rem' }}>
-              {[
-                { l: 'Premium Paid', v: `₹${confirmedInsurance.insuranceAmount}` },
-                { l: 'Coverage', v: `₹${confirmedInsurance.amount}` },
-                { l: 'Delicacy', v: confirmedInsurance.deligacy },
-                { l: 'Status', v: confirmedInsurance.insuranceStatus },
-              ].map(({ l, v }) => (
-                <div key={l}>
-                  <p style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.04em', margin: '0 0 0.15rem' }}>{l}</p>
-                  <p style={{ fontWeight: 700, fontSize: '0.9rem', color: v === 'PAID' ? 'var(--green)' : 'var(--text-1)', margin: 0 }}>{v}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <button onClick={reset} className="btn-primary" style={{ width: '100%', background: 'linear-gradient(135deg, #7c3aed, #a78bfa)' }}>
-            <Shield size={15} /> Insure Another Shipment
-          </button>
-        </div>
-      )}
-    </div>
-  );
-};
-
 /* ─── Main Dashboard ─────────────────────────────── */
 const Dashboard = () => {
   const { user, logout } = useAuth();
@@ -1374,13 +1330,6 @@ const Dashboard = () => {
   const [walletLoading, setWalletLoading] = useState(false);
   const [walletNotice, setWalletNotice] = useState('');
   const [walletError, setWalletError] = useState('');
-  const [insurancePrefillId, setInsurancePrefillId] = useState('');
-
-  // Called from ShipmentCard → navigates to Insurance view with pre-filled shipmentId
-  const handleAddInsurance = (shipmentId) => {
-    setInsurancePrefillId(shipmentId);
-    setView('insurance');
-  };
 
   const fetchWalletBalance = useCallback(async () => {
     setWalletLoading(true);
@@ -1454,7 +1403,7 @@ const Dashboard = () => {
       <div className="bg-mesh" />
       <Navbar logout={logout} view={view} setView={setView} />
       <main style={{ maxWidth: 1200, margin: '0 auto', padding: '2.5rem 1.5rem', position: 'relative', zIndex: 1 }}>
-        {view === 'profile' && <ProfileView user={user} shipments={shipments} loadingShipments={loadingShipments} walletBalance={walletBalance} onAddInsurance={handleAddInsurance} />}
+        {view === 'profile' && <ProfileView user={user} shipments={shipments} loadingShipments={loadingShipments} walletBalance={walletBalance} />}
         {view === 'wallet' && <WalletView balance={walletBalance} loading={walletLoading} notice={walletNotice} error={walletError} onRecharge={rechargeWallet} />}
         {view === 'book'    && (
           <BookingView
@@ -1464,12 +1413,6 @@ const Dashboard = () => {
             refreshWalletBalance={fetchWalletBalance}
             rechargeWallet={rechargeWallet}
             onWalletBalanceUpdate={setWalletBalance}
-          />
-        )}
-        {view === 'insurance' && (
-          <InsuranceView
-            key={insurancePrefillId}
-            prefillShipmentId={insurancePrefillId}
           />
         )}
       </main>

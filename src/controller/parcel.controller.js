@@ -265,7 +265,8 @@ export const confirmCourier = async (req, res) => {
     const perKg = pricing.per_kg || 0;
     const etaDays = pricing.eta_days || 0;
 
-    const totalAmount = basePrice + (parcelData.weight * perKg) + parcelData.riskCharge + parcelData.volumePrice;
+    const weightCharge = parcelData.weight * perKg;
+    const totalAmount = basePrice + weightCharge + parcelData.riskCharge + parcelData.volumePrice;
 
     // ORDER ID
     const orderId = "ORD_" + Date.now();
@@ -280,7 +281,7 @@ export const confirmCourier = async (req, res) => {
       courierId: courierData._id,
       courierPartner: courierData.provider,
       price: totalAmount,
-      description : description ,
+      description: parcelData.description || '',
       eta: etaDays,
       paymentStatus: "PENDING",
       shipmentStatus: "PAYMENT_PENDING",
@@ -320,6 +321,13 @@ export const confirmCourier = async (req, res) => {
         eta: shipment.eta,
         paymentStatus: shipment.paymentStatus,
         status: shipment.shipmentStatus
+      },
+      priceBreakdown: {
+        basePrice,
+        weightCharge,
+        volumePrice: parcelData.volumePrice,
+        riskCharge: parcelData.riskCharge,
+        total: totalAmount
       }
     });
 
@@ -401,7 +409,7 @@ export const getUserShipments = async (req, res) => {
     const userId = req.user;
     const shipments = await Shipment.find({ senderId: userId })
       .sort({ createdAt: -1 })
-      .select('awb courierPartner price eta shipmentStatus paymentStatus createdAt');
+      .select('awb courierPartner price eta shipmentStatus paymentStatus createdAt sender receiver');
       
     return res.status(200).json({ shipments });
   } catch (err) {
