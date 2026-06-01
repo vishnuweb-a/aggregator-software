@@ -6,7 +6,7 @@ import {
   Clock, CreditCard, ChevronRight, ChevronDown, ChevronUp, User,
   AlertCircle, ArrowLeft, Truck, Zap, Phone, Mail,
   ShieldCheck, PlusCircle, List, Home, Wallet, Download,
-  Star, DollarSign, Award, Navigation, Shield, Box, Ruler, FileText,
+  Star, DollarSign, Award, Navigation, Shield, Ruler, FileText,
   AlertTriangle,
 } from 'lucide-react';
 import shipbiharLogo from '../assets/logo_ship_bihar.jpeg';
@@ -99,7 +99,7 @@ const ShipmentCard = ({ s }) => {
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', marginTop: '0.6rem' }}>
           {[
             { label: 'Provider', value: s.courierPartner },
-            { label: 'Amount', value: `₹${s.price}` },
+            { label: 'Amount', value: `₹${Number(s.price).toFixed(2)}` },
             { label: 'ETA', value: `${s.eta} Days` },
           ].map(({ label, value }) => (
             <div key={label}>
@@ -400,7 +400,7 @@ const RecommendationCard = ({ type, courier, onSelect, loading }) => {
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1rem' }}>
           <div>
             <p style={{ fontSize: '0.62rem', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 0.2rem' }}>Price</p>
-            <p style={{ fontSize: '1.35rem', fontWeight: 900, color: 'var(--text-1)', margin: 0 }}>₹{Math.round(courier.price)}</p>
+            <p style={{ fontSize: '1.35rem', fontWeight: 900, color: 'var(--text-1)', margin: 0 }}>₹{Number(courier.price).toFixed(2)}</p>
           </div>
           <div>
             <p style={{ fontSize: '0.62rem', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 0.2rem' }}>ETA</p>
@@ -441,7 +441,7 @@ const AllCourierCard = ({ courier, onSelect, loading }) => (
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem', marginBottom: '0.75rem' }}>
         <div style={{ display: 'flex', gap: '0.5rem', fontSize: '0.82rem', color: 'var(--text-2)' }}><Clock size={14} color="var(--text-3)" />{courier.eta} Day{courier.eta !== 1 ? 's' : ''} Delivery</div>
-        <div style={{ display: 'flex', gap: '0.5rem', fontSize: '0.82rem', color: 'var(--text-2)' }}><CreditCard size={14} color="var(--text-3)" />₹{Math.round(courier.price)}</div>
+        <div style={{ display: 'flex', gap: '0.5rem', fontSize: '0.82rem', color: 'var(--text-2)' }}><CreditCard size={14} color="var(--text-3)" />₹{Number(courier.price).toFixed(2)}</div>
       </div>
 
       {/* Rating + Score */}
@@ -454,7 +454,7 @@ const AllCourierCard = ({ courier, onSelect, loading }) => (
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '1rem', marginTop: '0.75rem', borderTop: '1px solid var(--border)' }}>
         <div>
           <p style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 0.15rem' }}>Total</p>
-          <p style={{ fontSize: '1.45rem', fontWeight: 900, color: 'var(--text-1)', margin: 0 }}>₹{Math.round(courier.price)}</p>
+          <p style={{ fontSize: '1.45rem', fontWeight: 900, color: 'var(--text-1)', margin: 0 }}>₹{Number(courier.price).toFixed(2)}</p>
         </div>
         <button onClick={() => onSelect(courier.courierId)} disabled={loading} className="btn-primary" style={{ padding: '0.6rem 1rem', minWidth: 'auto', borderRadius: 10 }}>
           {loading ? <Spinner small /> : <ChevronRight size={18} />}
@@ -778,6 +778,7 @@ const BookingView = ({ onBooked, walletBalance, walletLoading, refreshWalletBala
         shipmentId: pendingShipment?.shipmentId || pendingShipment?._id,
         utrNumber: utr,
         paymentScreenshot: paymentScreenshot || '',
+        amount: payableAmount,
       });
       setSuccessData(r.data.shipment);
       setStep(4);
@@ -809,8 +810,9 @@ const BookingView = ({ onBooked, walletBalance, walletLoading, refreshWalletBala
   const handlePayWithWallet = async () => {
     setLoading(true); setError('');
     try {
-      if (!createdParcelId || !selectedCourierId) {
-        setError('Courier selection is missing.');
+      const shipId = pendingShipment?.shipmentId || pendingShipment?._id;
+      if (!shipId) {
+        setError('Shipment information is missing.');
         return;
       }
       const payableAmount = Number(paymentInfo?.amount || pendingShipment?.amount || pendingShipment?.price || 0);
@@ -822,7 +824,7 @@ const BookingView = ({ onBooked, walletBalance, walletLoading, refreshWalletBala
         setError('Insufficient wallet balance.');
         return;
       }
-      const r = await api.post('/user/payment/wallet', { parcelId: createdParcelId, courierId: selectedCourierId });
+      const r = await api.post('/user/payment/wallet', { shipmentId: shipId });
       const successPayload = {
         _id: r.data.shipmentId,
         awb: r.data.awb,

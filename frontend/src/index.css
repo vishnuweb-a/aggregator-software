@@ -631,11 +631,11 @@ textarea.input-field {
 /* ── Recommendation cards ── */
 .rec-card {
   position: relative;
-  background: rgba(18, 24, 41, 0.95);
+  background: rgba(255, 255, 255, 0.95);
   border-radius: var(--radius-lg);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  box-shadow: var(--shadow-card);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
   transition: all 0.32s cubic-bezier(.4,0,.2,1);
   overflow: hidden;
   cursor: pointer;
@@ -677,24 +677,9 @@ textarea.input-field {
   letter-spacing: 0.06em;
   text-transform: uppercase;
   animation: tagPulse 2.5s ease-in-out infinite;
-}
-
-.rec-tag-cheapest {
-  background: rgba(34,197,94,0.18);
-  color: #4ade80;
-  border: 1px solid rgba(34,197,94,0.35);
-}
-
-.rec-tag-fastest {
-  background: rgba(245,158,11,0.18);
-  color: #fbbf24;
-  border: 1px solid rgba(245,158,11,0.35);
-}
-
-.rec-tag-best {
-  background: rgba(168,85,247,0.18);
-  color: #c084fc;
-  border: 1px solid rgba(168,85,247,0.35);
+  background: rgba(244,122,32,0.1);
+  color: var(--accent);
+  border: 1px solid rgba(244,122,32,0.3);
 }
 
 @keyframes tagPulse {
