@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import {
   ArrowRight, Mail, Lock, AlertCircle,
 } from 'lucide-react';
-import shipbiharLogo from '../assets/logo_ship_bihar.jpeg';
+import shipbiharLogo from '../assets/sb3.png';
 const Home = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -39,10 +39,7 @@ const Home = () => {
       <nav className="sb-nav">
         <div className="sb-nav-inner">
           <div className="sb-nav-left" onClick={() => navigate('/')}>
-            <img src={shipbiharLogo} alt="shipBihar" style={{ width: 36, height: 36, borderRadius: 8, objectFit: 'cover' }} />
-            <span className="sb-nav-logo-text">
-              ship<span className="sb-saffron">Bihar</span>
-            </span>
+            <img src={shipbiharLogo} alt="shipBihar" style={{ width: 200, height: 50, borderRadius: 6, objectFit: 'cover', marginTop: '12px' }} />
           </div>
 
           <div className="sb-nav-center">
@@ -186,9 +183,7 @@ const Home = () => {
           position: sticky;
           top: 0;
           z-index: 100;
-          background: rgba(248, 249, 250, 0.75);
-          backdrop-filter: blur(12px);
-          border-bottom: 1px solid rgba(222, 193, 177, 0.4);
+          background: transparent;
         }
 
         .sb-nav-inner {
@@ -274,7 +269,7 @@ const Home = () => {
           inset: 0;
           width: 100%;
           height: 100%;
-          object-fit: cover;
+          object-fit: fill;
           object-position: center;
           z-index: -2;
           filter: brightness(1.25) contrast(1.05);

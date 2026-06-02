@@ -5,6 +5,7 @@ import {
   Mail, Lock, AlertCircle, CheckCircle,
   KeyRound, Truck, ArrowLeft, RefreshCw, ArrowRight,
 } from 'lucide-react';
+import shipbiharLogo from '../assets/logo_ship_bihar.jpeg';
 
 const Login = () => {
   const [mode, setMode]             = useState('login');
@@ -68,8 +69,7 @@ const Login = () => {
       <nav className="sb-nav">
         <div className="sb-nav-inner">
           <div className="sb-nav-left" onClick={() => navigate('/')}>
-            <div className="sb-nav-logo-icon"><Truck size={18} color="#fff" strokeWidth={2.5} /></div>
-            <span className="sb-nav-logo-text">ship<span className="sb-saffron">Bihar</span></span>
+            <img src={shipbiharLogo} alt="shipBihar" style={{ width: 100, height: 50, borderRadius: 6, objectFit: 'cover' }} />
           </div>
           <button className="sb-nav-signin" onClick={() => navigate('/register')}>Create Account</button>
         </div>
@@ -203,7 +203,7 @@ const Login = () => {
         .sb-nav-signin:hover { background:#9a4600; }
 
         .sb-hero { position:relative; flex:1; min-height:calc(100vh - 64px - 72px); display:flex; align-items:center; overflow:hidden; }
-        .sb-hero-bg { position:fixed; inset:0; width:100%; height:100%; object-fit:cover; object-position:center; z-index:-2; filter:brightness(1.25) contrast(1.05); }
+        .sb-hero-bg { position:fixed; inset:0; width:100%; height:100%; object-fit:fill; object-position:center; z-index:-2; filter:brightness(1.25) contrast(1.05); }
         .sb-hero-overlay { position:fixed; inset:0; background:linear-gradient(90deg,rgba(25,28,29,0.65) 0%,rgba(25,28,29,0.35) 50%,rgba(25,28,29,0.1) 100%); z-index:-1; }
 
         .sb-hero-card { position:relative; z-index:2; margin-left:clamp(32px,5vw,80px); width:100%; max-width:420px; background:rgba(255,255,255,0.97); border:1px solid #dec1b1; border-radius:8px; padding:36px 32px 28px; box-shadow:0 8px 32px rgba(87,66,55,0.12),0 2px 8px rgba(87,66,55,0.06); }

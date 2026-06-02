@@ -42,6 +42,32 @@
   --trans:      all 0.24s cubic-bezier(.4,0,.2,1);
 }
 
+[data-theme="dark"] {
+  --bg-deep:    #121212;
+  --bg-card:    #1e1e1e;
+  --bg-glass:   rgba(30, 30, 30, 0.95);
+  --border:     #333333;
+  --border-glow:#555555;
+  --text-1:     #f4f4f5;
+  --text-2:     #d4d4d8;
+  --text-3:     #a1a1aa;
+  --header-bg:  #121212;
+  --header-border: #333333;
+}
+
+[data-theme="dim"] {
+  --bg-deep:    #22272e;
+  --bg-card:    #2d333b;
+  --bg-glass:   rgba(45, 51, 59, 0.95);
+  --border:     #444c56;
+  --border-glow:#545d68;
+  --text-1:     #adbac7;
+  --text-2:     #768390;
+  --text-3:     #545d68;
+  --header-bg:  #22272e;
+  --header-border: #444c56;
+}
+
 html { scroll-behavior: smooth; }
 
 body {
@@ -106,7 +132,7 @@ body {
 
 /* ── Glass card / Premium Container ── */
 .glass-card {
-  background: rgba(255, 255, 255, 0.94);
+  background: var(--bg-glass);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   backdrop-filter: blur(24px);
@@ -139,7 +165,7 @@ body {
 /* ── Input field ── */
 .input-field {
   width: 100%;
-  background: #ffffff;
+  background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   color: var(--text-1);
@@ -157,7 +183,7 @@ body {
 
 .input-field:focus {
   border-color: var(--accent);
-  background: #ffffff;
+  background: var(--bg-card);
   box-shadow: 0 0 0 3px rgba(244, 122, 32, 0.15);
 }
 
@@ -338,10 +364,10 @@ textarea.input-field {
 
 .risk-card {
   position: relative;
-  padding: 1.1rem;
-  border-radius: var(--radius-lg);
+  padding: 0.75rem;
+  border-radius: var(--radius-md);
   border: 2px solid var(--border);
-  background: rgba(255,255,255,0.8);
+  background: var(--bg-glass);
   cursor: pointer;
   transition: var(--trans);
   text-align: center;
@@ -379,27 +405,27 @@ textarea.input-field {
 }
 
 .risk-card-icon {
-  width: 42px;
-  height: 42px;
-  border-radius: 12px;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto 0.65rem;
+  margin: 0 auto 0.4rem;
   transition: var(--trans);
 }
 
 .risk-card-title {
-  font-size: 0.88rem;
+  font-size: 0.8rem;
   font-weight: 800;
   color: var(--text-1);
-  margin: 0 0 0.25rem;
+  margin: 0 0 0.2rem;
 }
 
 .risk-card-desc {
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   color: var(--text-3);
-  line-height: 1.4;
+  line-height: 1.3;
   margin: 0;
 }
 
@@ -785,9 +811,50 @@ textarea.input-field {
   100% { background-position: 400px 0; }
 }
 
+/* ── Compact input variant ── */
+.input-compact {
+  padding-top: 0.55rem !important;
+  padding-bottom: 0.55rem !important;
+  font-size: 0.85rem !important;
+  border-radius: var(--radius-sm) !important;
+}
+
+/* ── Remove spin buttons from number inputs ── */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+/* ── Compact address grid ── */
+.address-grid-compact {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.55rem;
+}
+
+.address-grid-compact .full-width {
+  grid-column: 1 / -1;
+}
+
 /* ── Responsive ── */
 @media (max-width: 768px) {
-  .address-grid {
+  .address-grid,
+  .address-grid-compact {
     grid-template-columns: 1fr;
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
   }
 }

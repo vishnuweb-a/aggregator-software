@@ -7,9 +7,48 @@ import {
   AlertCircle, ArrowLeft, Truck, Zap, Phone, Mail,
   ShieldCheck, PlusCircle, List, Home, Wallet, Download,
   Star, DollarSign, Award, Navigation, Shield, Ruler, FileText,
-  AlertTriangle,
+  AlertTriangle, Moon, Sun
 } from 'lucide-react';
-import shipbiharLogo from '../assets/logo_ship_bihar.jpeg';
+import shipbiharLogo from '../assets/sb3.png';
+
+/* ─── Theme Toggle ───────────────────────────────── */
+const ThemeToggle = () => {
+  const [theme, setTheme] = useState(localStorage.getItem('app-theme') || 'light');
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('app-theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    const themes = ['light', 'dim', 'dark'];
+    const nextIndex = (themes.indexOf(theme) + 1) % themes.length;
+    setTheme(themes[nextIndex]);
+  };
+
+  const getIcon = () => {
+    if (theme === 'dark') return <Moon size={16} color="var(--text-1)" />;
+    if (theme === 'dim') return <Star size={16} color="var(--text-2)" />;
+    return <Sun size={16} color="var(--accent)" />;
+  };
+
+  return (
+    <button 
+      onClick={toggleTheme}
+      style={{ 
+        display: 'flex', alignItems: 'center', justifyContent: 'center', 
+        width: '36px', height: '36px', background: 'var(--bg-deep)', 
+        borderRadius: '8px', border: '1px solid var(--border)', 
+        cursor: 'pointer', transition: 'var(--trans)' 
+      }}
+      title={`Current Theme: ${theme}`}
+    >
+      {getIcon()}
+    </button>
+  );
+};
+
+
 
 /* ─── Navbar ─────────────────────────────────────── */
 const Navbar = ({ logout, view, setView }) => (
@@ -21,13 +60,11 @@ const Navbar = ({ logout, view, setView }) => (
     boxShadow: '0 10px 30px rgba(8,6,20,0.08)',
   }}>
     <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 1.5rem', height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-        <img src={shipbiharLogo} alt="shipBihar" style={{ width: 40, height: 40, borderRadius: 10, objectFit: 'cover', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
-        <span style={{ fontSize: '1.05rem', fontWeight: 800, letterSpacing: '-0.01em', color: 'var(--text-1)' }}>
-          ship<span style={{ color: 'var(--accent)' }}>Bihar</span>
-        </span>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', cursor: 'pointer' }} onClick={() => setView('profile')}>
+        <img src={shipbiharLogo} alt="shipBihar" style={{ width: 200, height: 50, borderRadius: 6, objectFit: 'cover', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+        <ThemeToggle />
         <button onClick={() => setView('profile')} className="btn-ghost" style={{ gap: '0.4rem', padding: '0.4rem 0.8rem', color: view === 'profile' ? 'var(--accent)' : undefined }}>
           <Home size={14} /> Profile
         </button>
@@ -186,7 +223,7 @@ const ProfileView = ({ user, shipments, loadingShipments, walletBalance }) => (
           <p style={{ color: 'var(--text-2)', fontSize: '0.85rem' }}>Book your first courier to see it here.</p>
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(280px,1fr))', gap: '1rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(280px,1fr))', gap: '1rem', alignItems: 'start' }}>
           {shipments.map((s, i) => <ShipmentCard key={s._id || i} s={s} />)}
         </div>
       )}
@@ -269,9 +306,9 @@ const RiskTypeSelector = ({ value, onChange, declaredValue }) => {
     {
       type: 'COURIER_RISK',
       title: 'Carrier Risk',
-      desc: 'Courier partner covers damage or loss',
-      rate: '2% of declared value',
-      maxCharge: '₹10,000 max',
+      desc: 'Get refund up to 2% of invoice value',
+      rate: 'Maximum liability up to declared invoice value',
+      maxCharge: '',
       icon: Truck,
       iconBg: 'rgba(244,122,32,0.12)',
       iconColor: 'var(--accent)',
@@ -279,9 +316,9 @@ const RiskTypeSelector = ({ value, onChange, declaredValue }) => {
     {
       type: 'OWNER_RISK',
       title: 'Owner Risk',
-      desc: 'Minimal coverage by parcel owner',
-      rate: '0.2% of declared value',
-      maxCharge: '₹3,000 max',
+      desc: '0.2% of invoice value',
+      rate: 'Maximum liability up to ₹3000 or less invoice value',
+      maxCharge: '',
       icon: User,
       iconBg: 'rgba(27,42,78,0.1)',
       iconColor: 'var(--purple)',
@@ -289,9 +326,9 @@ const RiskTypeSelector = ({ value, onChange, declaredValue }) => {
     {
       type: 'NO_RISK',
       title: 'No Risk',
-      desc: 'No coverage — zero extra charge',
+      desc: 'No risk coverage',
       rate: 'Free',
-      maxCharge: '₹0',
+      maxCharge: '',
       icon: AlertTriangle,
       iconBg: 'rgba(139,114,101,0.1)',
       iconColor: 'var(--text-3)',
@@ -324,7 +361,7 @@ const RiskTypeSelector = ({ value, onChange, declaredValue }) => {
             onClick={() => onChange(opt.type)}
           >
             <div className="risk-card-icon" style={{ background: opt.iconBg }}>
-              <Icon size={20} color={opt.iconColor} />
+              <Icon size={16} color={opt.iconColor} />
             </div>
             <p className="risk-card-title">{opt.title}</p>
             <p className="risk-card-desc">{opt.desc}</p>
@@ -542,25 +579,61 @@ const AddressFields = ({ prefix, label, emoji, color, address, onChange }) => {
   const pincodeClass = address.pincode.length === 0 ? '' : (pincodeValid ? 'pincode-valid' : 'pincode-invalid');
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
-      <p style={{ fontWeight: 700, fontSize: '0.85rem', color, margin: 0 }}>{emoji} {label}</p>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+      <p style={{ fontWeight: 700, fontSize: '0.82rem', color, margin: 0 }}>{emoji} {label}</p>
 
-      <div className="address-grid">
+      <div className="address-grid-compact">
         <div className="full-width">
           <Field label="Full Address">
             <textarea
               value={address.fullAddress}
               onChange={handleChange('fullAddress')}
-              className="input-field"
+              className="input-field input-compact"
               rows={2}
               placeholder="House/Building No., Street, Area…"
               required
+              style={{ borderRadius: 8, paddingLeft: '0.75rem' }}
             />
           </Field>
         </div>
         <Field label="Landmark">
-          <input type="text" value={address.landmark} onChange={handleChange('landmark')} className="input-field no-icon" placeholder="Near…" />
+          <input type="text" value={address.landmark} onChange={handleChange('landmark')} className="input-field no-icon input-compact" placeholder="Near…" />
         </Field>
+
+        {/* Pincode with auto-fill indicator — moved above city/state */}
+        <div className="pincode-field">
+          <Field label="Pincode ✱">
+            <div style={{ position: 'relative' }}>
+              <input
+                type="text"
+                maxLength={6}
+                value={address.pincode}
+                onChange={handleChange('pincode')}
+                className={`input-field no-icon input-compact ${pincodeClass}`}
+                placeholder="400001"
+                pattern="[0-9]{6}"
+                required
+              />
+              {pincodeLoading && (
+                <span style={{
+                  position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)',
+                  width: 13, height: 13, border: '2px solid rgba(244,122,32,0.3)',
+                  borderTopColor: 'var(--accent)', borderRadius: '50%',
+                  display: 'inline-block', animation: 'spin 0.7s linear infinite',
+                }} />
+              )}
+            </div>
+          </Field>
+          {pincodeMsg && (
+            <p style={{
+              fontSize: '0.68rem', marginTop: '0.15rem',
+              color: pincodeMsg.startsWith('✓') ? 'var(--green)' : 'var(--text-3)',
+              fontWeight: 600,
+            }}>
+              {pincodeMsg}
+            </p>
+          )}
+        </div>
 
         {/* City with suggestions dropdown */}
         <div style={{ position: 'relative' }}>
@@ -571,7 +644,7 @@ const AddressFields = ({ prefix, label, emoji, color, address, onChange }) => {
               onChange={handleChange('city')}
               onFocus={() => citySuggestions.length > 0 && setShowCitySuggestions(true)}
               onBlur={() => setTimeout(() => setShowCitySuggestions(false), 200)}
-              className="input-field no-icon"
+              className="input-field no-icon input-compact"
               placeholder="Mumbai"
               required
             />
@@ -580,15 +653,15 @@ const AddressFields = ({ prefix, label, emoji, color, address, onChange }) => {
             <div style={{
               position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 20,
               background: 'rgba(255,255,255,0.98)', border: '1px solid var(--border)',
-              borderRadius: 14, marginTop: 4, maxHeight: 200, overflowY: 'auto',
-              boxShadow: '0 12px 40px rgba(0,0,0,0.12)',
+              borderRadius: 10, marginTop: 4, maxHeight: 180, overflowY: 'auto',
+              boxShadow: '0 8px 30px rgba(0,0,0,0.1)',
             }}>
               {citySuggestions.map((item, i) => (
                 <div
                   key={`${item.pincode}-${i}`}
                   onClick={() => selectCitySuggestion(item)}
                   style={{
-                    padding: '0.65rem 1rem', cursor: 'pointer',
+                    padding: '0.5rem 0.75rem', cursor: 'pointer',
                     borderBottom: i < citySuggestions.length - 1 ? '1px solid rgba(244,122,32,0.1)' : 'none',
                     display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                     transition: 'background 0.15s',
@@ -597,10 +670,10 @@ const AddressFields = ({ prefix, label, emoji, color, address, onChange }) => {
                   onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                 >
                   <div>
-                    <span style={{ fontWeight: 700, fontSize: '0.85rem', color: 'var(--text-1)' }}>{item.city}</span>
-                    <span style={{ fontSize: '0.75rem', color: 'var(--text-3)', marginLeft: '0.5rem' }}>{item.state}</span>
+                    <span style={{ fontWeight: 700, fontSize: '0.82rem', color: 'var(--text-1)' }}>{item.city}</span>
+                    <span style={{ fontSize: '0.72rem', color: 'var(--text-3)', marginLeft: '0.4rem' }}>{item.state}</span>
                   </div>
-                  <span style={{ fontFamily: 'monospace', fontWeight: 700, fontSize: '0.8rem', color: 'var(--accent)' }}>{item.pincode}</span>
+                  <span style={{ fontFamily: 'monospace', fontWeight: 700, fontSize: '0.78rem', color: 'var(--accent)' }}>{item.pincode}</span>
                 </div>
               ))}
             </div>
@@ -608,54 +681,66 @@ const AddressFields = ({ prefix, label, emoji, color, address, onChange }) => {
         </div>
 
         <Field label="State">
-          <input type="text" value={address.state} onChange={handleChange('state')} className="input-field no-icon" placeholder="Maharashtra" required />
+          <input type="text" value={address.state} onChange={handleChange('state')} className="input-field no-icon input-compact" placeholder="Maharashtra" required />
         </Field>
-
-        {/* Pincode with auto-fill indicator */}
-        <div className="pincode-field">
-          <Field label="Pincode ✱">
-            <div style={{ position: 'relative' }}>
-              <input
-                type="text"
-                maxLength={6}
-                value={address.pincode}
-                onChange={handleChange('pincode')}
-                className={`input-field no-icon ${pincodeClass}`}
-                placeholder="400001"
-                pattern="[0-9]{6}"
-                required
-              />
-              {pincodeLoading && (
-                <span style={{
-                  position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)',
-                  width: 14, height: 14, border: '2px solid rgba(244,122,32,0.3)',
-                  borderTopColor: 'var(--accent)', borderRadius: '50%',
-                  display: 'inline-block', animation: 'spin 0.7s linear infinite',
-                }} />
-              )}
-            </div>
-          </Field>
-          {pincodeMsg && (
-            <p style={{
-              fontSize: '0.72rem', marginTop: '0.25rem',
-              color: pincodeMsg.startsWith('✓') ? 'var(--green)' : 'var(--text-3)',
-              fontWeight: 600,
-            }}>
-              {pincodeMsg}
-            </p>
-          )}
-        </div>
       </div>
     </div>
   );
 };
 
+/* ─── Error Formatting & Toast ────────────────────── */
+const getHumanError = (errStr) => {
+  if (!errStr) return "Something went wrong. Please try again.";
+  const s = errStr.toLowerCase();
+  if (s.includes('no courier available')) return "Sorry, no courier partners currently service this route or package type.";
+  if (s.includes('invalid pincode')) return "Please enter a valid 6-digit pincode for pickup and delivery.";
+  if (s.includes('pincode required')) return "Both pickup and delivery pincodes are required.";
+  if (s.includes('invalid weight')) return "Package weight must be a positive number greater than 0.";
+  if (s.includes('amount mismatch')) return "The entered payment amount doesn't match the required total.";
+  if (s.includes('utrnumber') || s.includes('utr number')) return "Please provide your transaction UTR number to verify payment.";
+  if (s.includes('serviceable')) return "The selected courier cannot service this route.";
+  if (s.includes('invalid shipment price')) return "There was an issue calculating the price. Please try again.";
+  return errStr; // fallback
+};
+
+const Toast = ({ message, onClose }) => {
+  useEffect(() => {
+    if (message) {
+      const timer = setTimeout(onClose, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [message, onClose]);
+
+  if (!message) return null;
+
+  return (
+    <div style={{
+      position: 'fixed',
+      bottom: '2.5rem',
+      right: '2.5rem',
+      background: '#fff',
+      boxShadow: '0 10px 40px rgba(0,0,0,0.12)',
+      borderRadius: '12px',
+      padding: '1.25rem 1.5rem',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '0.85rem',
+      zIndex: 10000,
+      borderLeft: '4px solid #ef4444',
+      animation: 'slideInRight 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+      maxWidth: '380px'
+    }}>
+      <AlertCircle size={22} color="#ef4444" style={{ flexShrink: 0 }} />
+      <span style={{ fontSize: '0.88rem', fontWeight: 600, color: 'var(--text-1)', lineHeight: 1.4 }}>{message}</span>
+    </div>
+  );
+};
 
 /* ─── Main Booking View ───────────────────────────── */
 const BookingView = ({ onBooked, walletBalance, walletLoading, refreshWalletBalance, rechargeWallet, onWalletBalanceUpdate }) => {
   const [step, setStep] = useState(1);
   const [parcelData, setParcelData] = useState({
-    senderName: '', senderEmail: '', senderPhoneNumber: '',
+    senderName: '', senderPhoneNumber: '',
     senderAddress: { fullAddress: '', landmark: '', city: '', state: '', pincode: '' },
     receiverName: '', receiverPhone: '',
     receiverAddress: { fullAddress: '', landmark: '', city: '', state: '', pincode: '' },
@@ -710,7 +795,6 @@ const BookingView = ({ onBooked, walletBalance, walletLoading, refreshWalletBala
     try {
       const payload = {
         senderName: parcelData.senderName,
-        senderEmail: parcelData.senderEmail,
         senderPhoneNumber: parcelData.senderPhoneNumber,
         senderAddress: parcelData.senderAddress,
         receiverName: parcelData.receiverName,
@@ -922,7 +1006,7 @@ const BookingView = ({ onBooked, walletBalance, walletLoading, refreshWalletBala
         ))}
       </div>
 
-      {error && <div className="alert alert-error" style={{ maxWidth: 900, margin: '0 auto 1.5rem' }}><AlertCircle size={16} /><span>{error}</span></div>}
+      <Toast message={error ? getHumanError(error) : ''} onClose={() => setError('')} />
 
       {/* ═══ Step 1: Parcel Details ═══ */}
       {step === 1 && (
@@ -937,74 +1021,53 @@ const BookingView = ({ onBooked, walletBalance, walletLoading, refreshWalletBala
             </div>
           </div>
           <form onSubmit={handleCreateParcel}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(340px,1fr))', gap: '2rem', padding: '1.75rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', padding: '1.25rem 1.5rem' }}>
 
-              {/* Sender side */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              {/* ── Sender side ── */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                <p style={{ fontWeight: 800, fontSize: '0.82rem', color: 'var(--accent)', margin: '0 0 0.15rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>📦 Sender</p>
                 <FieldRow>
-                  <Field label="Sender Name">
-                    <input type="text" name="senderName" value={parcelData.senderName} onChange={onFieldChange} className="input-field no-icon" placeholder="Jane Smith" required />
+                  <Field label="Name">
+                    <input type="text" name="senderName" value={parcelData.senderName} onChange={onFieldChange} className="input-field no-icon input-compact" placeholder="Jane Smith" required />
                   </Field>
                   <Field label="Phone">
-                    <input type="text" name="senderPhoneNumber" value={parcelData.senderPhoneNumber} onChange={onFieldChange} className="input-field no-icon" placeholder="9876543210" required />
+                    <input type="text" name="senderPhoneNumber" value={parcelData.senderPhoneNumber} onChange={onFieldChange} className="input-field no-icon input-compact" placeholder="9876543210" required />
                   </Field>
                 </FieldRow>
-                <Field label="Email">
-                  <input type="email" name="senderEmail" value={parcelData.senderEmail} onChange={onFieldChange} className="input-field no-icon" placeholder="jane@example.com" required />
-                </Field>
                 <AddressFields
                   prefix="sender"
                   label="Pickup Address"
-                  emoji="📦"
+                  emoji="📍"
                   color="var(--accent)"
                   address={parcelData.senderAddress}
                   onChange={onSenderAddressChange}
                 />
               </div>
 
-              {/* Receiver side */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              {/* ── Receiver side ── */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                <p style={{ fontWeight: 800, fontSize: '0.82rem', color: 'var(--green)', margin: '0 0 0.15rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>🏠 Receiver</p>
                 <FieldRow>
-                  <Field label="Receiver Name">
-                    <input type="text" name="receiverName" value={parcelData.receiverName} onChange={onFieldChange} className="input-field no-icon" placeholder="John Doe" required />
+                  <Field label="Name">
+                    <input type="text" name="receiverName" value={parcelData.receiverName} onChange={onFieldChange} className="input-field no-icon input-compact" placeholder="John Doe" required />
                   </Field>
                   <Field label="Phone">
-                    <input type="text" name="receiverPhone" value={parcelData.receiverPhone} onChange={onFieldChange} className="input-field no-icon" placeholder="9876543210" required />
+                    <input type="text" name="receiverPhone" value={parcelData.receiverPhone} onChange={onFieldChange} className="input-field no-icon input-compact" placeholder="9876543210" required />
                   </Field>
                 </FieldRow>
                 <AddressFields
                   prefix="receiver"
                   label="Delivery Address"
-                  emoji="🏠"
+                  emoji="📍"
                   color="var(--green)"
                   address={parcelData.receiverAddress}
                   onChange={onReceiverAddressChange}
                 />
-                <FieldRow>
-                  <Field label="Package Type">
-                    <input type="text" name="DelevarableType" value={parcelData.DelevarableType} onChange={onFieldChange} className="input-field no-icon" placeholder="Document, Electronics…" required />
-                  </Field>
-                  <Field label="Weight (kg)">
-                    <input type="number" step="0.1" min="0.1" name="weight" value={parcelData.weight} onChange={onFieldChange} className="input-field no-icon" placeholder="0.5" required />
-                  </Field>
-                </FieldRow>
-                <FieldRow>
-                  <Field label="Courier Type">
-                    <select name="courierType" value={parcelData.courierType} onChange={onFieldChange} className="input-field no-icon" required>
-                      <option value="docx">Document (docx)</option>
-                      <option value="nonDocx">Non-Document (nonDocx)</option>
-                    </select>
-                  </Field>
-                  <Field label="Mode">
-                    <select name="mode" value={parcelData.mode} onChange={onFieldChange} className="input-field no-icon" required>
-                      <option value="SURFACE">Surface (Standard)</option>
-                      <option value="AIRWAY">Airway (Fast, 1.5x Cost)</option>
-                    </select>
-                  </Field>
-                </FieldRow>
               </div>
 
             </div>
+
+
 
             {/* ═══ NEW SECTION: Package Specifications ═══ */}
             <div style={{ padding: '0 1.75rem' }}>
@@ -1014,29 +1077,50 @@ const BookingView = ({ onBooked, walletBalance, walletLoading, refreshWalletBala
                     <Ruler size={16} color="var(--accent)" />
                   </div>
                   <div>
-                    <p className="spec-section-title">📐 Package Specifications</p>
+                    <p className="spec-section-title">📐 Accomodity Name</p>
                     <p className="spec-section-subtitle">Dimensions, quantity, and declared value for accurate pricing</p>
                   </div>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem', marginBottom: '1rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 180px))', gap: '0.75rem', marginBottom: '1rem', justifyContent: 'start' }}>
+                  <Field label="Package Type">
+                    <input type="text" name="DelevarableType" value={parcelData.DelevarableType} onChange={onFieldChange} className="input-field no-icon input-compact" placeholder="Document, Electronics…" required />
+                  </Field>
+                  <Field label="Weight (kg)">
+                    <input type="number" step="0.1" min="0.1" name="weight" value={parcelData.weight} onChange={onFieldChange} className="input-field no-icon input-compact" placeholder="0.5" required />
+                  </Field>
+                  <Field label="Courier Type">
+                    <select name="courierType" value={parcelData.courierType} onChange={onFieldChange} className="input-field no-icon input-compact" required>
+                      <option value="docx">Document (docx)</option>
+                      <option value="nonDocx">Non-Document (nonDocx)</option>
+                    </select>
+                  </Field>
+                  <Field label="Mode">
+                    <select name="mode" value={parcelData.mode} onChange={onFieldChange} className="input-field no-icon input-compact" required>
+                      <option value="SURFACE">Surface (Standard)</option>
+                      <option value="AIRWAY">Airway (Fast, 1.5x Cost)</option>
+                    </select>
+                  </Field>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 130px))', gap: '0.75rem', marginBottom: '1rem', justifyContent: 'start' }}>
                   <Field label="No. of Parcels">
-                    <input type="number" min="1" step="1" name="no_of_parcel" value={parcelData.no_of_parcel} onChange={onFieldChange} className="input-field no-icon" placeholder="1" required />
+                    <input type="number" min="1" step="1" name="no_of_parcel" value={parcelData.no_of_parcel} onChange={onFieldChange} className="input-field no-icon input-compact" placeholder="1" required />
                   </Field>
                   <Field label="Length (cm)">
-                    <input type="number" min="0.1" step="0.1" name="length" value={parcelData.length} onChange={onFieldChange} className="input-field no-icon" placeholder="30" required />
+                    <input type="number" min="0.1" step="0.1" name="length" value={parcelData.length} onChange={onFieldChange} className="input-field no-icon input-compact" placeholder="30" required />
                   </Field>
                   <Field label="Width (cm)">
-                    <input type="number" min="0.1" step="0.1" name="width" value={parcelData.width} onChange={onFieldChange} className="input-field no-icon" placeholder="20" required />
+                    <input type="number" min="0.1" step="0.1" name="width" value={parcelData.width} onChange={onFieldChange} className="input-field no-icon input-compact" placeholder="20" required />
                   </Field>
                   <Field label="Height (cm)">
-                    <input type="number" min="0.1" step="0.1" name="height" value={parcelData.height} onChange={onFieldChange} className="input-field no-icon" placeholder="15" required />
+                    <input type="number" min="0.1" step="0.1" name="height" value={parcelData.height} onChange={onFieldChange} className="input-field no-icon input-compact" placeholder="15" required />
                   </Field>
                 </div>
 
                 <FieldRow>
                   <Field label="Declared Value (₹)">
-                    <input type="number" min="1" step="1" name="declaredValue" value={parcelData.declaredValue} onChange={onFieldChange} className="input-field no-icon" placeholder="5000" required />
+                    <input type="number" min="1" step="1" name="declaredValue" value={parcelData.declaredValue} onChange={onFieldChange} className="input-field no-icon input-compact" placeholder="5000" style={{ maxWidth: '140px' }} required />
                   </Field>
                   <div>
                     {/* Volume preview */}
@@ -1083,7 +1167,7 @@ const BookingView = ({ onBooked, walletBalance, walletLoading, refreshWalletBala
                     <Shield size={16} color="#ef4444" />
                   </div>
                   <div>
-                    <p className="spec-section-title">⚠️ Risk & Protection <span style={{ color: '#ef4444', fontSize: '0.75rem' }}>*required</span></p>
+                    <p className="spec-section-title">⚠️ Insure your parcel . <span style={{ color: '#ef4444', fontSize: '0.75rem' }}>*required</span></p>
                     <p className="spec-section-subtitle">Choose how you want your shipment protected — select one option</p>
                   </div>
                 </div>

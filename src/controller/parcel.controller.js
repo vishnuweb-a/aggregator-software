@@ -1,4 +1,5 @@
 import Parcel from "../model/parcel.model.js";
+import User from "../model/user.model.js";
 import Courier from "../model/courier.model.js";
 import Shipment from "../model/shipment.model.js";
 import { bookingConfirmation } from '../services/mail.service.js';
@@ -11,7 +12,6 @@ export const createParcel = async (req, res) => {
     const userId = req.user;
     const {
       senderName,
-      senderEmail,
       senderPhoneNumber,
       senderAddress,
       receiverName,
@@ -52,6 +52,30 @@ export const createParcel = async (req, res) => {
 
 
    
+
+    // Fetch sender email from user record
+    const userDoc = await User.findById(userId);
+    const senderEmail = userDoc?.email || '';
+
+    // CHECK COURIER AVAILABILITY BEFORE CREATING PARCEL
+    const courierQuery = {
+      active: true,
+      pickup_pincodes: { $in: [senderAddress.pincode] },
+      delivery_pincodes: { $in: [receiverAddress.pincode] }
+    };
+
+    if (courierType) {
+      courierQuery.$or = [
+        { supported_types: { $in: [courierType] } },
+        { supported_types: { $exists: false } },
+        { supported_types: { $size: 0 } }
+      ];
+    }
+
+    const availableCourier = await Courier.findOne(courierQuery);
+    if (!availableCourier) {
+      return res.status(400).json({ response: "No courier available for these pincodes and package type" });
+    }
 
     // CREATE PARCEL
     const parcel = await Parcel.create({
