@@ -43,25 +43,20 @@ const registerUser = async (req , res)=>{
           name,
           email,
           password : hashedPassword,
-          phoneNumber
+          phoneNumber,
+          status: 'verified'
         })
         if(!user){
         return    res.status(400).json({message : "user not created"})
         }
         
-        const generatedOtp = crypto.randomInt(1000,9999)
-        const otpResponse = await strOpt(generatedOtp, email)
-        console.log(otpResponse)
-        if(!otpResponse){
-          return res.status(400).json({message : "otp not sent"})
-        }
-         const emailSent = await    sendOtp (email, generatedOtp)
-         console.log(emailSent)
-   
+        const token = jwt.sign({userId :user._id,password : user.password},credential.jwtSecret,{expiresIn : '1h'})
+        res.cookie('token', token, cookieOptions)
+        await welcomeMessage(email,user.name)
         
         return res.status(201).json({
-          "message"  :  " user created sucessfully  (unverified) and opt sent. plz verify user ",
-          
+          "message"  :  "user created successfully.",
+          user: { name: user.name, email: user.email, phoneNumber: user.phoneNumber, status: user.status }
         })
   }catch(err){
     console.log(err.message)
@@ -289,6 +284,7 @@ const getMe = async (req, res) => {
     const decoded = jwt.verify(token, credential.jwtSecret)
     const user = await User.findById(decoded.userId).select('-password')
     if (!user) return res.status(404).json({ response: 'User not found' })
+    if (user.isBlocked) return res.status(403).json({ response: user.reasonOfBlock })
     return res.status(200).json({ user: { name: user.name, email: user.email, phoneNumber: user.phoneNumber, status: user.status } })
   } catch (err) {
     return res.status(401).json({ response: 'Invalid token' })

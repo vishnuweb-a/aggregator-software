@@ -6,6 +6,8 @@ import { bookingConfirmation } from '../services/mail.service.js';
 import { insuranceAmount_cal } from "../logic/insurance.logic.js";
 import { volumePrice_cal } from "../logic/volumePrice.logic.js";
 import insurance from "../model/insurance.model.js";
+import PincodeDB from "../model/pincode.model.js";
+import ZonePricing from "../model/zonePricing.model.js";
 
 export const createParcel = async (req, res) => {
   try {
@@ -38,6 +40,21 @@ export const createParcel = async (req, res) => {
 
     if (senderAddress.pincode.length !== 6 || receiverAddress.pincode.length !== 6) {
       return res.status(400).json({ response: "invalid pincode" });
+    }
+
+    // PHASE 9 VALIDATION
+    const senderPincodeDoc = await PincodeDB.findOne({ pincode: senderAddress.pincode });
+    if (!senderPincodeDoc) {
+      return res.status(404).json({ response: "sender pincode not found" });
+    }
+    
+    const receiverPincodeDoc = await PincodeDB.findOne({ pincode: receiverAddress.pincode });
+    if (!receiverPincodeDoc) {
+      return res.status(404).json({ response: "receiver pincode not found" });
+    }
+
+    if (!receiverPincodeDoc.serviceable) {
+      return res.status(400).json({ response: "receiver pincode not serviceable" });
     }
 
     if (weight <= 0) {
@@ -164,6 +181,39 @@ function resolvePricing(courier, mode) {
      console.log(parcel)
 
     // Build query – filter by courierType if the courier has supported_types
+    const senderPincodeDoc = await PincodeDB.findOne({ pincode: parcel.senderAddress.pincode });
+    const receiverPincodeDoc = await PincodeDB.findOne({ pincode: parcel.receiverAddress.pincode });
+
+    if (!senderPincodeDoc || !receiverPincodeDoc) {
+      return res.status(404).json({ response: "pincode not found" });
+    }
+
+    // Determine Route Type
+    let routeType = "INTER_ZONE";
+    if (senderPincodeDoc.city === receiverPincodeDoc.city) {
+      routeType = "LOCAL";
+    } else if (senderPincodeDoc.zone === receiverPincodeDoc.zone) {
+      routeType = "INTRA_ZONE";
+    }
+
+    // Fetch ZonePricing
+    const zonePricing = await ZonePricing.findOne({
+      fromZone: senderPincodeDoc.zone,
+      toZone: receiverPincodeDoc.zone
+    });
+
+    if (!zonePricing) {
+      return res.status(404).json({ response: "zone pricing record not found" });
+    }
+
+    // Determine Delivery Type Charge
+    let deliveryCharge = 0;
+    const dType = receiverPincodeDoc.deliveryType || "URBAN";
+    if (dType === "METRO") deliveryCharge = 0;
+    else if (dType === "URBAN") deliveryCharge = 20;
+    else if (dType === "SEMI_URBAN") deliveryCharge = 50;
+    else if (dType === "RURAL") deliveryCharge = 100;
+
     const query = {
       active: true,
       pickup_pincodes: { $in: [parcel.senderAddress.pincode] },
@@ -197,8 +247,17 @@ function resolvePricing(courier, mode) {
       const perKg     = pricing.per_kg     || 0;
       const etaDays   = pricing.eta_days   || 0;
 
-      let price = basePrice + (parcel.weight * perKg) + parcel.riskCharge + parcel.volumePrice;
-      price = Math.round(price * 100) / 100;
+      const surfaceCharge = zonePricing.surfaceCharge;
+      const airwayCharge = zonePricing.airwayCharge;
+
+      const baseWeightCharge = basePrice + (parcel.weight * perKg) + parcel.riskCharge + parcel.volumePrice;
+      
+      const surfacePrice = Math.round((baseWeightCharge + surfaceCharge + deliveryCharge) * 100) / 100;
+      const airPrice = Math.round((baseWeightCharge + airwayCharge + deliveryCharge) * 100) / 100;
+
+      // Price based on parcel mode
+      const selectedZoneCharge = parcel.mode === "AIRWAY" ? airwayCharge : surfaceCharge;
+      const price = parcel.mode === "AIRWAY" ? airPrice : surfacePrice;
 
       const priceScore = 100 - Math.min(price, 100);
       const etaScore = 100 - (etaDays * 10);
@@ -217,6 +276,14 @@ function resolvePricing(courier, mode) {
         courierId: c._id,
         provider: c.provider,
         price,
+        surfacePrice,
+        airPrice,
+        pickupZone: senderPincodeDoc.zone,
+        deliveryZone: receiverPincodeDoc.zone,
+        routeType,
+        deliveryType: dType,
+        zoneCharge: selectedZoneCharge,
+        deliveryCharge,
         eta: etaDays,
         score: Math.round(finalScore),
         rating: c.rating,
@@ -291,8 +358,45 @@ export const confirmCourier = async (req, res) => {
     const perKg = pricing.per_kg || 0;
     const etaDays = pricing.eta_days || 0;
 
+    const senderPincodeDoc = await PincodeDB.findOne({ pincode: parcelData.senderAddress.pincode });
+    const receiverPincodeDoc = await PincodeDB.findOne({ pincode: parcelData.receiverAddress.pincode });
+
+    if (!senderPincodeDoc || !receiverPincodeDoc) {
+      return res.status(404).json({ response: "pincode not found" });
+    }
+
+    let routeType = "INTER_ZONE";
+    if (senderPincodeDoc.city === receiverPincodeDoc.city) {
+      routeType = "LOCAL";
+    } else if (senderPincodeDoc.zone === receiverPincodeDoc.zone) {
+      routeType = "INTRA_ZONE";
+    }
+
+    const zonePricing = await ZonePricing.findOne({
+      fromZone: senderPincodeDoc.zone,
+      toZone: receiverPincodeDoc.zone
+    });
+
+    if (!zonePricing) {
+      return res.status(404).json({ response: "zone pricing record not found" });
+    }
+
+    let deliveryCharge = 0;
+    const dType = receiverPincodeDoc.deliveryType || "URBAN";
+    if (dType === "METRO") deliveryCharge = 0;
+    else if (dType === "URBAN") deliveryCharge = 20;
+    else if (dType === "SEMI_URBAN") deliveryCharge = 50;
+    else if (dType === "RURAL") deliveryCharge = 100;
+
+    const selectedZoneCharge = parcelData.mode === "AIRWAY" ? zonePricing.airwayCharge : zonePricing.surfaceCharge;
+
     const weightCharge = parcelData.weight * perKg;
-    let totalAmount = basePrice + weightCharge + (parcelData.riskCharge || 0) + (parcelData.volumePrice || 0);
+
+    // Platform fees (fixed) and extra fees (zone-based surcharge from DB)
+    const platformFees = 0; // Set to desired fixed amount when ready
+    const extraFees = selectedZoneCharge; // Zone-based extra charge from DB
+
+    let totalAmount = basePrice + weightCharge + selectedZoneCharge + deliveryCharge + (parcelData.riskCharge || 0) + (parcelData.volumePrice || 0) + platformFees;
     
     // Round off to 2 decimal places
     totalAmount = Math.round(totalAmount * 100) / 100;
@@ -329,6 +433,24 @@ export const confirmCourier = async (req, res) => {
         name: parcelData.senderName,
         phone: parcelData.senderPhoneNumber,
         address: parcelData.senderAddress
+      },
+      zoneInfo: {
+        pickupZone: senderPincodeDoc.zone,
+        deliveryZone: receiverPincodeDoc.zone,
+        routeType,
+        zoneCharge: selectedZoneCharge,
+        deliveryCharge
+      },
+      costBreakdown: {
+        basePrice,
+        weightCharge,
+        volumePrice: parcelData.volumePrice || 0,
+        riskCharge: parcelData.riskCharge || 0,
+        zoneCharge: selectedZoneCharge,
+        deliveryCharge,
+        platformFees,
+        extraFees,
+        totalAmount
       }
     });
 
@@ -355,13 +477,7 @@ export const confirmCourier = async (req, res) => {
         paymentStatus: shipment.paymentStatus,
         status: shipment.shipmentStatus
       },
-      priceBreakdown: {
-        basePrice,
-        weightCharge,
-        volumePrice: parcelData.volumePrice,
-        riskCharge: parcelData.riskCharge,
-        total: totalAmount
-      }
+      priceBreakdown: shipment.costBreakdown
     });
 
   } catch (err) {

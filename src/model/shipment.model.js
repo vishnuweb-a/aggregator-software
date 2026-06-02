@@ -98,7 +98,27 @@ timestamp:Date
 
 }
 
-]
+],
+
+zoneInfo: {
+  pickupZone: String,
+  deliveryZone: String,
+  routeType: String,
+  zoneCharge: Number,
+  deliveryCharge: Number
+},
+
+costBreakdown: {
+  basePrice: Number,
+  weightCharge: Number,
+  volumePrice: Number,
+  riskCharge: Number,
+  zoneCharge: Number,
+  deliveryCharge: Number,
+  platformFees: { type: Number, default: 0 },
+  extraFees: { type: Number, default: 0 },
+  totalAmount: Number
+}
 
 },{timestamps:true});
 

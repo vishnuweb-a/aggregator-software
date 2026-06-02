@@ -7,14 +7,14 @@ const authCheck = async (req,res,next)=>{
   try{
      const token = req.cookies.token
      if(!token){
-        return res.status(404).json({
+        return res.status(401).json({
           "response" : "token not found , session expired ."
         })
      }
      const assets = jwt.verify(token,credential.jwtSecret)
      const verify =  await User.findOne({_id : assets.userId})
      if(!verify){
-      return res.status(404).json({
+      return res.status(401).json({
         "response" : "user not found ."
       })
      }

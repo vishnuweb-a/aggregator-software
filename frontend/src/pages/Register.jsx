@@ -11,13 +11,11 @@ const Register = () => {
   const [formData, setFormData] = useState({
     name: '', email: '', password: '', phoneNumber: '',
   });
-  const [otpSent, setOtpSent]     = useState(false);
-  const [otp, setOtp]             = useState('');
   const [error, setError]         = useState('');
   const [message, setMessage]     = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const { register, validateOtp } = useAuth();
+  const { register } = useAuth();
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -28,21 +26,10 @@ const Register = () => {
     e.preventDefault(); setError(''); setMessage(''); setIsLoading(true);
     try {
       await register({ ...formData, phoneNumber: Number(formData.phoneNumber) });
-      setOtpSent(true);
-      setMessage('OTP has been sent to your email. Please verify.');
-    } catch (err) {
-      setError(err.response?.data?.response || err.response?.data?.message || 'Registration failed');
-    } finally { setIsLoading(false); }
-  };
-
-  const handleOtpSubmit = async (e) => {
-    e.preventDefault(); setError(''); setIsLoading(true);
-    try {
-      await validateOtp(formData.email, Number(otp));
       setMessage('Registration successful! Redirecting…');
       setTimeout(() => navigate('/dashboard'), 1500);
     } catch (err) {
-      setError(err.response?.data?.response || 'OTP validation failed');
+      setError(err.response?.data?.response || err.response?.data?.message || 'Registration failed');
     } finally { setIsLoading(false); }
   };
 
@@ -74,53 +61,33 @@ const Register = () => {
         <div className="sb-hero-overlay" />
 
         <div className="sb-hero-card">
-          <h1 className="sb-card-title">{otpSent ? 'Verify your email' : 'Create account'}</h1>
+          <h1 className="sb-card-title">Create account</h1>
           <p className="sb-card-subtitle">
-            {otpSent
-              ? 'Enter the 4-digit code sent to your inbox'
-              : 'Join shipBihar — Ship anywhere, anytime'}
+            Join shipBihar — Ship anywhere, anytime
           </p>
 
           {error && <div className="sb-card-error"><AlertCircle size={14} /><span>{error}</span></div>}
           {message && <div className="sb-card-success"><CheckCircle size={14} /><span>{message}</span></div>}
 
           {/* Registration form */}
-          {!otpSent ? (
-            <form onSubmit={handleRegisterSubmit} className="sb-card-form">
-              {fields.map(({ name, type, icon: Icon, placeholder, label }) => (
-                <div key={name} className="sb-field">
-                  <label className="sb-label">{label}</label>
-                  <div className="sb-input-wrap">
-                    <Icon size={16} className="sb-input-icon" />
-                    <input
-                      type={type} name={name} value={formData[name]}
-                      onChange={handleChange} className="sb-input"
-                      placeholder={placeholder} required
-                    />
-                  </div>
-                </div>
-              ))}
-              <button type="submit" disabled={isLoading} className="sb-submit-btn">
-                {isLoading ? <><Spinner /> Processing…</> : <>Create Account <ArrowRight size={16} /></>}
-              </button>
-            </form>
-          ) : (
-            <form onSubmit={handleOtpSubmit} className="sb-card-form">
-              <div className="sb-field">
-                <label className="sb-label">4-Digit OTP Code</label>
+          <form onSubmit={handleRegisterSubmit} className="sb-card-form">
+            {fields.map(({ name, type, icon: Icon, placeholder, label }) => (
+              <div key={name} className="sb-field">
+                <label className="sb-label">{label}</label>
                 <div className="sb-input-wrap">
-                  <KeyRound size={16} className="sb-input-icon" />
-                  <input type="number" value={otp} onChange={(e) => setOtp(e.target.value)}
-                    className="sb-input" placeholder="0000"
-                    style={{ textAlign: 'center', fontSize: '1.5rem', letterSpacing: '0.3em', fontWeight: 700 }}
-                    required />
+                  <Icon size={16} className="sb-input-icon" />
+                  <input
+                    type={type} name={name} value={formData[name]}
+                    onChange={handleChange} className="sb-input"
+                    placeholder={placeholder} required
+                  />
                 </div>
               </div>
-              <button type="submit" disabled={isLoading} className="sb-submit-btn" style={{ background: '#10b981' }}>
-                {isLoading ? <><Spinner /> Verifying…</> : <><CheckCircle size={16} /> Verify & Go to Dashboard</>}
-              </button>
-            </form>
-          )}
+            ))}
+            <button type="submit" disabled={isLoading} className="sb-submit-btn">
+              {isLoading ? <><Spinner /> Processing…</> : <>Create Account <ArrowRight size={16} /></>}
+            </button>
+          </form>
 
           <p className="sb-card-create">
             Already have an account? <Link to="/login" className="sb-create-link">Sign in →</Link>

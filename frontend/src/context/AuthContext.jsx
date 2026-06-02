@@ -48,6 +48,19 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (userData) => {
     const response = await api.post('/auth/register', userData);
+    if (response.status === 201 || response.status === 200) {
+      try {
+        const profileRes = await api.get('/auth/me');
+        const user = profileRes.data.user;
+        setUser(user);
+        localStorage.setItem('acs_user', JSON.stringify(user));
+      } catch {
+        // fallback
+        const user = response.data.user || { email: userData.email };
+        setUser(user);
+        localStorage.setItem('acs_user', JSON.stringify(user));
+      }
+    }
     return response.data;
   };
 

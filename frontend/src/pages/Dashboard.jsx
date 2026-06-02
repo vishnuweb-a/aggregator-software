@@ -1291,25 +1291,39 @@ const BookingView = ({ onBooked, walletBalance, walletLoading, refreshWalletBala
               <div className="glass-card" style={{ padding: '1.25rem', marginBottom: '1.25rem' }}>
                 <table className="price-breakdown-table">
                   <tbody>
-                    <tr>
-                      <td>🏷️ Base Price</td>
-                      <td>₹{priceBreakdown?.basePrice != null ? priceBreakdown.basePrice.toFixed(2) : '—'}</td>
-                    </tr>
-                    <tr>
-                      <td>⚖️ Weight Charge</td>
-                      <td>₹{priceBreakdown?.weightCharge != null ? priceBreakdown.weightCharge.toFixed(2) : '—'}</td>
-                    </tr>
-                    <tr>
-                      <td>📐 Volume Price</td>
-                      <td>₹{priceBreakdown?.volumePrice != null ? priceBreakdown.volumePrice.toFixed(2) : '—'}</td>
-                    </tr>
-                    <tr>
-                      <td>🛡️ Risk Charge</td>
-                      <td>₹{priceBreakdown?.riskCharge != null ? priceBreakdown.riskCharge.toFixed(2) : '—'}</td>
-                    </tr>
+                    {priceBreakdown?.basePrice > 0 && (
+                      <tr>
+                        <td>🏷️ Base Price</td>
+                        <td>₹{priceBreakdown.basePrice.toFixed(2)}</td>
+                      </tr>
+                    )}
+                    {priceBreakdown?.weightCharge > 0 && (
+                      <tr>
+                        <td>⚖️ Weight Charge</td>
+                        <td>₹{priceBreakdown.weightCharge.toFixed(2)}</td>
+                      </tr>
+                    )}
+                    {priceBreakdown?.riskCharge > 0 && (
+                      <tr>
+                        <td>🛡️ Risk Charge</td>
+                        <td>₹{priceBreakdown.riskCharge.toFixed(2)}</td>
+                      </tr>
+                    )}
+                    {priceBreakdown?.deliveryCharge > 0 && (
+                      <tr>
+                        <td>🚚 Delivery Charge</td>
+                        <td>₹{priceBreakdown.deliveryCharge.toFixed(2)}</td>
+                      </tr>
+                    )}
+                    {priceBreakdown?.zoneCharge > 0 && (
+                      <tr>
+                        <td>📍 Zone Charge</td>
+                        <td>₹{priceBreakdown.zoneCharge.toFixed(2)}</td>
+                      </tr>
+                    )}
                     <tr>
                       <td>Total</td>
-                      <td>₹{priceBreakdown?.total != null ? priceBreakdown.total.toFixed(2) : (paymentInfo?.amount || pendingShipment.amount || pendingShipment.price)}</td>
+                      <td>₹{priceBreakdown?.totalAmount != null ? priceBreakdown.totalAmount.toFixed(2) : (priceBreakdown?.total != null ? priceBreakdown.total.toFixed(2) : (paymentInfo?.amount || pendingShipment.amount || pendingShipment.price))}</td>
                     </tr>
                   </tbody>
                 </table>

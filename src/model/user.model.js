@@ -21,6 +21,14 @@ const userSchema = new mongoose.Schema({
     required : true,
     unique : true,
   },
+  isBlocked : {
+     type : Boolean,
+     default : false
+  },
+  reasonOfBlock : {
+     type : String,
+     default : "access the account ."
+  },
   status : {
     type : String,
     enum : ["unverified","verified"],
