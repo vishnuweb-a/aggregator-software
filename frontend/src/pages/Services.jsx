@@ -17,6 +17,7 @@ const Services = () => {
           </div>
           <div className="sv-nav-center">
             <Link to="/" className="sv-nav-link">Home</Link>
+            <Link to="/tracking" className="sv-nav-link">Tracking</Link>
             <Link to="/network" className="sv-nav-link">Network</Link>
             <Link to="/services" className="sv-nav-link sv-nav-link--active">Services</Link>
             <Link to="/about" className="sv-nav-link">About Us</Link>

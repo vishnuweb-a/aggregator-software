@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Track Your Shipment - shipBihar</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-container": "#4a5980",
+                        "on-primary-fixed": "#321200",
+                        "tertiary": "#005bc0",
+                        "on-tertiary": "#ffffff",
+                        "surface-container": "#edeeef",
+                        "tertiary-fixed": "#d8e2ff",
+                        "on-secondary": "#ffffff",
+                        "primary-fixed": "#ffdbc9",
+                        "surface-container-high": "#e7e8e9",
+                        "primary-fixed-dim": "#ffb68c",
+                        "surface-variant": "#e1e3e4",
+                        "on-error": "#ffffff",
+                        "on-primary-container": "#582500",
+                        "tertiary-container": "#639bff",
+                        "error": "#ba1a1a",
+                        "surface-bright": "#f8f9fa",
+                        "on-secondary-fixed-variant": "#37466b",
+                        "inverse-primary": "#ffb68c",
+                        "error-container": "#ffdad6",
+                        "on-tertiary-fixed-variant": "#004493",
+                        "surface-tint": "#9a4600",
+                        "on-primary-fixed-variant": "#753400",
+                        "on-surface-variant": "#574237",
+                        "inverse-surface": "#2e3132",
+                        "surface-container-low": "#f3f4f5",
+                        "on-surface": "#191c1d",
+                        "tertiary-fixed-dim": "#adc7ff",
+                        "surface-dim": "#d9dadb",
+                        "on-tertiary-fixed": "#001a41",
+                        "on-tertiary-container": "#00326f",
+                        "on-primary": "#ffffff",
+                        "secondary-fixed-dim": "#b7c6f2",
+                        "primary-container": "#f47a20",
+                        "surface-container-highest": "#e1e3e4",
+                        "on-background": "#191c1d",
+                        "on-error-container": "#93000a",
+                        "primary": "#9a4600",
+                        "outline-variant": "#dec1b1",
+                        "background": "#f8f9fa",
+                        "secondary-fixed": "#dae2ff",
+                        "secondary-container": "#c2d1fe",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary": "#4f5d85",
+                        "on-secondary-fixed": "#091a3d",
+                        "inverse-on-surface": "#f0f1f2",
+                        "surface": "#f8f9fa",
+                        "outline": "#8b7265"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "xl": "80px",
+                        "base": "8px",
+                        "xs": "4px",
+                        "md": "24px",
+                        "margin": "32px",
+                        "lg": "48px",
+                        "sm": "12px",
+                        "gutter": "24px"
+                    },
+                    "fontFamily": {
+                        "label-sm": ["Work Sans"],
+                        "headline-lg": ["Work Sans"],
+                        "label-md": ["Work Sans"],
+                        "body-md": ["Work Sans"],
+                        "headline-xl": ["Work Sans"],
+                        "headline-lg-mobile": ["Work Sans"],
+                        "body-lg": ["Work Sans"],
+                        "headline-md": ["Work Sans"]
+                    },
+                    "fontSize": {
+                        "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                        "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "headline-xl": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        /* Modern Mithila Background Pattern */
+        .mithila-pattern {
+            background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(222, 193, 177, 0.1) 10px, rgba(222, 193, 177, 0.1) 12px);
+        }
+        
+        .milestone-card {
+            transition: opacity 0.6s ease-out, transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        .milestone-card.is-visible {
+            opacity: 1 !important;
+            transform: translateY(0) !important;
+        }
+
+        .milestone-node {
+            transition: all 0.3s ease;
+        }
+        
+        .milestone-node.is-active-node {
+            background-color: theme('colors.primary');
+            border-color: theme('colors.primary-container');
+            box-shadow: 0 0 0 4px theme('colors.primary-fixed');
+        }
+
+        @keyframes pulse-glow {
+            0% { box-shadow: 0 0 0 0 theme('colors.primary-fixed'); }
+            70% { box-shadow: 0 0 0 12px transparent; }
+            100% { box-shadow: 0 0 0 0 transparent; }
+        }
+
+        .pulse-glow {
+            animation: pulse-glow 2s infinite;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md antialiased min-h-screen flex flex-col">
+<!-- TopNavBar Component -->
+<header class="bg-surface-container-lowest border-b border-outline-variant w-full relative z-50">
+<nav class="flex justify-between items-center w-full px-margin py-4 max-w-7xl mx-auto">
+<div class="flex items-center gap-md">
+<a class="font-headline-md text-headline-md font-bold text-primary" href="#">
+<img alt="shipBihar Logo" class="h-8 w-auto" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAoyO6orf4pBacCItlYcYXRoenIdzEqP2vRG6aBaRFOEUkMFsfXWjvLzGDtwA7OBY-YxYnuuTMSJUVvyTdvC4Jp6WapfL34UramRZgCVxIKnWVqQTYLM5nJqbTKSBFKP-DVPIAHszt1yG48hXSMEjvej8jkuM0Wwg14RG6pRDVdibkegyCp6tFVu9-fvU-NcwbClFYYQAl1QWhhAacxGDwF2T6SW1PqaXN442KzCwUItWpG2ePvsfrNQ9vyDxDo8vMk5xQeFOVU0as"/>
+</a>
+</div>
+<div class="hidden md:flex items-center gap-md font-label-md text-label-md">
+<a class="text-primary border-b-2 border-primary pb-1 active:opacity-80 active:scale-95 transition-all" href="#">Tracking</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors duration-200 active:opacity-80 active:scale-95 transition-all" href="#">Solutions</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors duration-200 active:opacity-80 active:scale-95 transition-all" href="#">Network</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors duration-200 active:opacity-80 active:scale-95 transition-all" href="#">About Us</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors duration-200 active:opacity-80 active:scale-95 transition-all" href="#">Contact</a>
+</div>
+<div>
+<button class="bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md px-md py-sm rounded-lg transition-colors">
+                    Get Started
+                </button>
+</div>
+</nav>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-grow flex flex-col">
+<!-- Hero Search Section -->
+<section class="bg-surface-container-lowest pt-xl pb-lg px-margin relative overflow-hidden">
+<div class="absolute inset-0 mithila-pattern opacity-50"></div>
+<div class="max-w-3xl mx-auto relative z-10 text-center">
+<h1 class="font-headline-xl text-headline-xl text-on-surface mb-md">Track Your Shipment</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant mb-lg">Enter your tracking ID to see live updates across our network.</p>
+<div class="relative max-w-xl mx-auto">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline text-2xl">search</span>
+<input class="w-full pl-14 pr-sm py-4 bg-surface rounded-xl border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary-fixed transition-all font-body-lg text-body-lg outline-none placeholder:text-outline shadow-sm" placeholder="Enter Tracking ID (e.g., SB-892401)" type="text" value="SB-892401"/>
+<button class="absolute right-2 top-1/2 -translate-y-1/2 bg-primary text-on-primary px-sm py-xs rounded-lg font-label-md text-label-md hover:bg-surface-tint transition-colors">Track</button>
+</div>
+</div>
+</section>
+<!-- Live Journey Tracker Section -->
+<section class="flex-grow bg-background py-xl px-margin">
+<div class="max-w-3xl mx-auto">
+<!-- Status Card -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-md flex flex-col md:flex-row items-center justify-between mb-xl shadow-sm relative overflow-hidden">
+<div class="absolute left-0 top-0 bottom-0 w-2 bg-primary"></div>
+<div class="flex items-center gap-md pl-sm mb-sm md:mb-0">
+<div class="h-12 w-12 rounded-full bg-primary-fixed flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">local_shipping</span>
+</div>
+<div>
+<h2 class="font-headline-md text-headline-md text-on-surface">Status: In Transit</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Tracking ID: SB-892401</p>
+</div>
+</div>
+<div class="text-right">
+<p class="font-label-sm text-label-sm text-outline uppercase tracking-wider mb-xs">Estimated Arrival</p>
+<p class="font-headline-lg-mobile text-headline-lg-mobile text-primary">July 17</p>
+</div>
+</div>
+<!-- Timeline Container -->
+<div class="relative pb-xl" id="timeline-container">
+<!-- Background Base Line -->
+<div class="absolute top-0 bottom-0 left-6 w-1 bg-surface-variant rounded-full"></div>
+<!-- Animated Progress Line -->
+<div class="absolute top-0 left-6 w-1 bg-primary rounded-full transition-all duration-300 ease-out z-10" id="progress-line" style="height: 0%;">
+<!-- Arrowhead at the tip -->
+<div class="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[8px] border-t-primary"></div>
+</div>
+<!-- Milestones -->
+<div class="flex flex-col gap-lg relative z-20">
+<!-- Milestone 1 -->
+<div class="relative flex items-start group milestone-card opacity-0 translate-y-8" data-milestone="1">
+<div class="absolute left-6 top-6 w-4 h-4 -translate-x-[6px] -translate-y-1/2 rounded-full border-2 border-surface-variant bg-surface-container-lowest milestone-node z-20"></div>
+<div class="ml-16 w-full">
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-md shadow-sm">
+<div class="flex justify-between items-start mb-sm">
+<h3 class="font-label-md text-label-md text-on-surface">Order Received - Patna Hub</h3>
+<span class="font-label-sm text-label-sm text-on-surface-variant">10:00 AM, July 15</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">Shipment data received and processing begun at origin facility.</p>
+</div>
+</div>
+</div>
+<!-- Milestone 2 -->
+<div class="relative flex items-start group milestone-card opacity-0 translate-y-8" data-milestone="2">
+<div class="absolute left-6 top-6 w-4 h-4 -translate-x-[6px] -translate-y-1/2 rounded-full border-2 border-surface-variant bg-surface-container-lowest milestone-node z-20"></div>
+<div class="ml-16 w-full">
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-md shadow-sm">
+<div class="flex justify-between items-start mb-sm">
+<h3 class="font-label-md text-label-md text-on-surface">Package Sorted - Automated Center</h3>
+<span class="font-label-sm text-label-sm text-on-surface-variant">2:30 PM, July 15</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">Package has been scanned and routed through our high-speed sorting matrix.</p>
+</div>
+</div>
+</div>
+<!-- Milestone 3 -->
+<div class="relative flex items-start group milestone-card opacity-0 translate-y-8" data-milestone="3">
+<div class="absolute left-6 top-6 w-4 h-4 -translate-x-[6px] -translate-y-1/2 rounded-full border-2 border-surface-variant bg-surface-container-lowest milestone-node z-20"></div>
+<div class="ml-16 w-full">
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-md shadow-sm">
+<div class="flex justify-between items-start mb-sm">
+<h3 class="font-label-md text-label-md text-on-surface">In Transit - Air Cargo</h3>
+<span class="font-label-sm text-label-sm text-on-surface-variant">8:00 AM, July 16</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">Departed original facility. Currently en route to destination hub.</p>
+</div>
+</div>
+</div>
+<!-- Milestone 4 (Active/Current) -->
+<div class="relative flex items-start group milestone-card opacity-0 translate-y-8" data-milestone="4">
+<div class="absolute left-6 top-6 w-5 h-5 -translate-x-[8px] -translate-y-1/2 rounded-full border-2 border-primary bg-surface-container-lowest milestone-node z-20 shadow-[0_0_0_4px_#ffdbc9] pulse-glow"></div>
+<div class="ml-16 w-full">
+<div class="bg-surface border-2 border-primary rounded-xl p-md shadow-sm relative overflow-hidden">
+<div class="absolute inset-0 mithila-pattern opacity-10 pointer-events-none"></div>
+<div class="flex justify-between items-start mb-sm relative z-10">
+<h3 class="font-label-md text-label-md text-primary flex items-center gap-xs">
+<span class="material-symbols-outlined text-[18px]">location_on</span>
+                                            Arrived at Local Hub - Bhagalpur
+                                        </h3>
+<span class="font-label-sm text-label-sm text-on-surface-variant">4:00 PM, July 16</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant relative z-10">Package has reached the final distribution center and is awaiting last-mile assignment.</p>
+</div>
+</div>
+</div>
+<!-- Milestone 5 (Pending) -->
+<div class="relative flex items-start group milestone-card opacity-0 translate-y-8" data-milestone="5">
+<div class="absolute left-6 top-6 w-4 h-4 -translate-x-[6px] -translate-y-1/2 rounded-full border-2 border-outline-variant bg-surface-container-lowest z-20"></div>
+<div class="ml-16 w-full opacity-60">
+<div class="bg-transparent border border-dashed border-outline-variant rounded-xl p-md">
+<div class="flex justify-between items-start mb-sm">
+<h3 class="font-label-md text-label-md text-on-surface-variant">Out for Delivery - Last Mile Van</h3>
+<span class="font-label-sm text-label-sm text-outline">Pending (Est. 9:30 AM, July 17)</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Milestone 6 (Pending) -->
+<div class="relative flex items-start group milestone-card opacity-0 translate-y-8" data-milestone="6">
+<div class="absolute left-6 top-6 w-4 h-4 -translate-x-[6px] -translate-y-1/2 rounded-full border-2 border-outline-variant bg-surface-container-lowest z-20"></div>
+<div class="ml-16 w-full opacity-60">
+<div class="bg-transparent border border-dashed border-outline-variant rounded-xl p-md">
+<div class="flex justify-between items-start mb-sm">
+<h3 class="font-label-md text-label-md text-on-surface-variant">Delivered - Handed to Customer</h3>
+<span class="font-label-sm text-label-sm text-outline">Pending (Est. 11:45 AM, July 17)</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer Component -->
+<section class="py-xl px-margin bg-background">
+<div class="max-w-7xl mx-auto bg-surface-container-low rounded-xl p-lg">
+<h2 class="font-headline-lg text-headline-lg text-on-surface text-center mb-xl">Powering Your Tracking Experience</h2>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-xl">
+<!-- Highlight 1: Real-Time Data Engine -->
+<div class="flex flex-col items-center text-center md:items-start md:text-left gap-md">
+<div class="h-14 w-14 rounded-full bg-primary-fixed flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-3xl">sync</span>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md text-primary mb-sm">Real-Time Data Engine</h3>
+<p class="font-body-lg text-body-lg text-on-surface-variant">
+                        Our proprietary engine fetches instant updates from a global network of courier partners, providing millisecond-accurate tracking for every leg of your shipment's journey.
+                    </p>
+</div>
+</div>
+<!-- Highlight 2: Dedicated Support Hub -->
+<div class="flex flex-col items-center text-center md:items-start md:text-left gap-md">
+<div class="h-14 w-14 rounded-full bg-primary-fixed flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-3xl">support_agent</span>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md text-primary mb-sm">Dedicated Support Hub</h3>
+<p class="font-body-lg text-body-lg text-on-surface-variant">
+                        Experience peace of mind with 24/7 dedicated support for every single shipment. Our logistics experts are always on standby to assist from pickup to final delivery.
+                    </p>
+</div>
+</div>
+</div>
+</div>
+</section><footer class="bg-surface-container w-full border-t border-outline-variant">
+<div class="flex flex-col md:flex-row justify-between items-center px-margin py-lg w-full max-w-7xl mx-auto">
+<div class="mb-md md:mb-0 flex flex-col items-center md:items-start gap-sm">
+<a class="font-headline-md text-headline-md font-bold text-primary" href="#">
+<img alt="shipBihar Logo" class="h-8 w-auto grayscale opacity-80" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAoyO6orf4pBacCItlYcYXRoenIdzEqP2vRG6aBaRFOEUkMFsfXWjvLzGDtwA7OBY-YxYnuuTMSJUVvyTdvC4Jp6WapfL34UramRZgCVxIKnWVqQTYLM5nJqbTKSBFKP-DVPIAHszt1yG48hXSMEjvej8jkuM0Wwg14RG6pRDVdibkegyCp6tFVu9-fvU-NcwbClFYYQAl1QWhhAacxGDwF2T6SW1PqaXN442KzCwUItWpG2ePvsfrNQ9vyDxDo8vMk5xQeFOVU0as"/>
+</a>
+<p class="font-body-md text-body-md text-on-surface">© 2024 shipBihar Logistics. Native to Bihar, Global by Design.</p>
+</div>
+<div class="flex flex-wrap justify-center gap-md font-body-md text-body-md">
+<a class="text-on-surface-variant hover:text-primary transition-colors focus:ring-2 focus:ring-primary rounded" href="#">Privacy Policy</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors focus:ring-2 focus:ring-primary rounded" href="#">Terms of Service</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors focus:ring-2 focus:ring-primary rounded" href="#">Carrier Login</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors focus:ring-2 focus:ring-primary rounded" href="#">Help Center</a>
+</div>
+</div>
+</footer>
+<!-- Scroll Interaction Logic -->
+<script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const container = document.getElementById('timeline-container');
+            const progressLine = document.getElementById('progress-line');
+            const milestones = document.querySelectorAll('.milestone-card');
+            
+            // Hardcoded active step for demonstration (4th step is active)
+            const activeStepIndex = 3; 
+
+            const updateTimeline = () => {
+                const containerRect = container.getBoundingClientRect();
+                const windowHeight = window.innerHeight;
+                
+                // Calculate how far down the container we've scrolled
+                const startOffset = windowHeight * 0.7; // Line starts filling when container is 70% down viewport
+                
+                let progress = 0;
+                if (containerRect.top < startOffset) {
+                    const totalDistance = containerRect.height;
+                    const scrolledDistance = startOffset - containerRect.top;
+                    progress = Math.min(Math.max((scrolledDistance / totalDistance) * 100, 0), 100);
+                }
+
+                // Update line height
+                progressLine.style.height = `${progress}%`;
+
+                // Animate milestones based on line progress reaching their offset
+                const containerHeight = container.offsetHeight;
+                milestones.forEach((card, index) => {
+                    // Approximate percentage down the container this card is
+                    const cardTop = card.offsetTop;
+                    const cardPercentage = (cardTop / containerHeight) * 100;
+                    
+                    // Reveal card if the progress line has reached it (with a slight offset for visual appeal)
+                    if (progress >= cardPercentage - 2 || card.getBoundingClientRect().top < windowHeight * 0.85) {
+                        card.classList.add('is-visible');
+                        
+                        // If it's a completed step (before active index), color the node solid
+                        const node = card.querySelector('.milestone-node');
+                        if (index < activeStepIndex && node) {
+                             setTimeout(() => {
+                                 node.classList.add('bg-primary', 'border-primary');
+                                 node.classList.remove('bg-surface-container-lowest', 'border-surface-variant');
+                             }, 150);
+                        }
+                    }
+                });
+            };
+
+            // Initial check
+            updateTimeline();
+
+            // Throttle scroll event for performance
+            let ticking = false;
+            window.addEventListener('scroll', () => {
+                if (!ticking) {
+                    window.requestAnimationFrame(() => {
+                        updateTimeline();
+                        ticking = false;
+                    });
+                    ticking = true;
+                }
+            });
+        });
+    </script>
+</body></html>

@@ -24,10 +24,11 @@ const AboutUs = () => {
             <img src={shipbiharLogo} alt="shipBihar" className="au-nav-logo" />
           </div>
           <div className="au-nav-center">
-            <a onClick={() => navigate('/')} className="au-nav-link">Tracking</a>
-            <a onClick={() => navigate('/network')} className="au-nav-link">Network</a>
-            <a onClick={() => navigate('/services')} className="au-nav-link">Services</a>
-            <a onClick={() => navigate('/about')} className="au-nav-link au-nav-link--active">About Us</a>
+            <Link to="/" className="au-nav-link">Home</Link>
+            <Link to="/tracking" className="au-nav-link">Tracking</Link>
+            <Link to="/network" className="au-nav-link">Network</Link>
+            <Link to="/services" className="au-nav-link">Services</Link>
+            <Link to="/about" className="au-nav-link au-nav-link--active">About Us</Link>
           </div>
           <div className="au-nav-right">
             <span className="au-launch-badge">

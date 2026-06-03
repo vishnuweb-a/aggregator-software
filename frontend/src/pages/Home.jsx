@@ -43,10 +43,10 @@ const Home = () => {
           </div>
 
           <div className="sb-nav-center">
-            <a href="#tracking" className="sb-nav-link">Tracking</a>
+            <Link to="/tracking" className="sb-nav-link">Tracking</Link>
             <Link to="/network" className="sb-nav-link">Network</Link>
-            <a href="#services" className="sb-nav-link">Services</a>
-            <a href="#about" className="sb-nav-link">About Us</a>
+            <Link to="/services" className="sb-nav-link">Services</Link>
+            <Link to="/about" className="sb-nav-link">About Us</Link>
           </div>
 
           <button className="sb-nav-signin" onClick={() => navigate('/login')}>

@@ -8,6 +8,7 @@ import Dashboard from '../pages/Dashboard';
 import Network from '../pages/Network';
 import Services from '../pages/Services';
 import AboutUs from '../pages/AboutUs';
+import Tracking from '../pages/Tracking';
 import ProtectedRoute from './ProtectedRoute';
 
 /* ── Page transition wrapper ── */
@@ -63,6 +64,16 @@ const AnimatedRoutes = () => {
           element={
             <PageTransition>
               <Network />
+            </PageTransition>
+          }
+        />
+
+        {/* Public: Tracking */}
+        <Route
+          path="/tracking"
+          element={
+            <PageTransition>
+              <Tracking />
             </PageTransition>
           }
         />

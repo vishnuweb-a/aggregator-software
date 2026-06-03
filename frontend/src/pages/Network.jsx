@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { ArrowRight, ChevronRight } from 'lucide-react';
 import shipbiharLogo from '../assets/sb3.png';
 
@@ -55,10 +55,11 @@ const Network = () => {
           </div>
 
           <div className="nw-nav-center">
-            <a onClick={() => navigate('/')} className="nw-nav-link">Tracking</a>
-            <a className="nw-nav-link nw-nav-link--active">Network</a>
-            <a onClick={() => navigate('/services')} className="nw-nav-link">Services</a>
-            <a onClick={() => navigate('/about')} className="nw-nav-link">About Us</a>
+            <Link to="/" className="nw-nav-link">Home</Link>
+            <Link to="/tracking" className="nw-nav-link">Tracking</Link>
+            <Link to="/network" className="nw-nav-link nw-nav-link--active">Network</Link>
+            <Link to="/services" className="nw-nav-link">Services</Link>
+            <Link to="/about" className="nw-nav-link">About Us</Link>
           </div>
 
           <button className="nw-nav-signin" onClick={() => navigate('/login')}>
