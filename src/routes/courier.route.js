@@ -1,6 +1,7 @@
 import router from 'express'
 import {createParcel,courierOption,confirmCourier,getUserShipments,verifyPayment} from '../controller/parcel.controller.js'
 import {payWallet} from '../controller/wallet.controller.js'
+import {createShipmentOrder, verifyShipmentPayment} from '../controller/payment.controller.js'
 import {authCheck} from '../middleware/authCheck.middleware.js'
 import {isBlocked} from '../middleware/isBlocked.middleware.js'
 import { downloadReceipt } from '../controller/reciept.controller.js'
@@ -18,5 +19,9 @@ parcelRouter.post('/payment/verify',verifyPayment)
 parcelRouter.post('/payment/wallet',authCheck,isBlocked,payWallet)
 parcelRouter.post('/payment/recipt/:shipmentId',authCheck,isBlocked,downloadReceipt)
 parcelRouter.get('/parcel//getAllParcel',authCheck,isBlocked,)
+
+// Razorpay Shipment Payment Routes
+parcelRouter.post('/payment/razorpay/create', authCheck, isBlocked, createShipmentOrder)
+parcelRouter.post('/payment/razorpay/verify', authCheck, isBlocked, verifyShipmentPayment)
 
 export default parcelRouter

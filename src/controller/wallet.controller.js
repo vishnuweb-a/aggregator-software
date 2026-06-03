@@ -4,9 +4,9 @@ import Freezed from "../model/freezedWallet.model.js";
 import Courier from "../model/courier.model.js";
 import Parcel from "../model/parcel.model.js";
 import Shipment from "../model/shipment.model.js";
-
-
-
+import razorpayInstance from "../service/razorpay.js";
+import credential from "../config/config.js";
+import crypto from "crypto";
 
 
 
@@ -215,4 +215,104 @@ err.message
 
 }
 
+};
+
+
+/**
+ * ─── Razorpay Wallet Recharge ─────────────────────
+ * POST /api/wallet/recharge/create-order
+ * Creates a Razorpay order for wallet recharge
+ */
+export const createRechargeOrder = async (req, res) => {
+  try {
+    const userId = req.user;
+    const { amount } = req.body;
+
+    if (!amount || Number(amount) <= 0) {
+      return res.status(400).json({ response: "Valid amount is required" });
+    }
+
+    const amountInPaise = Math.round(Number(amount) * 100);
+
+    const options = {
+      amount: amountInPaise,
+      currency: "INR",
+      receipt: `rcg_${String(userId).slice(-6)}_${Date.now()}`,
+      notes: {
+        type: "WALLET_RECHARGE",
+        userId: String(userId)
+      }
+    };
+
+    const order = await razorpayInstance.orders.create(options);
+
+    return res.status(201).json({
+      orderId: order.id,
+      amount: order.amount,
+      currency: order.currency,
+      keyId: credential.razorpayKeyId
+    });
+  } catch (err) {
+    console.log("Razorpay create order error:", err);
+    return res.status(500).json({ response: err.message });
+  }
+};
+
+
+/**
+ * POST /api/wallet/recharge/verify
+ * Verifies Razorpay payment signature and credits wallet
+ */
+export const verifyRechargePayment = async (req, res) => {
+  try {
+    const userId = req.user;
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, amount } = req.body;
+
+    if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
+      return res.status(400).json({ response: "Missing payment verification fields" });
+    }
+
+    // Verify signature
+    const body = razorpay_order_id + "|" + razorpay_payment_id;
+    const expectedSignature = crypto
+      .createHmac("sha256", credential.razorpayKeySecret)
+      .update(body)
+      .digest("hex");
+
+    if (expectedSignature !== razorpay_signature) {
+      return res.status(400).json({ response: "Payment verification failed — invalid signature" });
+    }
+
+    // Credit wallet
+    const creditAmount = Number(amount);
+    if (!creditAmount || creditAmount <= 0) {
+      return res.status(400).json({ response: "Invalid recharge amount" });
+    }
+
+    let wallet = await Wallet.findOne({ userId });
+    if (!wallet) {
+      wallet = await Wallet.create({ userId, balance: 0 });
+    }
+
+    wallet.balance += creditAmount;
+    await wallet.save();
+
+    // Create transaction record
+    await WalletTransaction.create({
+      userId,
+      type: "CREDIT",
+      amount: creditAmount,
+      source: "RECHARGE",
+      description: `Razorpay recharge — ${razorpay_payment_id}`
+    });
+
+    return res.status(200).json({
+      response: "Wallet recharged successfully",
+      balance: wallet.balance,
+      paymentId: razorpay_payment_id
+    });
+  } catch (err) {
+    console.log("Razorpay verify error:", err);
+    return res.status(500).json({ response: err.message });
+  }
 };

@@ -891,6 +891,64 @@ const BookingView = ({ onBooked, walletBalance, walletLoading, refreshWalletBala
     }
   };
 
+  const handlePayWithRazorpay = async () => {
+    setLoading(true); setError('');
+    try {
+      const shipId = pendingShipment?.shipmentId || pendingShipment?._id;
+      if (!shipId) {
+        setError('Shipment information is missing.');
+        setLoading(false);
+        return;
+      }
+      
+      const r = await api.post('/user/payment/razorpay/create', { shipmentId: shipId });
+      const { orderId, amount, currency, keyId } = r.data;
+      
+      const options = {
+        key: keyId,
+        amount: Math.round(amount * 100),
+        currency: currency,
+        name: "Aggregator Software",
+        description: "Shipment Payment",
+        order_id: orderId,
+        handler: async function (response) {
+          try {
+            const verifyRes = await api.post('/user/payment/razorpay/verify', {
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+              shipmentId: shipId
+            });
+            const successPayload = {
+              _id: verifyRes.data.shipment.shipmentId,
+              awb: verifyRes.data.shipment.awb,
+              courierPartner: verifyRes.data.shipment.courier,
+              price: verifyRes.data.shipment.amount,
+              eta: verifyRes.data.shipment.eta,
+              paymentStatus: verifyRes.data.shipment.paymentStatus,
+              shipmentStatus: verifyRes.data.shipment.status,
+            };
+            setSuccessData(successPayload);
+            setStep(4);
+          } catch (err) {
+            setError(err.response?.data?.response || 'Payment verification failed.');
+          }
+        },
+        theme: { color: "#f47a20" }
+      };
+      
+      const rzp = new window.Razorpay(options);
+      rzp.on('payment.failed', function (response){
+        setError("Payment failed: " + response.error.description);
+      });
+      rzp.open();
+    } catch (err) {
+      setError(err.response?.data?.response || 'Failed to initialize payment.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handlePayWithWallet = async () => {
     setLoading(true); setError('');
     try {
@@ -1330,11 +1388,19 @@ const BookingView = ({ onBooked, walletBalance, walletLoading, refreshWalletBala
               </div>
             </div>
 
-            <div style={{ marginBottom: '1.25rem' }}>
-              <p style={{ fontSize: '0.78rem', color: 'var(--text-2)', marginBottom: '0.4rem' }}>Pay using UPI</p>
-              <a href={paymentInfo?.upiUrl || pendingShipment.upiUrl} className="btn-ghost" style={{ width: '100%', justifyContent: 'center' }}>
-                Open UPI Payment Link
-              </a>
+            <div style={{ marginBottom: '1.25rem', display: 'flex', gap: '1rem' }}>
+              <div style={{ flex: 1 }}>
+                <p style={{ fontSize: '0.78rem', color: 'var(--text-2)', marginBottom: '0.4rem' }}>Pay Online instantly</p>
+                <button type="button" onClick={handlePayWithRazorpay} disabled={loading} className="btn-primary" style={{ width: '100%', justifyContent: 'center' }}>
+                  {loading ? <Spinner small /> : 'Pay with Razorpay'}
+                </button>
+              </div>
+              <div style={{ flex: 1 }}>
+                <p style={{ fontSize: '0.78rem', color: 'var(--text-2)', marginBottom: '0.4rem' }}>Pay using UPI App</p>
+                <a href={paymentInfo?.upiUrl || pendingShipment.upiUrl} className="btn-ghost" style={{ width: '100%', justifyContent: 'center' }}>
+                  Open UPI Payment Link
+                </a>
+              </div>
             </div>
             <div className="glass-card" style={{ padding: '1rem', marginBottom: '1.25rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem' }}>
@@ -1455,20 +1521,67 @@ const Dashboard = () => {
   }, []);
 
   const rechargeWallet = useCallback(async (amount) => {
-    setWalletLoading(true);
-    setWalletError('');
-    try {
-      const r = await api.post('/wallet/recharge', { amount });
-      const balanceValue = r.data.balance ?? r.data['balance in wallet is'];
-      const normalized = Number(balanceValue);
-      const finalBalance = Number.isFinite(normalized) ? normalized : 0;
-      setWalletBalance(finalBalance);
-      setWalletNotice('');
-      return finalBalance;
-    } finally {
-      setWalletLoading(false);
-    }
-  }, []);
+    return new Promise((resolve, reject) => {
+      setWalletLoading(true);
+      setWalletError('');
+      
+      api.post('/wallet/recharge/create-order', { amount }).then(r => {
+        const { orderId, currency, keyId } = r.data;
+        const options = {
+          key: keyId,
+          amount: Math.round(Number(amount) * 100),
+          currency: currency,
+          name: "Aggregator Software",
+          description: "Wallet Recharge",
+          order_id: orderId,
+          handler: async function (response) {
+            try {
+              const verifyRes = await api.post('/wallet/recharge/verify', {
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+                amount: amount
+              });
+              const balanceValue = verifyRes.data.balance;
+              const normalized = Number(balanceValue);
+              const finalBalance = Number.isFinite(normalized) ? normalized : 0;
+              setWalletBalance(finalBalance);
+              setWalletNotice('');
+              setWalletLoading(false);
+              resolve(finalBalance);
+            } catch (err) {
+              setWalletError(err.response?.data?.response || 'Wallet recharge verification failed.');
+              setWalletLoading(false);
+              reject(err);
+            }
+          },
+          prefill: {
+            name: user?.name || "",
+            email: user?.email || "",
+            contact: user?.phoneNumber || ""
+          },
+          theme: { color: "#f47a20" },
+          modal: {
+            ondismiss: function() {
+              setWalletLoading(false);
+              reject(new Error("Payment cancelled"));
+            }
+          }
+        };
+        const rzp = new window.Razorpay(options);
+        rzp.on('payment.failed', function (response){
+          setWalletError("Payment failed: " + response.error.description);
+          setWalletLoading(false);
+          reject(new Error("Payment failed"));
+        });
+        rzp.open();
+      }).catch(err => {
+        setWalletError(err.response?.data?.response || 'Failed to initialize recharge.');
+        setWalletLoading(false);
+        reject(err);
+      });
+    });
+  }, [user]);
 
   useEffect(() => {
     // Fetch user's shipment history
