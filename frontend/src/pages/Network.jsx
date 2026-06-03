@@ -57,8 +57,8 @@ const Network = () => {
           <div className="nw-nav-center">
             <a onClick={() => navigate('/')} className="nw-nav-link">Tracking</a>
             <a className="nw-nav-link nw-nav-link--active">Network</a>
-            <a onClick={() => navigate('/')} className="nw-nav-link">Services</a>
-            <a onClick={() => navigate('/')} className="nw-nav-link">About Us</a>
+            <a onClick={() => navigate('/services')} className="nw-nav-link">Services</a>
+            <a onClick={() => navigate('/about')} className="nw-nav-link">About Us</a>
           </div>
 
           <button className="nw-nav-signin" onClick={() => navigate('/login')}>
@@ -90,7 +90,7 @@ const Network = () => {
           </div>
           <div className="nw-hero-image-wrap">
             <img
-              src="/network/hero-warehouse.jpg"
+              src="/parcelx_images/image_38.png"
               alt="Modern logistics warehouse interior during golden hour with warm saffron lighting"
               className="nw-hero-image"
             />
@@ -153,7 +153,7 @@ const Network = () => {
           <div className="nw-detail-image-wrap">
             <div className="nw-detail-bg-circle" />
             <img
-              src="/network/bihar-network-map.jpg"
+              src="/parcelx_images/image_31.png"
               alt="Bihar map overlaid with glowing orange network grid connecting districts"
               className="nw-detail-image"
             />

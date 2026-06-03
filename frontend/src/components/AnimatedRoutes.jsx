@@ -6,6 +6,8 @@ import Login from '../pages/Login';
 import Register from '../pages/Register';
 import Dashboard from '../pages/Dashboard';
 import Network from '../pages/Network';
+import Services from '../pages/Services';
+import AboutUs from '../pages/AboutUs';
 import ProtectedRoute from './ProtectedRoute';
 
 /* ── Page transition wrapper ── */
@@ -61,6 +63,26 @@ const AnimatedRoutes = () => {
           element={
             <PageTransition>
               <Network />
+            </PageTransition>
+          }
+        />
+
+        {/* Public: Services */}
+        <Route
+          path="/services"
+          element={
+            <PageTransition>
+              <Services />
+            </PageTransition>
+          }
+        />
+
+        {/* Public: About Us */}
+        <Route
+          path="/about"
+          element={
+            <PageTransition>
+              <AboutUs />
             </PageTransition>
           }
         />
