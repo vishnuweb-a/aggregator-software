@@ -5,6 +5,7 @@ import Home from '../pages/Home';
 import Login from '../pages/Login';
 import Register from '../pages/Register';
 import Dashboard from '../pages/Dashboard';
+import Network from '../pages/Network';
 import ProtectedRoute from './ProtectedRoute';
 
 /* ── Page transition wrapper ── */
@@ -50,6 +51,16 @@ const AnimatedRoutes = () => {
           element={
             <PageTransition>
               <Login />
+            </PageTransition>
+          }
+        />
+
+        {/* Public: Network */}
+        <Route
+          path="/network"
+          element={
+            <PageTransition>
+              <Network />
             </PageTransition>
           }
         />

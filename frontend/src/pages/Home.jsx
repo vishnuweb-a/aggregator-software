@@ -44,7 +44,7 @@ const Home = () => {
 
           <div className="sb-nav-center">
             <a href="#tracking" className="sb-nav-link">Tracking</a>
-            <a href="#network" className="sb-nav-link">Network</a>
+            <Link to="/network" className="sb-nav-link">Network</Link>
             <a href="#services" className="sb-nav-link">Services</a>
             <a href="#about" className="sb-nav-link">About Us</a>
           </div>
