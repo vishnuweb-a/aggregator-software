@@ -21,17 +21,18 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     const response = await api.post('/auth/login', { email, password });
     if (response.status === 200) {
-      // Try to fetch full user profile
-      try {
-        const profileRes = await api.get('/auth/me');
-        const userData = profileRes.data.user;
-        setUser(userData);
-        localStorage.setItem('acs_user', JSON.stringify(userData));
-      } catch {
-        const userData = { email };
-        setUser(userData);
-        localStorage.setItem('acs_user', JSON.stringify(userData));
+      // Use user data from login response directly (cookies may be blocked cross-domain)
+      let userData = response.data.user;
+      if (!userData) {
+        try {
+          const profileRes = await api.get('/auth/me');
+          userData = profileRes.data.user;
+        } catch {
+          userData = { email };
+        }
       }
+      setUser(userData);
+      localStorage.setItem('acs_user', JSON.stringify(userData));
       return true;
     }
   };
@@ -49,17 +50,19 @@ export const AuthProvider = ({ children }) => {
   const register = async (userData) => {
     const response = await api.post('/auth/register', userData);
     if (response.status === 201 || response.status === 200) {
-      try {
-        const profileRes = await api.get('/auth/me');
-        const user = profileRes.data.user;
-        setUser(user);
-        localStorage.setItem('acs_user', JSON.stringify(user));
-      } catch {
-        // fallback
-        const user = response.data.user || { email: userData.email };
-        setUser(user);
-        localStorage.setItem('acs_user', JSON.stringify(user));
+      // Use user data from register response directly (cookies may be blocked cross-domain)
+      let registeredUser = response.data.user;
+      if (!registeredUser) {
+        // Try /auth/me as fallback (works when cookies are set, e.g. same-domain)
+        try {
+          const profileRes = await api.get('/auth/me');
+          registeredUser = profileRes.data.user;
+        } catch {
+          registeredUser = { name: userData.name, email: userData.email, phoneNumber: userData.phoneNumber, status: 'verified' };
+        }
       }
+      setUser(registeredUser);
+      localStorage.setItem('acs_user', JSON.stringify(registeredUser));
     }
     return response.data;
   };

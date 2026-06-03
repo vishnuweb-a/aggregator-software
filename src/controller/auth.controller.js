@@ -151,7 +151,8 @@ const loginUser = async (req,res)=>{
 
    res.cookie('token', token, cookieOptions)
    return res.status(200).json({
-       "response"  : "user login successfully ..."
+       "response"  : "user login successfully ...",
+       user: { name: user.name, email: user.email, phoneNumber: user.phoneNumber, status: user.status }
    })
   }catch(err){
     return res.status(500).json({
