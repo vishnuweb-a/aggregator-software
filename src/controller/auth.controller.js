@@ -52,7 +52,9 @@ const registerUser = async (req , res)=>{
         
         const token = jwt.sign({userId :user._id,password : user.password},credential.jwtSecret,{expiresIn : '1h'})
         res.cookie('token', token, cookieOptions)
-        await welcomeMessage(email,user.name)
+        
+        // Send welcome email in background (don't block registration)
+        welcomeMessage(email,user.name).catch(err => console.log('Welcome email failed:', err.message))
         
         return res.status(201).json({
           "message"  :  "user created successfully.",
@@ -60,6 +62,7 @@ const registerUser = async (req , res)=>{
         })
   }catch(err){
     console.log(err.message)
+    return res.status(500).json({ message: err.message })
   }
 }
 
@@ -115,6 +118,7 @@ const validateAndMarkStatus = async (req,res)=>{
       })
     }catch(err){
       console.log(err.message)
+      return res.status(500).json({ message: err.message })
     }
 }
 

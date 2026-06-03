@@ -24,7 +24,7 @@ const app = express()
 connectDB()
 redisConnect()
 
-const clientUrls = (credential.clientUrl || 'http://localhost:5173')
+const clientUrls = (credential.clientUrl || 'http://localhost:5173,http://localhost:5174')
   .split(',')
   .map((url) => url.trim())
   .filter(Boolean)
