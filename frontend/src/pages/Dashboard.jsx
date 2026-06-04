@@ -7,7 +7,7 @@ import {
   AlertCircle, ArrowLeft, Truck, Zap, Phone, Mail,
   ShieldCheck, PlusCircle, List, Home, Wallet, Download,
   Star, DollarSign, Award, Navigation, Shield, Ruler,
-  AlertTriangle, Moon, Sun, Menu, X
+  AlertTriangle, Moon, Sun, Menu, X, Camera
 } from 'lucide-react';
 import shipbiharLogo from '../assets/sb3.png';
 
@@ -220,30 +220,115 @@ const ShipmentCard = ({ s }) => {
 };
 
 /* ─── Profile View (two columns) ─────────────────── */
-const ProfileView = ({ user, shipments, loadingShipments, walletBalance }) => (
-  <div className="profile-layout">
+const ProfileView = ({ user, shipments, loadingShipments, walletBalance }) => {
+  const { logout, checkAuth } = useAuth();
+  const [isEditing, setIsEditing] = useState(false);
+  const [editData, setEditData] = useState({ name: user?.name || '', password: '' });
+  const [file, setFile] = useState(null);
+  const [preview, setPreview] = useState(user?.profilePicture || null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-    {/* LEFT — User Info */}
-    <div className="glass-card" style={{ padding: '2rem' }}>
-      {/* Avatar */}
-      <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
-        <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'linear-gradient(135deg, var(--accent), var(--purple))', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem', boxShadow: '0 0 28px rgba(244,122,32,0.25)' }}>
-          <span style={{ fontSize: '2rem', fontWeight: 900, color: '#fff' }}>{(user?.name || 'U')[0].toUpperCase()}</span>
+  const handleFileChange = (e) => {
+    const selected = e.target.files[0];
+    if (selected) {
+      setFile(selected);
+      setPreview(URL.createObjectURL(selected));
+    }
+  };
+
+  const handleUpdate = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+
+    try {
+      const formData = new FormData();
+      formData.append('name', editData.name);
+      if (editData.password) formData.append('password', editData.password);
+      if (file) formData.append('photo', file);
+
+      await api.put('/auth/profile', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+
+      await checkAuth(); // Refresh user data
+      setIsEditing(false);
+
+      if (editData.password) {
+        alert('Password changed successfully. For security verification, you will now be logged out.');
+        logout();
+      }
+    } catch (err) {
+      setError(err.response?.data?.response || 'Failed to update profile');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="profile-layout">
+      {/* LEFT — User Info */}
+      <div className="glass-card" style={{ padding: '2rem' }}>
+        {/* Avatar */}
+        <div style={{ textAlign: 'center', marginBottom: '1.5rem', position: 'relative' }}>
+          <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'linear-gradient(135deg, var(--accent), var(--purple))', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem', boxShadow: '0 0 28px rgba(244,122,32,0.25)', overflow: 'hidden' }}>
+            {preview || user?.profilePicture ? (
+              <img src={preview || user?.profilePicture} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            ) : (
+              <span style={{ fontSize: '2rem', fontWeight: 900, color: '#fff' }}>{(user?.name || 'U')[0].toUpperCase()}</span>
+            )}
+          </div>
+          {isEditing && (
+            <label style={{ position: 'absolute', bottom: '2rem', right: 'calc(50% - 40px)', background: 'var(--accent)', color: '#fff', borderRadius: '50%', width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', border: '2px solid var(--bg-1)' }}>
+              <Camera size={12} />
+              <input type="file" style={{ display: 'none' }} accept="image/*" onChange={handleFileChange} />
+            </label>
+          )}
+
+          {!isEditing ? (
+            <>
+              <h2 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-1)', margin: '0 0 0.25rem' }}>{user?.name || 'User'}</h2>
+              <span className="badge badge-green" style={{ fontSize: '0.7rem' }}><ShieldCheck size={10} /> Verified Account</span>
+              <div>
+                <button onClick={() => setIsEditing(true)} className="btn-ghost" style={{ marginTop: '0.75rem', padding: '0.25rem 0.75rem', fontSize: '0.75rem' }}>Edit Profile</button>
+              </div>
+            </>
+          ) : (
+             <form onSubmit={handleUpdate} style={{ marginTop: '1rem', textAlign: 'left' }}>
+               {error && <div className="alert alert-error" style={{ marginBottom: '0.5rem', fontSize: '0.8rem', padding: '0.5rem' }}>{error}</div>}
+               <Field label="Full Name">
+                 <input type="text" value={editData.name} onChange={e => setEditData({...editData, name: e.target.value})} className="input-field no-icon input-compact" required />
+               </Field>
+               <div style={{ marginTop: '0.5rem' }}>
+                 <Field label="New Password (optional)">
+                   <input type="password" value={editData.password} onChange={e => setEditData({...editData, password: e.target.value})} className="input-field no-icon input-compact" placeholder="Leave blank to keep current" minLength={6} />
+                 </Field>
+               </div>
+               <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem' }}>
+                 <button type="submit" disabled={loading} className="btn-primary" style={{ flex: 1, padding: '0.5rem' }}>
+                   {loading ? 'Saving...' : 'Save'}
+                 </button>
+                 <button type="button" onClick={() => { setIsEditing(false); setPreview(user?.profilePicture || null); setFile(null); setEditData({ name: user?.name || '', password: '' }); setError(''); }} className="btn-ghost" style={{ flex: 1, padding: '0.5rem' }}>Cancel</button>
+               </div>
+             </form>
+          )}
         </div>
-        <h2 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-1)', margin: '0 0 0.25rem' }}>{user?.name || 'User'}</h2>
-        <span className="badge badge-green" style={{ fontSize: '0.7rem' }}><ShieldCheck size={10} /> Verified Account</span>
-      </div>
 
-      <InfoRow icon={Mail} label="Email" value={user?.email} />
-      <InfoRow icon={Phone} label="Phone" value={user?.phoneNumber ? String(user.phoneNumber) : null} />
-      <InfoRow icon={User} label="Account Status" value={user?.status || 'verified'} />
-      <InfoRow icon={Wallet} label="Wallet Balance" value={walletBalance != null ? `₹${walletBalance}` : '—'} />
+        {!isEditing && (
+          <>
+            <InfoRow icon={Mail} label="Email" value={user?.email} />
+            <InfoRow icon={Phone} label="Phone" value={user?.phoneNumber ? String(user.phoneNumber) : null} />
+            <InfoRow icon={User} label="Account Status" value={user?.status || 'verified'} />
+            <InfoRow icon={Wallet} label="Wallet Balance" value={walletBalance != null ? `₹${walletBalance}` : '—'} />
+          </>
+        )}
 
-      <div style={{ marginTop: '1.25rem', padding: '0.9rem', background: 'rgba(244,122,32,0.06)', borderRadius: 12, border: '1px solid rgba(244,122,32,0.18)', textAlign: 'center' }}>
-        <p style={{ fontSize: '0.72rem', color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 0.35rem', fontWeight: 700 }}>Total Shipments</p>
-        <p style={{ fontSize: '2.2rem', fontWeight: 900, color: 'var(--accent)', margin: 0 }}>{shipments.length}</p>
+        <div style={{ marginTop: '1.25rem', padding: '0.9rem', background: 'rgba(244,122,32,0.06)', borderRadius: 12, border: '1px solid rgba(244,122,32,0.18)', textAlign: 'center' }}>
+          <p style={{ fontSize: '0.72rem', color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 0.35rem', fontWeight: 700 }}>Total Shipments</p>
+          <p style={{ fontSize: '2.2rem', fontWeight: 900, color: 'var(--accent)', margin: 0 }}>{shipments.length}</p>
+        </div>
       </div>
-    </div>
 
     {/* RIGHT — Courier History */}
     <div>
@@ -268,6 +353,7 @@ const ProfileView = ({ user, shipments, loadingShipments, walletBalance }) => (
     </div>
   </div>
 );
+};
 
 /* ─── Wallet View ─────────────────────────────────── */
 const WalletView = ({ balance, loading, notice, error, onRecharge }) => {

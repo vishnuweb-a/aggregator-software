@@ -47,6 +47,18 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('acs_user');
   };
 
+  const checkAuth = async () => {
+    try {
+      const res = await api.get('/auth/me');
+      const userData = res.data.user;
+      setUser(userData);
+      localStorage.setItem('acs_user', JSON.stringify(userData));
+      return userData;
+    } catch {
+      return null;
+    }
+  };
+
   const register = async (userData) => {
     const response = await api.post('/auth/register', userData);
     if (response.status === 201 || response.status === 200) {
@@ -110,6 +122,7 @@ export const AuthProvider = ({ children }) => {
     forgotPassword,
     verifyForgotOtp,
     changePassword,
+    checkAuth,
     loading,
   };
 

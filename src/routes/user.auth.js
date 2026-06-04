@@ -1,7 +1,9 @@
 import router from 'express'
-import { loginUser, registerUser,validateAndMarkStatus ,logoutUser ,  forgotPassword ,verifyOtpForForgotPassword ,changePassword, getMe } from '../controller/auth.controller.js'
+import multer from 'multer'
+import { loginUser, registerUser,validateAndMarkStatus ,logoutUser ,  forgotPassword ,verifyOtpForForgotPassword ,changePassword, getMe, updateProfile } from '../controller/auth.controller.js'
 
 const authRouter = router()
+const upload = multer({ storage: multer.memoryStorage() })
 
 /**
  * @swagger
@@ -199,6 +201,6 @@ authRouter.post('/verifyotp',verifyOtpForForgotPassword)
 authRouter.post('/changepassword',changePassword)
 
 authRouter.get('/me', getMe)
-
+authRouter.put('/profile', upload.single('photo'), updateProfile)
 
 export default authRouter

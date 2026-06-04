@@ -33,6 +33,10 @@ const userSchema = new mongoose.Schema({
     type : String,
     enum : ["unverified","verified"],
     default : "unverified"
+  },
+  profilePicture: {
+    type: String,
+    default: ""
   }
 },{
   timestamps :  true

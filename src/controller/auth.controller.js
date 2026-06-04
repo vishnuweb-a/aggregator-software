@@ -6,6 +6,7 @@ import crypto from 'crypto'
 import { strOpt,optValidate } from '../services/otp.service.js'
 import { sendOtp,welcomeMessage } from '../services/mail.service.js'
 import credential from '../config/config.js'
+import { uploadToCloudinary } from '../utils/cloudinary.js'
 
 const isProduction = process.env.NODE_ENV === 'production'
 const cookieOptions = {
@@ -58,7 +59,7 @@ const registerUser = async (req , res)=>{
         
         return res.status(201).json({
           "message"  :  "user created successfully.",
-          user: { name: user.name, email: user.email, phoneNumber: user.phoneNumber, status: user.status }
+          user: { name: user.name, email: user.email, phoneNumber: user.phoneNumber, status: user.status, profilePicture: user.profilePicture }
         })
   }catch(err){
     console.log(err.message)
@@ -124,7 +125,6 @@ const validateAndMarkStatus = async (req,res)=>{
 
 
 
-
 /**  
  *   -  post :  /login  
  *  - helps to  login  user ..
@@ -152,7 +152,7 @@ const loginUser = async (req,res)=>{
    res.cookie('token', token, cookieOptions)
    return res.status(200).json({
        "response"  : "user login successfully ...",
-       user: { name: user.name, email: user.email, phoneNumber: user.phoneNumber, status: user.status }
+       user: { name: user.name, email: user.email, phoneNumber: user.phoneNumber, status: user.status, profilePicture: user.profilePicture }
    })
   }catch(err){
     return res.status(500).json({
@@ -290,14 +290,50 @@ const getMe = async (req, res) => {
     const user = await User.findById(decoded.userId).select('-password')
     if (!user) return res.status(404).json({ response: 'User not found' })
     if (user.isBlocked) return res.status(403).json({ response: user.reasonOfBlock })
-    return res.status(200).json({ user: { name: user.name, email: user.email, phoneNumber: user.phoneNumber, status: user.status } })
+    return res.status(200).json({ user: { name: user.name, email: user.email, phoneNumber: user.phoneNumber, status: user.status, profilePicture: user.profilePicture } })
   } catch (err) {
     return res.status(401).json({ response: 'Invalid token' })
   }
 }
 
-export  { registerUser,validateAndMarkStatus, loginUser ,logoutUser ,forgotPassword ,verifyOtpForForgotPassword ,changePassword, getMe }
+const updateProfile = async (req, res) => {
+  try {
+    const token = req.cookies?.token
+    if (!token) return res.status(401).json({ response: 'Not authenticated' })
+    
+    const decoded = jwt.verify(token, credential.jwtSecret)
+    const user = await User.findById(decoded.userId)
+    if (!user) return res.status(404).json({ response: 'User not found' })
 
+    const { name, password } = req.body
+    
+    if (name) {
+      user.name = name
+    }
 
+    if (password && password.trim() !== '') {
+      user.password = await bcrypt.hash(password, 10)
+    }
 
+    if (req.file) {
+      try {
+        const result = await uploadToCloudinary(req.file.buffer)
+        user.profilePicture = result.secure_url
+      } catch (uploadErr) {
+        return res.status(500).json({ response: 'Image upload failed' })
+      }
+    }
 
+    await user.save()
+
+    return res.status(200).json({
+      response: 'Profile updated successfully',
+      user: { name: user.name, email: user.email, phoneNumber: user.phoneNumber, status: user.status, profilePicture: user.profilePicture }
+    })
+
+  } catch (err) {
+    return res.status(500).json({ response: err.message })
+  }
+}
+
+export  { registerUser,validateAndMarkStatus, loginUser ,logoutUser ,forgotPassword ,verifyOtpForForgotPassword ,changePassword, getMe, updateProfile }

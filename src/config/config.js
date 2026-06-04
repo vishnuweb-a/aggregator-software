@@ -11,7 +11,10 @@ const credential = {
   jwtSecret :  process.env.JWT_SECRET,
   clientUrl : process.env.CLIENT_URL,
   razorpayKeyId : process.env.ROZA_API_KEY,
-  razorpayKeySecret : process.env.ROZAPAY_SECRET_KEY
+  razorpayKeySecret : process.env.ROZAPAY_SECRET_KEY,
+  cloudnaryApiKey : process.env.CLOUDNARY_API_KEY,
+  cloudnaryApiSecret : process.env.CLOUDNARY_API_SECRET,
+  cloudnaryName : process.env.CLOUDNARY_NAME
 }
 
 export default credential
