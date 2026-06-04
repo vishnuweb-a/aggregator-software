@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, Fragment } from 'react';
+import { useState, useEffect, useCallback, Fragment, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
 import {
@@ -775,8 +775,36 @@ const Toast = ({ message, onClose }) => {
   );
 };
 
+/* ─── Suggestion Chips Component ──────────────────── */
+const SuggestionChips = ({ title, suggestions, onSelect }) => {
+  if (!suggestions || suggestions.length === 0) return null;
+  return (
+    <div style={{ marginBottom: '0.75rem' }}>
+      <p style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', margin: '0 0 0.4rem' }}>{title}</p>
+      <div className="suggestion-chips-container" style={{ display: 'flex', gap: '0.5rem', overflowX: 'auto', paddingBottom: '0.2rem', scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+        {suggestions.map((s, idx) => (
+          <div key={idx} onClick={() => onSelect(s)} style={{
+            flexShrink: 0,
+            background: 'rgba(244,122,32,0.06)',
+            border: '1px solid rgba(244,122,32,0.2)',
+            borderRadius: '20px',
+            padding: '0.3rem 0.75rem',
+            cursor: 'pointer',
+            display: 'flex',
+            flexDirection: 'column',
+            transition: 'all 0.2s'
+          }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(244,122,32,0.12)'} onMouseLeave={e => e.currentTarget.style.background = 'rgba(244,122,32,0.06)'}>
+            <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-1)' }}>{s.name}</span>
+            <span style={{ fontSize: '0.65rem', color: 'var(--text-3)' }}>{s.address?.city || 'Unknown'}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 /* ─── Main Booking View ───────────────────────────── */
-const BookingView = ({ onBooked, walletBalance, walletLoading, refreshWalletBalance, rechargeWallet, onWalletBalanceUpdate }) => {
+const BookingView = ({ onBooked, walletBalance, walletLoading, refreshWalletBalance, rechargeWallet, onWalletBalanceUpdate, shipments }) => {
   const [step, setStep] = useState(1);
   const [parcelData, setParcelData] = useState({
     senderName: '', senderPhoneNumber: '',
@@ -809,6 +837,49 @@ const BookingView = ({ onBooked, walletBalance, walletLoading, refreshWalletBala
   const onFieldChange = e => setParcelData({ ...parcelData, [e.target.name]: e.target.value });
   const onSenderAddressChange = (addr) => setParcelData({ ...parcelData, senderAddress: addr });
   const onReceiverAddressChange = (addr) => setParcelData({ ...parcelData, receiverAddress: addr });
+
+  // Compute unique sender and receiver suggestions from past shipments
+  const senderSuggestions = useMemo(() => {
+    if (!shipments || shipments.length === 0) return [];
+    const unique = new Map();
+    shipments.forEach(s => {
+      if (s.sender?.name && s.sender?.address) {
+        const key = `${s.sender.name}-${s.sender.phone}-${s.sender.address.pincode}`.toLowerCase();
+        if (!unique.has(key)) unique.set(key, s.sender);
+      }
+    });
+    return Array.from(unique.values()).slice(0, 5); // Limit to 5
+  }, [shipments]);
+
+  const receiverSuggestions = useMemo(() => {
+    if (!shipments || shipments.length === 0) return [];
+    const unique = new Map();
+    shipments.forEach(s => {
+      if (s.receiver?.name && s.receiver?.address) {
+        const key = `${s.receiver.name}-${s.receiver.phone}-${s.receiver.address.pincode}`.toLowerCase();
+        if (!unique.has(key)) unique.set(key, s.receiver);
+      }
+    });
+    return Array.from(unique.values()).slice(0, 5); // Limit to 5
+  }, [shipments]);
+
+  const applySenderSuggestion = (s) => {
+    setParcelData(prev => ({
+      ...prev,
+      senderName: s.name || '',
+      senderPhoneNumber: s.phone || '',
+      senderAddress: s.address ? { ...s.address } : prev.senderAddress
+    }));
+  };
+
+  const applyReceiverSuggestion = (s) => {
+    setParcelData(prev => ({
+      ...prev,
+      receiverName: s.name || '',
+      receiverPhone: s.phone || '',
+      receiverAddress: s.address ? { ...s.address } : prev.receiverAddress
+    }));
+  };
 
   useEffect(() => {
     if (step === 3 && refreshWalletBalance) {
@@ -1123,7 +1194,10 @@ const BookingView = ({ onBooked, walletBalance, walletLoading, refreshWalletBala
 
               {/* ── Sender side ── */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                <p style={{ fontWeight: 800, fontSize: '0.82rem', color: 'var(--accent)', margin: '0 0 0.15rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>📦 Sender</p>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <p style={{ fontWeight: 800, fontSize: '0.82rem', color: 'var(--accent)', margin: '0 0 0.15rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>📦 Sender</p>
+                </div>
+                <SuggestionChips title="Recent Senders" suggestions={senderSuggestions} onSelect={applySenderSuggestion} />
                 <FieldRow>
                   <Field label="Name">
                     <input type="text" name="senderName" value={parcelData.senderName} onChange={onFieldChange} className="input-field no-icon input-compact" placeholder="Jane Smith" required />
@@ -1144,7 +1218,10 @@ const BookingView = ({ onBooked, walletBalance, walletLoading, refreshWalletBala
 
               {/* ── Receiver side ── */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                <p style={{ fontWeight: 800, fontSize: '0.82rem', color: 'var(--green)', margin: '0 0 0.15rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>🏠 Receiver</p>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <p style={{ fontWeight: 800, fontSize: '0.82rem', color: 'var(--green)', margin: '0 0 0.15rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>🏠 Receiver</p>
+                </div>
+                <SuggestionChips title="Recent Receivers" suggestions={receiverSuggestions} onSelect={applyReceiverSuggestion} />
                 <FieldRow>
                   <Field label="Name">
                     <input type="text" name="receiverName" value={parcelData.receiverName} onChange={onFieldChange} className="input-field no-icon input-compact" placeholder="John Doe" required />
@@ -1665,6 +1742,7 @@ const Dashboard = () => {
             refreshWalletBalance={fetchWalletBalance}
             rechargeWallet={rechargeWallet}
             onWalletBalanceUpdate={setWalletBalance}
+            shipments={shipments}
           />
         )}
       </main>
