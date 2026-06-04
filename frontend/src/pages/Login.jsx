@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import {
   Mail, Lock, AlertCircle, CheckCircle,
-  KeyRound, ArrowLeft, RefreshCw, ArrowRight,
+  KeyRound, ArrowLeft, RefreshCw, ArrowRight, Eye, EyeOff
 } from 'lucide-react';
 import shipbiharLogo from '../assets/sb3.png';
 
@@ -17,6 +17,9 @@ const Login = () => {
   const [error, setError]           = useState('');
   const [message, setMessage]       = useState('');
   const [isLoading, setIsLoading]   = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const { login, forgotPassword, verifyForgotOtp, changePassword } = useAuth();
   const navigate = useNavigate();
@@ -113,8 +116,11 @@ const Login = () => {
                 </div>
                 <div className="sb-input-wrap">
                   <Lock size={16} className="sb-input-icon" />
-                  <input type="password" value={password} onChange={e => setPassword(e.target.value)}
+                  <input type={showPassword ? "text" : "password"} value={password} onChange={e => setPassword(e.target.value)}
                     className="sb-input" placeholder="••••••••" required />
+                  <button type="button" className="sb-input-toggle" onClick={() => setShowPassword(!showPassword)}>
+                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
                 </div>
               </div>
               <button type="submit" disabled={isLoading} className="sb-submit-btn">
@@ -168,16 +174,22 @@ const Login = () => {
                 <label className="sb-label">New Password</label>
                 <div className="sb-input-wrap">
                   <Lock size={16} className="sb-input-icon" />
-                  <input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)}
+                  <input type={showNewPassword ? "text" : "password"} value={newPassword} onChange={e => setNewPassword(e.target.value)}
                     className="sb-input" placeholder="••••••••" minLength={6} required />
+                  <button type="button" className="sb-input-toggle" onClick={() => setShowNewPassword(!showNewPassword)}>
+                    {showNewPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
                 </div>
               </div>
               <div className="sb-field">
                 <label className="sb-label">Confirm Password</label>
                 <div className="sb-input-wrap">
                   <Lock size={16} className="sb-input-icon" />
-                  <input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)}
+                  <input type={showConfirmPassword ? "text" : "password"} value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)}
                     className="sb-input" placeholder="••••••••" minLength={6} required />
+                  <button type="button" className="sb-input-toggle" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
+                    {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
                 </div>
               </div>
               <button type="submit" disabled={isLoading} className="sb-submit-btn">
@@ -222,7 +234,9 @@ const Login = () => {
         .sb-label { font-size:13px; font-weight:600; color:#191c1d; }
         .sb-input-wrap { position:relative; }
         .sb-input-icon { position:absolute; left:12px; top:50%; transform:translateY(-50%); color:#8b7265; pointer-events:none; }
-        .sb-input { width:100%; height:44px; padding:0 14px 0 40px; border:1px solid #dec1b1; border-radius:4px; font-size:14px; font-family:inherit; color:#191c1d; background:#fff; outline:none; transition:border-color 0.2s,box-shadow 0.2s; }
+        .sb-input-toggle { position:absolute; right:12px; top:50%; transform:translateY(-50%); background:none; border:none; color:#8b7265; cursor:pointer; padding:0; display:flex; align-items:center; justify-content:center; }
+        .sb-input-toggle:hover { color:#f47a20; }
+        .sb-input { width:100%; height:44px; padding:0 40px 0 40px; border:1px solid #dec1b1; border-radius:4px; font-size:14px; font-family:inherit; color:#191c1d; background:#fff; outline:none; transition:border-color 0.2s,box-shadow 0.2s; }
         .sb-input:focus { border-color:#f47a20; box-shadow:0 0 0 2px rgba(244,122,32,0.2); }
         .sb-input::placeholder { color:#8b7265; opacity:0.6; }
 

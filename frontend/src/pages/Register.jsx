@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import {
   User, Mail, Lock, Phone,
-  CheckCircle, AlertCircle, ArrowRight,
+  CheckCircle, AlertCircle, ArrowRight, Eye, EyeOff
 } from 'lucide-react';
 import shipbiharLogo from '../assets/sb3.png';
 
@@ -14,6 +14,7 @@ const Register = () => {
   const [error, setError]         = useState('');
   const [message, setMessage]     = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const { register } = useAuth();
   const navigate = useNavigate();
@@ -77,10 +78,15 @@ const Register = () => {
                 <div className="sb-input-wrap">
                   <Icon size={16} className="sb-input-icon" />
                   <input
-                    type={type} name={name} value={formData[name]}
+                    type={name === 'password' ? (showPassword ? "text" : "password") : type} name={name} value={formData[name]}
                     onChange={handleChange} className="sb-input"
                     placeholder={placeholder} required
                   />
+                  {name === 'password' && (
+                    <button type="button" className="sb-input-toggle" onClick={() => setShowPassword(!showPassword)}>
+                      {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  )}
                 </div>
               </div>
             ))}
@@ -126,7 +132,9 @@ const Register = () => {
         .sb-label { font-size:13px; font-weight:600; color:#191c1d; }
         .sb-input-wrap { position:relative; }
         .sb-input-icon { position:absolute; left:12px; top:50%; transform:translateY(-50%); color:#8b7265; pointer-events:none; }
-        .sb-input { width:100%; height:44px; padding:0 14px 0 40px; border:1px solid #dec1b1; border-radius:4px; font-size:14px; font-family:inherit; color:#191c1d; background:#fff; outline:none; transition:border-color 0.2s,box-shadow 0.2s; }
+        .sb-input-toggle { position:absolute; right:12px; top:50%; transform:translateY(-50%); background:none; border:none; color:#8b7265; cursor:pointer; padding:0; display:flex; align-items:center; justify-content:center; }
+        .sb-input-toggle:hover { color:#f47a20; }
+        .sb-input { width:100%; height:44px; padding:0 40px 0 40px; border:1px solid #dec1b1; border-radius:4px; font-size:14px; font-family:inherit; color:#191c1d; background:#fff; outline:none; transition:border-color 0.2s,box-shadow 0.2s; }
         .sb-input:focus { border-color:#f47a20; box-shadow:0 0 0 2px rgba(244,122,32,0.2); }
         .sb-input::placeholder { color:#8b7265; opacity:0.6; }
 
