@@ -7,7 +7,7 @@ const credential = {
   port : process.env.PORT || 3000,
   emailAccount : process.env.MAIL_PASS,
   emailApi : process.env.MAIL_API,
-  redisUri :  process.env.REDIS_URI,
+
   jwtSecret :  process.env.JWT_SECRET,
   clientUrl : process.env.CLIENT_URL,
   razorpayKeyId : process.env.ROZA_API_KEY,

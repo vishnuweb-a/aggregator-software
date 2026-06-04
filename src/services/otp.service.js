@@ -1,35 +1,32 @@
-import {client}  from '../redis/redis.js'
+const otpStore = new Map();
 
-
-const strOpt = async (otp,email)=>{
+const strOpt = async (otp, email) => {
    try {
-       const status = client.set(`email:${email}`,otp,{EX:300})
+       // Store OTP with an expiry of 300 seconds (5 minutes)
+       const expiryTime = Date.now() + 300 * 1000;
+       otpStore.set(email, { otp: String(otp), expiry: expiryTime });
        
-
-       return  {otp}
-   }catch(err){
-    console.log(err.message)
+       return { otp };
+   } catch(err) {
+       console.log(err.message);
    }
 }
 
-const optValidate = async  (email,otp)=>{
-const returnotp = await  client.get(
-    `otp${email}`,
-    (err,data)=>{
-      if(err){
-        console.log(err.message)
-      }
- } )
-    if(!returnotp){
-      return "otp not found expires "
-    }
-    if(returnotp !== otp){
-      return  "invalid otp"
+const optValidate = async (email, otp) => {
+    const record = otpStore.get(email);
     
+    if (!record || record.expiry < Date.now()) {
+        if (record) otpStore.delete(email);
+        return "otp not found expires ";
     }
-    return true ;
- 
+    
+    if (record.otp !== String(otp)) {
+        return "invalid otp";
+    }
+    
+    // OTP is valid; clean it up
+    otpStore.delete(email);
+    return true;
 }
 
-
-export {strOpt,optValidate}
+export { strOpt, optValidate }

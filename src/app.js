@@ -2,7 +2,7 @@ import express from 'express';
 import cookieParser from 'cookie-parser'
 import cors from 'cors'
 import connectDB from './db/db.connect.js';
-import { redisConnect } from './redis/redis.js';
+
 import authRouter from './routes/user.auth.js';
 import {swaggerUi,specs} from "./config/swagger.js";
 import parcelRouter from './routes/courier.route.js';
@@ -22,7 +22,7 @@ import TrackingOrder from './routes/shipmentTracking.routes.js'
 const app = express()
 
 connectDB()
-redisConnect()
+
 
 const clientUrls = (credential.clientUrl || 'http://localhost:5173,http://localhost:5174')
   .split(',')
