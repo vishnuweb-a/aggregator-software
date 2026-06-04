@@ -1,11 +1,20 @@
 import { useNavigate, Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import { Menu, X } from 'lucide-react';
 import shipbiharLogo from '../assets/sb3.png';
 
 const Tracking = () => {
   const navigate = useNavigate();
   const [trackingId, setTrackingId] = useState('SB-892401');
   const [progress, setProgress] = useState(0);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScrollNav = () => setIsScrolled(window.scrollY > 60);
+    window.addEventListener('scroll', handleScrollNav);
+    return () => window.removeEventListener('scroll', handleScrollNav);
+  }, []);
 
   // Timeline animation logic
   useEffect(() => {
@@ -34,22 +43,46 @@ const Tracking = () => {
   return (
     <div className="tr-page">
       {/* ═══ Nav Bar ═══ */}
-      <nav className="tr-nav">
-        <div className="tr-nav-inner">
-          <div className="tr-nav-left" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
-            <img src={shipbiharLogo} alt="shipBihar" className="tr-nav-logo" />
+      <nav className={`pub-nav ${isScrolled ? 'is-scrolled' : ''}`}>
+        <div className="pub-nav-inner">
+          <div className="pub-nav-left" onClick={() => navigate('/')}>
+            <img src={shipbiharLogo} alt="shipBihar" className="pub-nav-logo" />
           </div>
-          <div className="tr-nav-center">
-            <Link to="/" className="tr-nav-link">Home</Link>
-            <Link to="/tracking" className="tr-nav-link tr-nav-link--active">Tracking</Link>
-            <Link to="/network" className="tr-nav-link">Network</Link>
-            <Link to="/services" className="tr-nav-link">Services</Link>
-            <Link to="/about" className="tr-nav-link">About Us</Link>
+
+          <div className="pub-nav-center">
+            <Link to="/" className="pub-nav-link">Home</Link>
+            <Link to="/tracking" className="pub-nav-link pub-nav-link--active">Tracking</Link>
+            <Link to="/network" className="pub-nav-link">Network</Link>
+            <Link to="/services" className="pub-nav-link">Services</Link>
+            <Link to="/about" className="pub-nav-link">About Us</Link>
           </div>
-          <div className="tr-nav-right">
-            <button className="tr-nav-signin" onClick={() => navigate('/login')}>Get Started</button>
+
+          <div className="pub-nav-right">
+            <button className="pub-nav-signin" onClick={() => navigate('/login')}>
+              Sign In
+            </button>
+            <button 
+              className="pub-mobile-menu-btn" 
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            >
+              {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
           </div>
         </div>
+
+        {/* Mobile Dropdown Menu */}
+        {isMobileMenuOpen && (
+          <div className="pub-mobile-dropdown">
+            <Link to="/" className="pub-mobile-link" onClick={() => setIsMobileMenuOpen(false)}>Home</Link>
+            <Link to="/tracking" className="pub-mobile-link pub-mobile-link--active" onClick={() => setIsMobileMenuOpen(false)}>Tracking</Link>
+            <Link to="/network" className="pub-mobile-link" onClick={() => setIsMobileMenuOpen(false)}>Network</Link>
+            <Link to="/services" className="pub-mobile-link" onClick={() => setIsMobileMenuOpen(false)}>Services</Link>
+            <Link to="/about" className="pub-mobile-link" onClick={() => setIsMobileMenuOpen(false)}>About Us</Link>
+            <button className="pub-mobile-signin" onClick={() => navigate('/login')}>
+              Sign In
+            </button>
+          </div>
+        )}
       </nav>
 
       <main className="tr-main">
@@ -231,7 +264,7 @@ const Tracking = () => {
       {/* ═══ Styles ═══ */}
       <style>{`
         /* ── Page Base ── */
-        .tr-page { min-height: 100vh; font-family: 'Work Sans', system-ui, sans-serif; background: #f8f9fa; color: #191c1d; display: flex; flex-direction: column; }
+        .tr-page { min-height: 100vh; font-family: 'Work Sans', system-ui, sans-serif; background: var(--bg-deep); color: var(--text-1); display: flex; flex-direction: column; }
         .tr-main { flex-grow: 1; display: flex; flex-direction: column; }
         
         /* ── Mithila Pattern ── */
@@ -240,18 +273,6 @@ const Tracking = () => {
           background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(222,193,177,0.2) 10px, rgba(222,193,177,0.2) 12px);
         }
         .tr-mithila-bg--dim { opacity: 0.1; }
-
-        /* ── Nav ── */
-        .tr-nav { position: sticky; top: 0; z-index: 100; background: #fff; border-bottom: 1px solid #dec1b1; }
-        .tr-nav-inner { max-width: 1280px; margin: 0 auto; padding: 0 32px; height: 64px; display: flex; align-items: center; justify-content: space-between; }
-        .tr-nav-left { display: flex; align-items: center; }
-        .tr-nav-logo { width: 200px; height: 50px; object-fit: cover; border-radius: 6px; margin-top: 12px; }
-        .tr-nav-center { display: flex; gap: 32px; }
-        .tr-nav-link { font-size: 16px; font-weight: 500; color: #4f5d85; text-decoration: none; padding-bottom: 4px; cursor: pointer; transition: color 0.2s; }
-        .tr-nav-link:hover { color: #9a4600; }
-        .tr-nav-link--active { color: #9a4600 !important; font-weight: 700; border-bottom: 2px solid #9a4600; }
-        .tr-nav-signin { background: #9a4600; color: #fff; border: none; padding: 10px 24px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
-        .tr-nav-signin:hover { background: #753400; transform: translateY(-1px); }
 
         /* ── Hero Search ── */
         .tr-hero { background: #fff; padding: 80px 32px 64px; position: relative; overflow: hidden; }
@@ -357,9 +378,6 @@ const Tracking = () => {
 
         /* Responsive */
         @media (max-width: 768px) {
-          .tr-nav-inner { padding: 0 16px; }
-          .tr-nav-logo { width: 140px; height: 35px; margin-top: 8px; }
-          .tr-nav-center { display: none; }
           .tr-status-card { flex-direction: column; align-items: flex-start; gap: 16px; padding: 16px; }
           .tr-status-right { text-align: left; }
           .tr-milestone-head { flex-direction: column; gap: 4px; }

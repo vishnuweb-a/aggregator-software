@@ -1,5 +1,6 @@
 import { useNavigate, Link } from 'react-router-dom';
-import { ArrowRight, ChevronRight } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Menu, X, ArrowRight, ChevronRight } from 'lucide-react';
 import shipbiharLogo from '../assets/sb3.png';
 
 /* ── Partner data ── */
@@ -43,146 +44,157 @@ const features = [
 
 const Network = () => {
   const navigate = useNavigate();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScrollNav = () => setIsScrolled(window.scrollY > 60);
+    window.addEventListener('scroll', handleScrollNav);
+    return () => window.removeEventListener('scroll', handleScrollNav);
+  }, []);
 
   return (
     <div className="nw-page">
-
-      {/* ═══ Nav Bar ═══ */}
-      <nav className="nw-nav">
-        <div className="nw-nav-inner">
-          <div className="nw-nav-left" onClick={() => navigate('/')}>
-            <img src={shipbiharLogo} alt="shipBihar" className="nw-nav-logo" />
+      <nav className={`pub-nav ${isScrolled ? 'pub-nav--scrolled' : ''}`}>
+        <div className="pub-nav-inner">
+          <div className="pub-nav-left" onClick={() => navigate('/')}>
+            <img src={shipbiharLogo} alt="shipBihar" className="pub-nav-logo" />
           </div>
 
-          <div className="nw-nav-center">
-            <Link to="/" className="nw-nav-link">Home</Link>
-            <Link to="/tracking" className="nw-nav-link">Tracking</Link>
-            <Link to="/network" className="nw-nav-link nw-nav-link--active">Network</Link>
-            <Link to="/services" className="nw-nav-link">Services</Link>
-            <Link to="/about" className="nw-nav-link">About Us</Link>
+          <div className={`pub-nav-center ${isMobileMenuOpen ? 'pub-nav-center--open' : ''}`}>
+            <Link to="/" className="pub-nav-link">Home</Link>
+            <Link to="/tracking" className="pub-nav-link">Tracking</Link>
+            <Link to="/network" className="pub-nav-link pub-nav-link--active">Network</Link>
+            <Link to="/services" className="pub-nav-link">Services</Link>
+            <Link to="/about" className="pub-nav-link">About Us</Link>
           </div>
 
-          <button className="nw-nav-signin" onClick={() => navigate('/login')}>
-            Sign In
-          </button>
+          <div className="pub-nav-right">
+            <button className="pub-nav-signin" onClick={() => navigate('/login')}>Sign In</button>
+            <button className="pub-nav-toggle" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+              {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
+          </div>
         </div>
       </nav>
 
-      {/* ═══ Hero Section ═══ */}
-      <section className="nw-hero">
-        <div className="nw-hero-hatch" />
-        <div className="nw-hero-inner">
-          <div className="nw-hero-text">
-            <h1 className="nw-hero-title">
-              Our Robust Network —{' '}
-              <span className="nw-saffron">Connecting Bihar to the World</span>
-            </h1>
-            <p className="nw-hero-desc">
-              shipBihar leverages strategic multi-modal partnerships to ensure your parcels move seamlessly from the narrow lanes of Madhubani to the bustling hubs of global commerce. We bridge the gap between local reliability and international reach.
-            </p>
-            <div className="nw-hero-actions">
-              <button className="nw-btn-primary" onClick={() => document.getElementById('partners')?.scrollIntoView({ behavior: 'smooth' })}>
-                Explore Partners <ArrowRight size={16} />
-              </button>
-              <button className="nw-btn-outline" onClick={() => document.getElementById('advantage')?.scrollIntoView({ behavior: 'smooth' })}>
-                Our Hubs
-              </button>
-            </div>
-          </div>
-          <div className="nw-hero-image-wrap">
-            <img
-              src="/parcelx_images/image_38.png"
-              alt="Modern logistics warehouse interior during golden hour with warm saffron lighting"
-              className="nw-hero-image"
-            />
-          </div>
-        </div>
-      </section>
-
-      {/* ═══ Courier Partners ═══ */}
-      <section className="nw-partners" id="partners">
-        <div className="nw-section-header">
-          <span className="nw-section-tag">COLLABORATIONS</span>
-          <h2 className="nw-section-title">Strategic Courier Partners</h2>
-          <div className="nw-section-line" />
-        </div>
-        <div className="nw-partners-grid">
-          {partners.map((p, i) => (
-            <div className="nw-partner-card" key={i}>
-              <div className="nw-partner-logo-wrap">
-                <span className="material-symbols-outlined nw-partner-icon">{p.icon}</span>
+      <main className="nw-main">
+        {/* ═══ Hero Section ═══ */}
+        <section className="nw-hero">
+          <div className="nw-hero-hatch" />
+          <div className="nw-hero-inner">
+            <div className="nw-hero-text">
+              <h1 className="nw-hero-title">
+                Our Robust Network —{' '}
+                <span className="nw-saffron">Connecting Bihar to the World</span>
+              </h1>
+              <p className="nw-hero-desc">
+                shipBihar leverages strategic multi-modal partnerships to ensure your parcels move seamlessly from the narrow lanes of Madhubani to the bustling hubs of global commerce. We bridge the gap between local reliability and international reach.
+              </p>
+              <div className="nw-hero-actions">
+                <button className="nw-btn-primary" onClick={() => document.getElementById('partners')?.scrollIntoView({ behavior: 'smooth' })}>
+                  Explore Partners <ArrowRight size={16} />
+                </button>
+                <button className="nw-btn-outline" onClick={() => document.getElementById('advantage')?.scrollIntoView({ behavior: 'smooth' })}>
+                  Our Hubs
+                </button>
               </div>
-              <h3 className="nw-partner-name">{p.name}</h3>
-              <p className="nw-partner-desc">{p.desc}</p>
             </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ═══ Advantage Visualization ═══ */}
-      <section className="nw-advantage" id="advantage">
-        <div className="nw-advantage-inner">
-          <div className="nw-advantage-header">
-            <h2 className="nw-section-title">The shipBihar Advantage</h2>
-            <p className="nw-advantage-subtitle">A precision-engineered delivery flow that combines local intelligence with national giants.</p>
+            <div className="nw-hero-image-wrap">
+              <img
+                src="/parcelx_images/image_38.png"
+                alt="Modern logistics warehouse interior during golden hour with warm saffron lighting"
+                className="nw-hero-image"
+              />
+            </div>
           </div>
-          <div className="nw-steps">
-            <div className="nw-steps-line" />
-            {steps.map((s, i) => (
-              <div className="nw-step-group" key={i}>
-                <div className="nw-step-card">
-                  <div className="nw-step-icon">
-                    <span className="material-symbols-outlined">{s.icon}</span>
-                  </div>
-                  <h4 className="nw-step-title">{s.title}</h4>
-                  <p className="nw-step-desc">{s.desc}</p>
+        </section>
+
+        {/* ═══ Courier Partners ═══ */}
+        <section className="nw-partners" id="partners">
+          <div className="nw-section-header">
+            <span className="nw-section-tag">COLLABORATIONS</span>
+            <h2 className="nw-section-title">Strategic Courier Partners</h2>
+            <div className="nw-section-line" />
+          </div>
+          <div className="nw-partners-grid">
+            {partners.map((p, i) => (
+              <div className="nw-partner-card" key={i}>
+                <div className="nw-partner-logo-wrap">
+                  <span className="material-symbols-outlined nw-partner-icon">{p.icon}</span>
                 </div>
-                {i < steps.length - 1 && (
-                  <div className="nw-step-arrow">
-                    <ChevronRight size={24} />
-                  </div>
-                )}
+                <h3 className="nw-partner-name">{p.name}</h3>
+                <p className="nw-partner-desc">{p.desc}</p>
               </div>
             ))}
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* ═══ Detailed Description ═══ */}
-      <section className="nw-detail">
-        <div className="nw-detail-inner">
-          <div className="nw-detail-image-wrap">
-            <div className="nw-detail-bg-circle" />
-            <img
-              src="/parcelx_images/image_31.png"
-              alt="Bihar map overlaid with glowing orange network grid connecting districts"
-              className="nw-detail-image"
-            />
-          </div>
-          <div className="nw-detail-content">
-            <h2 className="nw-section-title">Seamless Flow, Zero Boundaries</h2>
-            <div className="nw-features-list">
-              {features.map((f, i) => (
-                <div className="nw-feature-item" key={i}>
-                  <div className="nw-feature-icon">
-                    <span className="material-symbols-outlined" style={{ fontSize: 24 }}>{f.icon}</span>
+        {/* ═══ Advantage Visualization ═══ */}
+        <section className="nw-advantage" id="advantage">
+          <div className="nw-advantage-inner">
+            <div className="nw-advantage-header">
+              <h2 className="nw-section-title">The shipBihar Advantage</h2>
+              <p className="nw-advantage-subtitle">A precision-engineered delivery flow that combines local intelligence with national giants.</p>
+            </div>
+            <div className="nw-steps">
+              <div className="nw-steps-line" />
+              {steps.map((s, i) => (
+                <div className="nw-step-group" key={i}>
+                  <div className="nw-step-card">
+                    <div className="nw-step-icon">
+                      <span className="material-symbols-outlined">{s.icon}</span>
+                    </div>
+                    <h4 className="nw-step-title">{s.title}</h4>
+                    <p className="nw-step-desc">{s.desc}</p>
                   </div>
-                  <div>
-                    <h4 className="nw-feature-title">{f.title}</h4>
-                    <p className="nw-feature-desc">{f.desc}</p>
-                  </div>
+                  {i < steps.length - 1 && (
+                    <div className="nw-step-arrow">
+                      <ChevronRight size={24} />
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
-            <div className="nw-quote-block">
-              <p className="nw-quote-text">
-                "Our mission is to empower Bihari entrepreneurs by providing them the same logistics muscle as global corporations. Our network is the backbone of that promise."
-              </p>
-              <div className="nw-quote-author">— Bihar Logistics Council, 2024 Report</div>
+          </div>
+        </section>
+
+        {/* ═══ Detailed Description ═══ */}
+        <section className="nw-detail">
+          <div className="nw-detail-inner">
+            <div className="nw-detail-image-wrap">
+              <div className="nw-detail-bg-circle" />
+              <img
+                src="/parcelx_images/image_31.png"
+                alt="Bihar map overlaid with glowing orange network grid connecting districts"
+                className="nw-detail-image"
+              />
+            </div>
+            <div className="nw-detail-content">
+              <h2 className="nw-section-title">Seamless Flow, Zero Boundaries</h2>
+              <div className="nw-features-list">
+                {features.map((f, i) => (
+                  <div className="nw-feature-item" key={i}>
+                    <div className="nw-feature-icon">
+                      <span className="material-symbols-outlined" style={{ fontSize: 24 }}>{f.icon}</span>
+                    </div>
+                    <div>
+                      <h4 className="nw-feature-title">{f.title}</h4>
+                      <p className="nw-feature-desc">{f.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="nw-quote-block">
+                <p className="nw-quote-text">
+                  "Our mission is to empower Bihari entrepreneurs by providing them the same logistics muscle as global corporations. Our network is the backbone of that promise."
+                </p>
+                <div className="nw-quote-author">— Bihar Logistics Council, 2024 Report</div>
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </main>
 
       {/* ═══ Footer ═══ */}
       <footer className="nw-footer">
@@ -220,97 +232,21 @@ const Network = () => {
         </div>
       </footer>
 
-      {/* ═══ Styles ═══ */}
       <style>{`
-        /* ── Reset ── */
+        /* ── Page Base ── */
         .nw-page {
           min-height: 100vh;
           font-family: 'Work Sans', system-ui, sans-serif;
-          -webkit-font-smoothing: antialiased;
           background: #fff7ed;
           color: #191c1d;
+          display: flex;
+          flex-direction: column;
         }
 
+        .nw-main { flex-grow: 1; }
         .nw-saffron { color: #9a4600; }
 
-        /* ════════════════════════
-           NAV
-        ════════════════════════ */
-        .nw-nav {
-          position: sticky;
-          top: 0;
-          z-index: 100;
-          background: #ffffff;
-          border-bottom: 1px solid #dec1b1;
-          transition: box-shadow 0.3s;
-        }
-
-        .nw-nav.scrolled { box-shadow: 0 4px 20px rgba(87,66,55,0.08); }
-
-        .nw-nav-inner {
-          max-width: 1280px;
-          margin: 0 auto;
-          padding: 0 32px;
-          height: 64px;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-        }
-
-        .nw-nav-left {
-          display: flex;
-          align-items: center;
-          cursor: pointer;
-        }
-
-        .nw-nav-logo {
-          width: 200px;
-          height: 50px;
-          border-radius: 6px;
-          object-fit: cover;
-          margin-top: 12px;
-        }
-
-        .nw-nav-center {
-          display: flex;
-          gap: 32px;
-        }
-
-        .nw-nav-link {
-          font-size: 16px;
-          font-weight: 400;
-          color: #4f5d85;
-          text-decoration: none;
-          cursor: pointer;
-          transition: color 0.2s;
-          padding-bottom: 4px;
-        }
-
-        .nw-nav-link:hover { color: #9a4600; }
-
-        .nw-nav-link--active {
-          color: #9a4600 !important;
-          font-weight: 700;
-          border-bottom: 2px solid #9a4600;
-        }
-
-        .nw-nav-signin {
-          background: #9a4600;
-          color: #fff;
-          border: none;
-          padding: 10px 24px;
-          border-radius: 8px;
-          font-size: 14px;
-          font-weight: 600;
-          cursor: pointer;
-          font-family: inherit;
-          transition: all 0.2s;
-        }
-
-        .nw-nav-signin:hover {
-          background: #753400;
-          transform: translateY(-1px);
-        }
+        /* ── Hero Search ── */
 
         /* ════════════════════════
            HERO
@@ -875,10 +811,6 @@ const Network = () => {
         }
 
         @media (max-width: 640px) {
-          .nw-nav-inner { padding: 0 16px; }
-          .nw-nav-logo { width: 140px; height: 35px; margin-top: 8px; }
-          .nw-nav-center { display: none; }
-
           .nw-hero-title {
             font-size: 24px;
             line-height: 32px;

@@ -51,30 +51,40 @@ const ThemeToggle = () => {
 
 
 /* ─── Navbar ─────────────────────────────────────── */
-const Navbar = ({ logout, view, setView }) => (
-  <header className="dashboard-header">
-    <div className="dashboard-header-inner">
-      <div className="dashboard-logo-wrap" onClick={() => setView('profile')}>
-        <img src={shipbiharLogo} alt="shipBihar" className="dashboard-logo" />
+const Navbar = ({ logout, view, setView }) => {
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScrollNav = () => setIsScrolled(window.scrollY > 60);
+    window.addEventListener('scroll', handleScrollNav);
+    return () => window.removeEventListener('scroll', handleScrollNav);
+  }, []);
+
+  return (
+    <header className={`dashboard-header ${isScrolled ? 'is-scrolled' : ''}`}>
+      <div className="dashboard-header-inner">
+        <div className="dashboard-logo-wrap" onClick={() => setView('profile')}>
+          <img src={shipbiharLogo} alt="shipBihar" className="dashboard-logo" />
+        </div>
+        <div className="dashboard-nav-actions">
+          <ThemeToggle />
+          <button onClick={() => setView('profile')} className="btn-ghost" style={{ gap: '0.4rem', padding: '0.4rem 0.8rem', color: view === 'profile' ? 'var(--accent)' : undefined }}>
+            <Home size={14} /> <span className="btn-ghost-text">Profile</span>
+          </button>
+          <button onClick={() => setView('wallet')} className="btn-ghost" style={{ gap: '0.4rem', padding: '0.4rem 0.8rem', color: view === 'wallet' ? 'var(--accent)' : undefined }}>
+            <Wallet size={14} /> <span className="btn-ghost-text">Wallet</span>
+          </button>
+          <button onClick={() => setView('book')} className="btn-ghost" style={{ gap: '0.4rem', padding: '0.4rem 0.8rem', color: view === 'book' ? 'var(--accent)' : undefined }}>
+            <PlusCircle size={14} /> <span className="btn-ghost-text">New Booking</span>
+          </button>
+          <button onClick={logout} className="btn-ghost" style={{ gap: '0.4rem', padding: '0.4rem 0.8rem' }}>
+            <LogOut size={14} /> <span className="btn-ghost-text">Sign Out</span>
+          </button>
+        </div>
       </div>
-      <div className="dashboard-nav-actions">
-        <ThemeToggle />
-        <button onClick={() => setView('profile')} className="btn-ghost" style={{ gap: '0.4rem', padding: '0.4rem 0.8rem', color: view === 'profile' ? 'var(--accent)' : undefined }}>
-          <Home size={14} /> <span className="btn-ghost-text">Profile</span>
-        </button>
-        <button onClick={() => setView('wallet')} className="btn-ghost" style={{ gap: '0.4rem', padding: '0.4rem 0.8rem', color: view === 'wallet' ? 'var(--accent)' : undefined }}>
-          <Wallet size={14} /> <span className="btn-ghost-text">Wallet</span>
-        </button>
-        <button onClick={() => setView('book')} className="btn-ghost" style={{ gap: '0.4rem', padding: '0.4rem 0.8rem', color: view === 'book' ? 'var(--accent)' : undefined }}>
-          <PlusCircle size={14} /> <span className="btn-ghost-text">New Booking</span>
-        </button>
-        <button onClick={logout} className="btn-ghost" style={{ gap: '0.4rem', padding: '0.4rem 0.8rem' }}>
-          <LogOut size={14} /> <span className="btn-ghost-text">Sign Out</span>
-        </button>
-      </div>
-    </div>
-  </header>
-);
+    </header>
+  );
+};
 
 /* ─── Info Row ───────────────────────────────────── */
 const InfoRow = ({ icon: Icon, label, value }) => (

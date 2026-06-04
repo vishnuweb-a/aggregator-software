@@ -1,10 +1,18 @@
 import { useNavigate, Link } from 'react-router-dom';
-import { ArrowRight } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Menu, X, ArrowRight } from 'lucide-react';
 import shipbiharLogo from '../assets/sb3.png';
-import { useState } from 'react';
 
 const AboutUs = () => {
   const navigate = useNavigate();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScrollNav = () => setIsScrolled(window.scrollY > 60);
+    window.addEventListener('scroll', handleScrollNav);
+    return () => window.removeEventListener('scroll', handleScrollNav);
+  }, []);
   const [email, setEmail] = useState('');
 
   const handleWaitlist = (e) => {
@@ -17,27 +25,47 @@ const AboutUs = () => {
 
   return (
     <div className="au-page">
-      {/* ═══ Nav Bar ═══ */}
-      <nav className="au-nav">
-        <div className="au-nav-inner">
-          <div className="au-nav-left" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
-            <img src={shipbiharLogo} alt="shipBihar" className="au-nav-logo" />
+      {/* ═══ Top Nav Bar ═══ */}
+      <nav className={`pub-nav ${isScrolled ? 'is-scrolled' : ''}`}>
+        <div className="pub-nav-inner">
+          <div className="pub-nav-left" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
+            <img src={shipbiharLogo} alt="shipBihar" className="pub-nav-logo" />
           </div>
-          <div className="au-nav-center">
-            <Link to="/" className="au-nav-link">Home</Link>
-            <Link to="/tracking" className="au-nav-link">Tracking</Link>
-            <Link to="/network" className="au-nav-link">Network</Link>
-            <Link to="/services" className="au-nav-link">Services</Link>
-            <Link to="/about" className="au-nav-link au-nav-link--active">About Us</Link>
+
+          <div className="pub-nav-center">
+            <Link to="/" className="pub-nav-link">Home</Link>
+            <Link to="/tracking" className="pub-nav-link">Tracking</Link>
+            <Link to="/network" className="pub-nav-link">Network</Link>
+            <Link to="/services" className="pub-nav-link">Services</Link>
+            <Link to="/about" className="pub-nav-link pub-nav-link--active">About Us</Link>
           </div>
-          <div className="au-nav-right">
-            <span className="au-launch-badge">
-              <span className="material-symbols-outlined au-launch-icon">event_upcoming</span>
-              Launching June-July 2025
-            </span>
-            <button className="au-nav-signin" onClick={() => navigate('/login')}>Get Started</button>
+
+          <div className="pub-nav-right">
+            <button className="pub-nav-signin" onClick={() => navigate('/login')}>
+              Sign In
+            </button>
+            <button 
+              className="pub-mobile-menu-btn" 
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            >
+              {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
           </div>
         </div>
+
+        {/* Mobile Dropdown Menu */}
+        {isMobileMenuOpen && (
+          <div className="pub-mobile-dropdown">
+            <Link to="/" className="pub-mobile-link" onClick={() => setIsMobileMenuOpen(false)}>Home</Link>
+            <Link to="/tracking" className="pub-mobile-link" onClick={() => setIsMobileMenuOpen(false)}>Tracking</Link>
+            <Link to="/network" className="pub-mobile-link" onClick={() => setIsMobileMenuOpen(false)}>Network</Link>
+            <Link to="/services" className="pub-mobile-link" onClick={() => setIsMobileMenuOpen(false)}>Services</Link>
+            <Link to="/about" className="pub-mobile-link pub-mobile-link--active" onClick={() => setIsMobileMenuOpen(false)}>About Us</Link>
+            <button className="pub-mobile-signin" onClick={() => navigate('/login')}>
+              Sign In
+            </button>
+          </div>
+        )}
       </nav>
 
       {/* ═══ Hero Section ═══ */}
@@ -228,63 +256,20 @@ const AboutUs = () => {
 
       {/* ═══ Styles ═══ */}
       <style>{`
-        /* ── Google Material Symbols (already loaded globally, but ensure) ── */
         @import url('https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap');
         @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
 
-        /* ── Page ── */
         .au-page {
           min-height: 100vh;
           font-family: 'Work Sans', system-ui, sans-serif;
-          background: #f8f9fa;
-          color: #191c1d;
+          background: var(--bg-deep);
+          color: var(--text-1);
+          display: flex;
+          flex-direction: column;
         }
 
-        /* ── Nav ── */
-        .au-nav {
-          position: sticky; top: 0; z-index: 100;
-          background: #fff;
-          border-bottom: 1px solid #dec1b1;
-        }
-        .au-nav-inner {
-          max-width: 1280px; margin: 0 auto;
-          padding: 0 32px; height: 64px;
-          display: flex; align-items: center; justify-content: space-between;
-        }
-        .au-nav-left { display: flex; align-items: center; }
-        .au-nav-logo { width: 200px; height: 50px; object-fit: cover; border-radius: 6px; margin-top: 12px; }
-        .au-nav-center { display: flex; gap: 32px; }
-        .au-nav-link {
-          font-size: 16px; font-weight: 500; color: #4f5d85;
-          text-decoration: none; padding-bottom: 4px; cursor: pointer;
-          transition: color 0.2s;
-        }
-        .au-nav-link:hover { color: #9a4600; }
-        .au-nav-link--active {
-          color: #9a4600 !important; font-weight: 700;
-          border-bottom: 2px solid #9a4600;
-        }
-        .au-nav-right { display: flex; align-items: center; gap: 12px; }
-        .au-launch-badge {
-          display: flex; align-items: center; gap: 4px;
-          background: rgba(255,255,255,0.8); backdrop-filter: blur(12px);
-          border: 1px solid #dec1b1; padding: 4px 12px;
-          border-radius: 999px; font-size: 12px; font-weight: 500;
-          color: #9a4600; animation: au-pulse 2s ease-in-out infinite;
-          box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-        }
-        .au-launch-icon { font-size: 14px; }
-        @keyframes au-pulse {
-          0%,100% { opacity: 1; }
-          50% { opacity: 0.6; }
-        }
-        .au-nav-signin {
-          background: #9a4600; color: #fff; border: none;
-          padding: 10px 24px; border-radius: 8px;
-          font-size: 14px; font-weight: 600; cursor: pointer;
-          transition: all 0.2s;
-        }
-        .au-nav-signin:hover { background: #753400; transform: translateY(-1px); }
+        .au-main { flex-grow: 1; display: flex; flex-direction: column; }
+        .au-saffron { color: var(--accent); }
 
         /* ── Hero ── */
         .au-hero {
@@ -482,10 +467,7 @@ const AboutUs = () => {
           .au-advantage-inner { flex-direction: column; gap: 40px; }
         }
         @media (max-width: 768px) {
-          .au-nav-inner { padding: 0 16px; }
-          .au-nav-logo { width: 140px; height: 35px; margin-top: 8px; }
           .au-hero-title { font-size: 32px; }
-          .au-nav-center { display: none; }
           .au-launch-badge { display: none; }
           .au-milestones { grid-template-columns: 1fr; }
           .au-bento-grid { grid-template-columns: 1fr; }

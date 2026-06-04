@@ -87,6 +87,168 @@ body {
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
 
+/* ── Shared Public Navbar (Tracking, Network, Services, About Us) ── */
+.pub-nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--bg-glass);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  transition: all 0.3s ease;
+}
+
+.pub-nav.is-scrolled {
+  background: var(--bg-card);
+  box-shadow: 0 4px 20px rgba(87, 66, 55, 0.08);
+}
+
+.pub-nav.is-scrolled .pub-nav-logo {
+  width: 160px;
+  height: 40px;
+}
+
+.pub-nav.is-scrolled .pub-nav-inner {
+  height: 52px;
+}
+
+.pub-nav-inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 32px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: height 0.3s ease;
+}
+
+.pub-nav-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.pub-nav-logo {
+  width: 200px;
+  height: 50px;
+  border-radius: 6px;
+  object-fit: cover;
+  margin-top: 12px;
+  transition: all 0.3s ease;
+}
+
+.pub-nav-center {
+  display: flex;
+  gap: 32px;
+}
+
+.pub-nav-link {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-2);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.pub-nav-link:hover { color: var(--accent); }
+.pub-nav-link--active { color: var(--accent) !important; font-weight: 700; border-bottom: 2px solid var(--accent); padding-bottom: 4px; }
+
+.pub-nav-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.pub-nav-signin {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s;
+}
+
+.pub-nav-signin:hover { background: var(--accent-2); }
+
+.pub-mobile-menu-btn {
+  display: none;
+  background: transparent;
+  border: none;
+  color: var(--text-2);
+  cursor: pointer;
+  padding: 4px;
+  transition: color 0.2s;
+}
+
+.pub-mobile-menu-btn:hover { color: var(--accent); }
+
+.pub-mobile-dropdown {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .pub-nav-center { display: none; }
+  .pub-nav-signin { display: none; }
+  .pub-mobile-menu-btn { display: flex; }
+  
+  .pub-mobile-dropdown {
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-card);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 24px;
+    gap: 4px;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    box-shadow: 0 12px 32px rgba(0,0,0,0.12);
+    animation: sb-slideDown 0.25s ease-out;
+  }
+  
+  .pub-mobile-link {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text-2);
+    text-decoration: none;
+    padding: 12px 8px;
+    border-radius: 8px;
+    transition: all 0.15s ease;
+  }
+  
+  .pub-mobile-link:hover, .pub-mobile-link--active {
+    background: rgba(244, 122, 32, 0.06);
+    color: var(--accent);
+  }
+  
+  .pub-mobile-signin {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 12px;
+    text-align: center;
+    font-family: inherit;
+    transition: background 0.2s;
+  }
+  .pub-mobile-signin:hover { background: var(--accent-2); }
+  
+  .pub-nav-inner { padding: 0 16px; }
+  .pub-nav-logo { width: 140px; height: 35px; margin-top: 8px; }
+}
+
 /* ── Animated mesh background ── */
 .bg-mesh {
   position: fixed;
@@ -904,6 +1066,18 @@ input[type="number"] {
   -webkit-backdrop-filter: blur(24px);
   border-bottom: 1px solid var(--header-border);
   box-shadow: 0 10px 30px rgba(8,6,20,0.08);
+  transition: all 0.3s ease;
+}
+.dashboard-header.is-scrolled {
+  background: var(--bg-card);
+  box-shadow: 0 4px 20px rgba(8,6,20,0.12);
+}
+.dashboard-header.is-scrolled .dashboard-logo {
+  width: 160px;
+  height: 40px;
+}
+.dashboard-header.is-scrolled .dashboard-header-inner {
+  height: 52px;
 }
 .dashboard-header-inner {
   max-width: 1200px;
@@ -913,6 +1087,7 @@ input[type="number"] {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  transition: height 0.3s ease;
 }
 .dashboard-logo-wrap {
   display: flex;
@@ -926,6 +1101,7 @@ input[type="number"] {
   border-radius: 6px;
   object-fit: cover;
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  transition: all 0.3s ease;
 }
 .dashboard-nav-actions {
   display: flex;

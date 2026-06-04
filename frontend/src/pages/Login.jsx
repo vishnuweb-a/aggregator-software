@@ -5,7 +5,7 @@ import {
   Mail, Lock, AlertCircle, CheckCircle,
   KeyRound, Truck, ArrowLeft, RefreshCw, ArrowRight,
 } from 'lucide-react';
-import shipbiharLogo from '../assets/logo_ship_bihar.jpeg';
+import shipbiharLogo from '../assets/sb3.png';
 
 const Login = () => {
   const [mode, setMode]             = useState('login');

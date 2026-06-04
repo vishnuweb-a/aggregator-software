@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
@@ -14,6 +14,15 @@ const Home = () => {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 60);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -37,25 +46,25 @@ const Home = () => {
     <div className="sb-landing">
 
       {/* ═══ Top Nav Bar ═══ */}
-      <nav className="sb-nav">
-        <div className="sb-nav-inner">
-          <div className="sb-nav-left" onClick={() => navigate('/')}>
-            <img src={shipbiharLogo} alt="shipBihar" className="sb-nav-logo" />
+      <nav className={`pub-nav ${isScrolled ? 'is-scrolled' : ''}`}>
+        <div className="pub-nav-inner">
+          <div className="pub-nav-left" onClick={() => navigate('/')}>
+            <img src={shipbiharLogo} alt="shipBihar" className="pub-nav-logo" />
           </div>
 
-          <div className="sb-nav-center">
-            <Link to="/tracking" className="sb-nav-link">Tracking</Link>
-            <Link to="/network" className="sb-nav-link">Network</Link>
-            <Link to="/services" className="sb-nav-link">Services</Link>
-            <Link to="/about" className="sb-nav-link">About Us</Link>
+          <div className="pub-nav-center">
+            <Link to="/tracking" className="pub-nav-link">Tracking</Link>
+            <Link to="/network" className="pub-nav-link">Network</Link>
+            <Link to="/services" className="pub-nav-link">Services</Link>
+            <Link to="/about" className="pub-nav-link">About Us</Link>
           </div>
 
-          <div className="sb-nav-right">
-            <button className="sb-nav-signin" onClick={() => navigate('/login')}>
+          <div className="pub-nav-right">
+            <button className="pub-nav-signin" onClick={() => navigate('/login')}>
               Sign In
             </button>
             <button 
-              className="sb-mobile-menu-btn" 
+              className="pub-mobile-menu-btn" 
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             >
               {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
@@ -65,12 +74,12 @@ const Home = () => {
 
         {/* Mobile Dropdown Menu */}
         {isMobileMenuOpen && (
-          <div className="sb-mobile-dropdown">
-            <Link to="/tracking" className="sb-mobile-link" onClick={() => setIsMobileMenuOpen(false)}>Tracking</Link>
-            <Link to="/network" className="sb-mobile-link" onClick={() => setIsMobileMenuOpen(false)}>Network</Link>
-            <Link to="/services" className="sb-mobile-link" onClick={() => setIsMobileMenuOpen(false)}>Services</Link>
-            <Link to="/about" className="sb-mobile-link" onClick={() => setIsMobileMenuOpen(false)}>About Us</Link>
-            <button className="sb-mobile-signin" onClick={() => navigate('/login')}>
+          <div className="pub-mobile-dropdown">
+            <Link to="/tracking" className="pub-mobile-link" onClick={() => setIsMobileMenuOpen(false)}>Tracking</Link>
+            <Link to="/network" className="pub-mobile-link" onClick={() => setIsMobileMenuOpen(false)}>Network</Link>
+            <Link to="/services" className="pub-mobile-link" onClick={() => setIsMobileMenuOpen(false)}>Services</Link>
+            <Link to="/about" className="pub-mobile-link" onClick={() => setIsMobileMenuOpen(false)}>About Us</Link>
+            <button className="pub-mobile-signin" onClick={() => navigate('/login')}>
               Sign In
             </button>
           </div>
@@ -199,109 +208,6 @@ const Home = () => {
         .sb-saffron { color: #f47a20; }
 
         /* ══════════════════════════════════
-           NAV BAR
-        ══════════════════════════════════ */
-        .sb-nav {
-          position: sticky;
-          top: 0;
-          z-index: 100;
-          background: transparent;
-        }
-
-        .sb-nav-inner {
-          max-width: 1280px;
-          margin: 0 auto;
-          padding: 0 32px;
-          height: 64px;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-        }
-
-        .sb-nav-left {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          cursor: pointer;
-        }
-
-        .sb-nav-logo {
-          width: 200px;
-          height: 50px;
-          border-radius: 6px;
-          object-fit: cover;
-          margin-top: 12px;
-        }
-
-        .sb-nav-logo-icon {
-          width: 36px;
-          height: 36px;
-          background: #9a4600;
-          border-radius: 6px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-
-        .sb-nav-logo-text {
-          font-size: 20px;
-          font-weight: 800;
-          color: #191c1d;
-          letter-spacing: -0.02em;
-        }
-
-        .sb-nav-center {
-          display: flex;
-          gap: 32px;
-        }
-
-        .sb-nav-link {
-          font-size: 14px;
-          font-weight: 500;
-          color: #574237;
-          text-decoration: none;
-          transition: color 0.2s;
-        }
-
-        .sb-nav-link:hover { color: #f47a20; }
-
-        .sb-nav-signin {
-          background: #f47a20;
-          color: #fff;
-          border: none;
-          padding: 10px 24px;
-          border-radius: 4px;
-          font-size: 14px;
-          font-weight: 600;
-          cursor: pointer;
-          font-family: inherit;
-          transition: all 0.2s;
-        }
-
-        .sb-nav-signin:hover {
-          background: #9a4600;
-        }
-
-        .sb-nav-right {
-          display: flex;
-          align-items: center;
-          gap: 16px;
-        }
-
-        .sb-mobile-menu-btn {
-          display: none;
-          background: transparent;
-          border: none;
-          color: #191c1d;
-          cursor: pointer;
-          padding: 4px;
-        }
-
-        .sb-mobile-dropdown {
-          display: none;
-        }
-
-        /* ══════════════════════════════════
            HERO — full bleed bg + floating card
         ══════════════════════════════════ */
         .sb-hero {
@@ -314,26 +220,26 @@ const Home = () => {
         }
 
         .sb-hero-bg {
-          position: fixed;
+          position: absolute;
           inset: 0;
           width: 100%;
           height: 100%;
-          object-fit: fill;
+          object-fit: cover;
           object-position: center;
-          z-index: -2;
-          filter: brightness(1.25) contrast(1.05);
+          z-index: 0;
+          filter: brightness(1.15) contrast(1.05);
         }
 
         .sb-hero-overlay {
-          position: fixed;
+          position: absolute;
           inset: 0;
           background: linear-gradient(
             90deg,
-            rgba(25, 28, 29, 0.65) 0%,
-            rgba(25, 28, 29, 0.35) 50%,
-            rgba(25, 28, 29, 0.1) 100%
+            rgba(25, 28, 29, 0.7) 0%,
+            rgba(25, 28, 29, 0.4) 50%,
+            rgba(25, 28, 29, 0.15) 100%
           );
-          z-index: -1;
+          z-index: 1;
         }
 
         /* ── Floating sign-in card ── */
@@ -536,52 +442,6 @@ const Home = () => {
            RESPONSIVE
         ══════════════════════════════════ */
         @media (max-width: 768px) {
-          .sb-nav-center { display: none; }
-          .sb-nav-signin { display: none; }
-          .sb-mobile-menu-btn { display: flex; }
-          
-          .sb-mobile-dropdown {
-            display: flex;
-            flex-direction: column;
-            background: #ffffff;
-            border-top: 1px solid #dec1b1;
-            border-bottom: 1px solid #dec1b1;
-            padding: 16px;
-            gap: 16px;
-            position: absolute;
-            top: 100%;
-            left: 0;
-            width: 100%;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
-          }
-          
-          .sb-mobile-link {
-            font-size: 16px;
-            font-weight: 500;
-            color: #574237;
-            text-decoration: none;
-            padding: 8px 0;
-            border-bottom: 1px solid #f3f4f5;
-          }
-          
-          .sb-mobile-link:hover { color: #f47a20; }
-          
-          .sb-mobile-signin {
-            background: #f47a20;
-            color: #fff;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 4px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            margin-top: 8px;
-            text-align: center;
-          }
-          
-          .sb-nav-inner { padding: 0 16px; }
-          .sb-nav-logo { width: 140px; height: 35px; margin-top: 8px; }
-
           .sb-hero {
             align-items: flex-start;
             padding-top: 24px;

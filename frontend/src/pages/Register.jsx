@@ -5,7 +5,7 @@ import {
   User, Mail, Lock, Phone, KeyRound,
   CheckCircle, AlertCircle, Truck, ArrowRight,
 } from 'lucide-react';
-import shipbiharLogo from '../assets/logo_ship_bihar.jpeg';
+import shipbiharLogo from '../assets/sb3.png';
 
 const Register = () => {
   const [formData, setFormData] = useState({

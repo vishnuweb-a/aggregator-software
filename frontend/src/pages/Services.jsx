@@ -1,29 +1,63 @@
 import { useNavigate, Link } from 'react-router-dom';
-import { ArrowRight, ChevronRight } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { ArrowRight, ChevronRight, Menu, X } from 'lucide-react';
 import shipbiharLogo from '../assets/sb3.png';
 
 // Reusing styles from Network page with a new prefix "sv-"
 const Services = () => {
   const navigate = useNavigate();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScrollNav = () => setIsScrolled(window.scrollY > 60);
+    window.addEventListener('scroll', handleScrollNav);
+    return () => window.removeEventListener('scroll', handleScrollNav);
+  }, []);
 
   return (
     <div className="sv-page">
-      {/* Nav Bar */}
-      <nav className="sv-nav">
-        <div className="sv-nav-inner">
-          <div className="sv-nav-left" onClick={() => navigate('/')}
-            style={{ cursor: 'pointer' }}>
-            <img src={shipbiharLogo} alt="shipBihar" className="sv-nav-logo" />
+      {/* ═══ Top Nav Bar ═══ */}
+      <nav className={`pub-nav ${isScrolled ? 'is-scrolled' : ''}`}>
+        <div className="pub-nav-inner">
+          <div className="pub-nav-left" onClick={() => navigate('/')}>
+            <img src={shipbiharLogo} alt="shipBihar" className="pub-nav-logo" />
           </div>
-          <div className="sv-nav-center">
-            <Link to="/" className="sv-nav-link">Home</Link>
-            <Link to="/tracking" className="sv-nav-link">Tracking</Link>
-            <Link to="/network" className="sv-nav-link">Network</Link>
-            <Link to="/services" className="sv-nav-link sv-nav-link--active">Services</Link>
-            <Link to="/about" className="sv-nav-link">About Us</Link>
+
+          <div className="pub-nav-center">
+            <Link to="/" className="pub-nav-link">Home</Link>
+            <Link to="/tracking" className="pub-nav-link">Tracking</Link>
+            <Link to="/network" className="pub-nav-link">Network</Link>
+            <Link to="/services" className="pub-nav-link pub-nav-link--active">Services</Link>
+            <Link to="/about" className="pub-nav-link">About Us</Link>
           </div>
-          <button className="sv-nav-signin" onClick={() => navigate('/login')}>Sign In</button>
+
+          <div className="pub-nav-right">
+            <button className="pub-nav-signin" onClick={() => navigate('/login')}>
+              Sign In
+            </button>
+            <button 
+              className="pub-mobile-menu-btn" 
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            >
+              {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
+          </div>
         </div>
+
+        {/* Mobile Dropdown Menu */}
+        {isMobileMenuOpen && (
+          <div className="pub-mobile-dropdown">
+            <Link to="/" className="pub-mobile-link" onClick={() => setIsMobileMenuOpen(false)}>Home</Link>
+            <Link to="/tracking" className="pub-mobile-link" onClick={() => setIsMobileMenuOpen(false)}>Tracking</Link>
+            <Link to="/network" className="pub-mobile-link" onClick={() => setIsMobileMenuOpen(false)}>Network</Link>
+            <Link to="/services" className="pub-mobile-link pub-mobile-link--active" onClick={() => setIsMobileMenuOpen(false)}>Services</Link>
+            <Link to="/about" className="pub-mobile-link" onClick={() => setIsMobileMenuOpen(false)}>About Us</Link>
+            <button className="pub-mobile-signin" onClick={() => navigate('/login')}>
+              Sign In
+            </button>
+          </div>
+        )}
       </nav>
 
       {/* Hero Section */}
@@ -154,9 +188,6 @@ const Services = () => {
         .sv-footer-list a:hover { color: #9a4600; }
 
         @media (max-width: 768px) {
-          .sv-nav-inner { padding: 0 16px; }
-          .sv-nav-logo { width: 140px; height: 35px; margin-top: 8px; }
-          .sv-nav-center { display: none; }
           .sv-hero-inner { grid-template-columns: 1fr; padding: 48px 16px; }
           .sv-features-grid { grid-template-columns: 1fr; }
           .sv-footer-grid { grid-template-columns: 1fr 1fr; }
