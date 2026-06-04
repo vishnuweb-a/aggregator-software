@@ -229,6 +229,12 @@ const ProfileView = ({ user, shipments, loadingShipments, walletBalance }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  useEffect(() => {
+    if (!isEditing) {
+      setPreview(user?.profilePicture || null);
+    }
+  }, [user?.profilePicture, isEditing]);
+
   const handleFileChange = (e) => {
     const selected = e.target.files[0];
     if (selected) {
@@ -248,10 +254,13 @@ const ProfileView = ({ user, shipments, loadingShipments, walletBalance }) => {
       if (editData.password) formData.append('password', editData.password);
       if (file) formData.append('photo', file);
 
-      await api.put('/auth/profile', formData);
+      await api.put('/auth/profile', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
 
       await checkAuth(); // Refresh user data
       setIsEditing(false);
+      setFile(null);
 
       if (editData.password) {
         alert('Password changed successfully. For security verification, you will now be logged out.');
