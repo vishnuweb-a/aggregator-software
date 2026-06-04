@@ -213,25 +213,26 @@ const Home = () => {
         .sb-hero {
           position: relative;
           flex: 1;
-          min-height: calc(100vh - 64px - 80px);
+          min-height: 0;
           display: flex;
           align-items: center;
-          overflow: hidden;
+          padding: 40px 0;
+          overflow: visible;
         }
 
         .sb-hero-bg {
-          position: absolute;
+          position: fixed;
           inset: 0;
           width: 100%;
           height: 100%;
           object-fit: cover;
           object-position: center;
-          z-index: 0;
+          z-index: -2;
           filter: brightness(1.15) contrast(1.05);
         }
 
         .sb-hero-overlay {
-          position: absolute;
+          position: fixed;
           inset: 0;
           background: linear-gradient(
             90deg,
@@ -239,7 +240,7 @@ const Home = () => {
             rgba(25, 28, 29, 0.4) 50%,
             rgba(25, 28, 29, 0.15) 100%
           );
-          z-index: 1;
+          z-index: -1;
         }
 
         /* ── Floating sign-in card ── */
@@ -444,7 +445,7 @@ const Home = () => {
         @media (max-width: 768px) {
           .sb-hero {
             align-items: flex-start;
-            padding-top: 24px;
+            padding: 24px 0 40px;
           }
 
           .sb-hero-overlay {
