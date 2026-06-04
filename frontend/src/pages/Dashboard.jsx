@@ -6,7 +6,7 @@ import {
   Clock, CreditCard, ChevronRight, ChevronDown, ChevronUp, User,
   AlertCircle, ArrowLeft, Truck, Zap, Phone, Mail,
   ShieldCheck, PlusCircle, List, Home, Wallet, Download,
-  Star, DollarSign, Award, Navigation, Shield, Ruler, FileText,
+  Star, DollarSign, Award, Navigation, Shield, Ruler,
   AlertTriangle, Moon, Sun
 } from 'lucide-react';
 import shipbiharLogo from '../assets/sb3.png';
@@ -506,11 +506,12 @@ const AllCourierCard = ({ courier, onSelect, loading }) => (
 );
 
 /* ─── Address Form Section (with auto-fill) ───────── */
-const AddressFields = ({ prefix, label, emoji, color, address, onChange }) => {
+const AddressFields = ({ label, emoji, color, address, onChange }) => {
   const [pincodeLoading, setPincodeLoading] = useState(false);
   const [pincodeMsg, setPincodeMsg] = useState('');
   const [citySuggestions, setCitySuggestions] = useState([]);
   const [showCitySuggestions, setShowCitySuggestions] = useState(false);
+  // eslint-disable-next-line no-unused-vars
   const [citySearchLoading, setCitySearchLoading] = useState(false);
 
   const handleChange = (field) => (e) => {
@@ -754,6 +755,7 @@ const BookingView = ({ onBooked, walletBalance, walletLoading, refreshWalletBala
     declaredValue: '', riskType: '', description: '',
   });
   const [createdParcelId, setCreatedParcelId] = useState(null);
+  // eslint-disable-next-line no-unused-vars
   const [selectedCourierId, setSelectedCourierId] = useState(null);
   const [recommendations, setRecommendations] = useState({ cheapest: null, fastest: null, recommended: null });
   const [allCouriers, setAllCouriers] = useState([]);

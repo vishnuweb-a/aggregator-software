@@ -1,6 +1,6 @@
 import { useNavigate, Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { ArrowRight, ChevronRight, Menu, X } from 'lucide-react';
+import { ArrowRight, Menu, X } from 'lucide-react';
 import shipbiharLogo from '../assets/sb3.png';
 
 // Reusing styles from Network page with a new prefix "sv-"

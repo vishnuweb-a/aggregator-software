@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import {
   Mail, Lock, AlertCircle, CheckCircle,
-  KeyRound, Truck, ArrowLeft, RefreshCw, ArrowRight,
+  KeyRound, ArrowLeft, RefreshCw, ArrowRight,
 } from 'lucide-react';
 import shipbiharLogo from '../assets/sb3.png';
 

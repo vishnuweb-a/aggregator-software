@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import {
-  User, Mail, Lock, Phone, KeyRound,
-  CheckCircle, AlertCircle, Truck, ArrowRight,
+  User, Mail, Lock, Phone,
+  CheckCircle, AlertCircle, ArrowRight,
 } from 'lucide-react';
 import shipbiharLogo from '../assets/sb3.png';
 
