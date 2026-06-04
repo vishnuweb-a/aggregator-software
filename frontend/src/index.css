@@ -49,10 +49,13 @@
   --border:     #333333;
   --border-glow:#555555;
   --text-1:     #f4f4f5;
-  --text-2:     #d4d4d8;
-  --text-3:     #a1a1aa;
+  --text-2:     #e4e4e7;
+  --text-3:     #b0b0b8;
   --header-bg:  #121212;
   --header-border: #333333;
+  --btn-ghost-bg: rgba(255, 255, 255, 0.08);
+  --btn-ghost-border: rgba(255, 255, 255, 0.2);
+  --btn-ghost-color: #e4e4e7;
 }
 
 [data-theme="dim"] {
@@ -61,11 +64,14 @@
   --bg-glass:   rgba(45, 51, 59, 0.95);
   --border:     #444c56;
   --border-glow:#545d68;
-  --text-1:     #adbac7;
-  --text-2:     #768390;
-  --text-3:     #545d68;
+  --text-1:     #cdd9e5;
+  --text-2:     #adbac7;
+  --text-3:     #768390;
   --header-bg:  #22272e;
   --header-border: #444c56;
+  --btn-ghost-bg: rgba(255, 255, 255, 0.06);
+  --btn-ghost-border: rgba(255, 255, 255, 0.16);
+  --btn-ghost-color: #adbac7;
 }
 
 html { scroll-behavior: smooth; }
@@ -292,6 +298,11 @@ body {
   100% { transform: translate(-30px, 80px) scale(0.95); }
 }
 
+@keyframes sb-slideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 /* ── Glass card / Premium Container ── */
 .glass-card {
   background: var(--bg-glass);
@@ -448,6 +459,20 @@ textarea.input-field {
   border-color: var(--accent);
   color: var(--accent-2);
   background: rgba(244, 122, 32, 0.08);
+}
+
+[data-theme="dark"] .btn-ghost,
+[data-theme="dim"] .btn-ghost {
+  background: var(--btn-ghost-bg);
+  border-color: var(--btn-ghost-border);
+  color: var(--btn-ghost-color);
+}
+
+[data-theme="dark"] .btn-ghost:hover,
+[data-theme="dim"] .btn-ghost:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(244, 122, 32, 0.12);
 }
 
 /* ── Badge ── */
@@ -1109,6 +1134,35 @@ input[type="number"] {
   gap: 0.6rem;
 }
 
+.dashboard-nav-mobile-controls {
+  display: none;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.dash-mobile-menu-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-1);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.dash-mobile-menu-btn:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.dash-mobile-dropdown {
+  display: none;
+}
+
 @media (max-width: 900px) {
   .profile-layout {
     grid-template-columns: 1fr;
@@ -1130,13 +1184,58 @@ input[type="number"] {
     width: 140px;
     height: 35px;
   }
-  .dashboard-nav-actions {
-    gap: 0.2rem;
+
+  /* Hide desktop nav, show mobile controls */
+  .dashboard-nav-desktop {
+    display: none !important;
   }
-  .btn-ghost-text {
-    display: none;
+  .dashboard-nav-mobile-controls {
+    display: flex;
+  }
+
+  /* Mobile dropdown */
+  .dash-mobile-dropdown {
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-card);
+    border-top: 1px solid var(--border);
+    padding: 12px 16px;
+    gap: 4px;
+    animation: sb-slideDown 0.25s ease-out;
+  }
+
+  .dash-mobile-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text-2);
+    background: none;
+    border: none;
+    padding: 12px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    font-family: inherit;
+    text-align: left;
+  }
+
+  .dash-mobile-link:hover,
+  .dash-mobile-link--active {
+    background: rgba(244, 122, 32, 0.08);
+    color: var(--accent);
+  }
+
+  .dash-mobile-link--danger {
+    color: var(--red);
+  }
+  .dash-mobile-link--danger:hover {
+    background: rgba(186, 26, 26, 0.08);
+    color: var(--red);
   }
 }
+
 @media (min-width: 769px) {
   .btn-ghost-text {
     display: inline;

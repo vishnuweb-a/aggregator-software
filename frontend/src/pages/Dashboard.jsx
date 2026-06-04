@@ -7,7 +7,7 @@ import {
   AlertCircle, ArrowLeft, Truck, Zap, Phone, Mail,
   ShieldCheck, PlusCircle, List, Home, Wallet, Download,
   Star, DollarSign, Award, Navigation, Shield, Ruler,
-  AlertTriangle, Moon, Sun
+  AlertTriangle, Moon, Sun, Menu, X
 } from 'lucide-react';
 import shipbiharLogo from '../assets/sb3.png';
 
@@ -53,6 +53,7 @@ const ThemeToggle = () => {
 /* ─── Navbar ─────────────────────────────────────── */
 const Navbar = ({ logout, view, setView }) => {
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleScrollNav = () => setIsScrolled(window.scrollY > 60);
@@ -60,13 +61,20 @@ const Navbar = ({ logout, view, setView }) => {
     return () => window.removeEventListener('scroll', handleScrollNav);
   }, []);
 
+  const handleNav = (v) => {
+    setView(v);
+    setIsMobileMenuOpen(false);
+  };
+
   return (
     <header className={`dashboard-header ${isScrolled ? 'is-scrolled' : ''}`}>
       <div className="dashboard-header-inner">
-        <div className="dashboard-logo-wrap" onClick={() => setView('profile')}>
+        <div className="dashboard-logo-wrap" onClick={() => handleNav('profile')}>
           <img src={shipbiharLogo} alt="shipBihar" className="dashboard-logo" />
         </div>
-        <div className="dashboard-nav-actions">
+
+        {/* Desktop nav actions */}
+        <div className="dashboard-nav-actions dashboard-nav-desktop">
           <ThemeToggle />
           <button onClick={() => setView('profile')} className="btn-ghost" style={{ gap: '0.4rem', padding: '0.4rem 0.8rem', color: view === 'profile' ? 'var(--accent)' : undefined }}>
             <Home size={14} /> <span className="btn-ghost-text">Profile</span>
@@ -81,7 +89,33 @@ const Navbar = ({ logout, view, setView }) => {
             <LogOut size={14} /> <span className="btn-ghost-text">Sign Out</span>
           </button>
         </div>
+
+        {/* Mobile: theme toggle + hamburger */}
+        <div className="dashboard-nav-mobile-controls">
+          <ThemeToggle />
+          <button className="dash-mobile-menu-btn" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+            {isMobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
+          </button>
+        </div>
       </div>
+
+      {/* Mobile dropdown */}
+      {isMobileMenuOpen && (
+        <div className="dash-mobile-dropdown">
+          <button onClick={() => handleNav('profile')} className={`dash-mobile-link ${view === 'profile' ? 'dash-mobile-link--active' : ''}`}>
+            <Home size={16} /> Profile
+          </button>
+          <button onClick={() => handleNav('wallet')} className={`dash-mobile-link ${view === 'wallet' ? 'dash-mobile-link--active' : ''}`}>
+            <Wallet size={16} /> Wallet
+          </button>
+          <button onClick={() => handleNav('book')} className={`dash-mobile-link ${view === 'book' ? 'dash-mobile-link--active' : ''}`}>
+            <PlusCircle size={16} /> New Booking
+          </button>
+          <button onClick={logout} className="dash-mobile-link dash-mobile-link--danger">
+            <LogOut size={16} /> Sign Out
+          </button>
+        </div>
+      )}
     </header>
   );
 };
