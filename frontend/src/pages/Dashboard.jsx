@@ -248,9 +248,7 @@ const ProfileView = ({ user, shipments, loadingShipments, walletBalance }) => {
       if (editData.password) formData.append('password', editData.password);
       if (file) formData.append('photo', file);
 
-      await api.put('/auth/profile', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
+      await api.put('/auth/profile', formData);
 
       await checkAuth(); // Refresh user data
       setIsEditing(false);
