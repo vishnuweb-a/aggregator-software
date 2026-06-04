@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
-  ArrowRight, Mail, Lock, AlertCircle,
+  ArrowRight, Mail, Lock, AlertCircle, Menu, X
 } from 'lucide-react';
 import shipbiharLogo from '../assets/sb3.png';
 const Home = () => {
@@ -13,6 +13,7 @@ const Home = () => {
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -49,10 +50,31 @@ const Home = () => {
             <Link to="/about" className="sb-nav-link">About Us</Link>
           </div>
 
-          <button className="sb-nav-signin" onClick={() => navigate('/login')}>
-            Sign In
-          </button>
+          <div className="sb-nav-right">
+            <button className="sb-nav-signin" onClick={() => navigate('/login')}>
+              Sign In
+            </button>
+            <button 
+              className="sb-mobile-menu-btn" 
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            >
+              {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
+          </div>
         </div>
+
+        {/* Mobile Dropdown Menu */}
+        {isMobileMenuOpen && (
+          <div className="sb-mobile-dropdown">
+            <Link to="/tracking" className="sb-mobile-link" onClick={() => setIsMobileMenuOpen(false)}>Tracking</Link>
+            <Link to="/network" className="sb-mobile-link" onClick={() => setIsMobileMenuOpen(false)}>Network</Link>
+            <Link to="/services" className="sb-mobile-link" onClick={() => setIsMobileMenuOpen(false)}>Services</Link>
+            <Link to="/about" className="sb-mobile-link" onClick={() => setIsMobileMenuOpen(false)}>About Us</Link>
+            <button className="sb-mobile-signin" onClick={() => navigate('/login')}>
+              Sign In
+            </button>
+          </div>
+        )}
       </nav>
 
       {/* ═══ Hero — Full-bleed background + floating sign-in card ═══ */}
@@ -258,6 +280,25 @@ const Home = () => {
 
         .sb-nav-signin:hover {
           background: #9a4600;
+        }
+
+        .sb-nav-right {
+          display: flex;
+          align-items: center;
+          gap: 16px;
+        }
+
+        .sb-mobile-menu-btn {
+          display: none;
+          background: transparent;
+          border: none;
+          color: #191c1d;
+          cursor: pointer;
+          padding: 4px;
+        }
+
+        .sb-mobile-dropdown {
+          display: none;
         }
 
         /* ══════════════════════════════════
@@ -496,6 +537,47 @@ const Home = () => {
         ══════════════════════════════════ */
         @media (max-width: 768px) {
           .sb-nav-center { display: none; }
+          .sb-nav-signin { display: none; }
+          .sb-mobile-menu-btn { display: flex; }
+          
+          .sb-mobile-dropdown {
+            display: flex;
+            flex-direction: column;
+            background: #ffffff;
+            border-top: 1px solid #dec1b1;
+            border-bottom: 1px solid #dec1b1;
+            padding: 16px;
+            gap: 16px;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+          }
+          
+          .sb-mobile-link {
+            font-size: 16px;
+            font-weight: 500;
+            color: #574237;
+            text-decoration: none;
+            padding: 8px 0;
+            border-bottom: 1px solid #f3f4f5;
+          }
+          
+          .sb-mobile-link:hover { color: #f47a20; }
+          
+          .sb-mobile-signin {
+            background: #f47a20;
+            color: #fff;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 8px;
+            text-align: center;
+          }
           
           .sb-nav-inner { padding: 0 16px; }
           .sb-nav-logo { width: 140px; height: 35px; margin-top: 8px; }
