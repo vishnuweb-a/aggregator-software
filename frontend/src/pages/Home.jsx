@@ -39,7 +39,7 @@ const Home = () => {
       <nav className="sb-nav">
         <div className="sb-nav-inner">
           <div className="sb-nav-left" onClick={() => navigate('/')}>
-            <img src={shipbiharLogo} alt="shipBihar" style={{ width: 200, height: 50, borderRadius: 6, objectFit: 'cover', marginTop: '12px' }} />
+            <img src={shipbiharLogo} alt="shipBihar" className="sb-nav-logo" />
           </div>
 
           <div className="sb-nav-center">
@@ -201,6 +201,14 @@ const Home = () => {
           align-items: center;
           gap: 8px;
           cursor: pointer;
+        }
+
+        .sb-nav-logo {
+          width: 200px;
+          height: 50px;
+          border-radius: 6px;
+          object-fit: cover;
+          margin-top: 12px;
         }
 
         .sb-nav-logo-icon {
@@ -488,6 +496,9 @@ const Home = () => {
         ══════════════════════════════════ */
         @media (max-width: 768px) {
           .sb-nav-center { display: none; }
+          
+          .sb-nav-inner { padding: 0 16px; }
+          .sb-nav-logo { width: 140px; height: 35px; margin-top: 8px; }
 
           .sb-hero {
             align-items: flex-start;

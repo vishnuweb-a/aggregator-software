@@ -875,6 +875,8 @@ const Network = () => {
         }
 
         @media (max-width: 640px) {
+          .nw-nav-inner { padding: 0 16px; }
+          .nw-nav-logo { width: 140px; height: 35px; margin-top: 8px; }
           .nw-nav-center { display: none; }
 
           .nw-hero-title {

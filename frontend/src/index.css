@@ -856,5 +856,121 @@ input[type="number"] {
   to {
     opacity: 1;
     transform: translateX(0);
+}
+
+/* ── Dashboard Layouts ── */
+.dashboard-main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem;
+  position: relative;
+  z-index: 1;
+}
+
+.profile-layout {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+.booking-fields-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  padding: 1.25rem 1.5rem;
+}
+
+.payment-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.payment-actions-grid {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.dashboard-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: var(--header-bg);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-bottom: 1px solid var(--header-border);
+  box-shadow: 0 10px 30px rgba(8,6,20,0.08);
+}
+.dashboard-header-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.dashboard-logo-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  cursor: pointer;
+}
+.dashboard-logo {
+  width: 200px;
+  height: 50px;
+  border-radius: 6px;
+  object-fit: cover;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+.dashboard-nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+@media (max-width: 900px) {
+  .profile-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-main {
+    padding: 1.5rem 1rem;
+  }
+  .booking-fields-grid {
+    grid-template-columns: 1fr;
+    padding: 1rem;
+  }
+  .dashboard-header-inner {
+    padding: 0 1rem;
+  }
+  .dashboard-logo {
+    width: 140px;
+    height: 35px;
+  }
+  .dashboard-nav-actions {
+    gap: 0.2rem;
+  }
+  .btn-ghost-text {
+    display: none;
+  }
+}
+@media (min-width: 769px) {
+  .btn-ghost-text {
+    display: inline;
+  }
+}
+
+@media (max-width: 600px) {
+  .payment-grid {
+    grid-template-columns: 1fr;
+  }
+  .payment-actions-grid {
+    flex-direction: column;
   }
 }

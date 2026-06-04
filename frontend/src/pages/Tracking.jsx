@@ -357,6 +357,8 @@ const Tracking = () => {
 
         /* Responsive */
         @media (max-width: 768px) {
+          .tr-nav-inner { padding: 0 16px; }
+          .tr-nav-logo { width: 140px; height: 35px; margin-top: 8px; }
           .tr-nav-center { display: none; }
           .tr-status-card { flex-direction: column; align-items: flex-start; gap: 16px; padding: 16px; }
           .tr-status-right { text-align: left; }

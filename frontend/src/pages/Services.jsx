@@ -152,6 +152,20 @@ const Services = () => {
         .sv-footer-list li { margin-bottom: 4px; }
         .sv-footer-list a { font-size: 13px; color: #4f5d85; text-decoration: none; }
         .sv-footer-list a:hover { color: #9a4600; }
+
+        @media (max-width: 768px) {
+          .sv-nav-inner { padding: 0 16px; }
+          .sv-nav-logo { width: 140px; height: 35px; margin-top: 8px; }
+          .sv-nav-center { display: none; }
+          .sv-hero-inner { grid-template-columns: 1fr; padding: 48px 16px; }
+          .sv-features-grid { grid-template-columns: 1fr; }
+          .sv-footer-grid { grid-template-columns: 1fr 1fr; }
+        }
+        @media (max-width: 480px) {
+          .sv-footer-grid { grid-template-columns: 1fr; }
+          .sv-hero-title { font-size: 28px; }
+          .sv-hero-actions { flex-direction: column; }
+        }
       `}</style>
     </div>
   );

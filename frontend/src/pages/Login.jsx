@@ -69,7 +69,7 @@ const Login = () => {
       <nav className="sb-nav">
         <div className="sb-nav-inner">
           <div className="sb-nav-left" onClick={() => navigate('/')}>
-            <img src={shipbiharLogo} alt="shipBihar" style={{ width: 100, height: 50, borderRadius: 6, objectFit: 'cover' }} />
+            <img src={shipbiharLogo} alt="shipBihar" className="sb-nav-logo" />
           </div>
           <button className="sb-nav-signin" onClick={() => navigate('/register')}>Create Account</button>
         </div>
@@ -197,6 +197,7 @@ const Login = () => {
         .sb-nav { position:sticky; top:0; z-index:100; background:rgba(248, 249, 250, 0.75); backdrop-filter:blur(12px); border-bottom:1px solid rgba(222, 193, 177, 0.4); }
         .sb-nav-inner { max-width:1280px; margin:0 auto; padding:0 32px; height:64px; display:flex; align-items:center; justify-content:space-between; }
         .sb-nav-left { display:flex; align-items:center; gap:8px; cursor:pointer; }
+        .sb-nav-logo { width:200px; height:50px; border-radius:6px; object-fit:cover; margin-top:12px; }
         .sb-nav-logo-icon { width:36px; height:36px; background:#9a4600; border-radius:6px; display:flex; align-items:center; justify-content:center; }
         .sb-nav-logo-text { font-size:20px; font-weight:800; color:#191c1d; letter-spacing:-0.02em; }
         .sb-nav-signin { background:#f47a20; color:#fff; border:none; padding:10px 24px; border-radius:4px; font-size:14px; font-weight:600; cursor:pointer; font-family:inherit; transition:all 0.2s; }
@@ -239,6 +240,8 @@ const Login = () => {
 
 
         @media (max-width:768px) {
+          .sb-nav-inner { padding:0 16px; }
+          .sb-nav-logo { width:140px; height:35px; margin-top:8px; }
           .sb-hero-overlay { background:linear-gradient(180deg,rgba(255,255,255,0.95) 0%,rgba(255,255,255,0.8) 60%,rgba(255,255,255,0.3) 100%); }
           .sb-hero-card { margin:0 16px; max-width:none; }
           .sb-hero { align-items:flex-start; padding-top:24px; }

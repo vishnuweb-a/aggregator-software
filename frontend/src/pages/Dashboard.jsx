@@ -52,30 +52,24 @@ const ThemeToggle = () => {
 
 /* ─── Navbar ─────────────────────────────────────── */
 const Navbar = ({ logout, view, setView }) => (
-  <header style={{
-    position: 'sticky', top: 0, zIndex: 50,
-    background: 'var(--header-bg)',
-    backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)',
-    borderBottom: '1px solid var(--header-border)',
-    boxShadow: '0 10px 30px rgba(8,6,20,0.08)',
-  }}>
-    <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 1.5rem', height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', cursor: 'pointer' }} onClick={() => setView('profile')}>
-        <img src={shipbiharLogo} alt="shipBihar" style={{ width: 200, height: 50, borderRadius: 6, objectFit: 'cover', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
+  <header className="dashboard-header">
+    <div className="dashboard-header-inner">
+      <div className="dashboard-logo-wrap" onClick={() => setView('profile')}>
+        <img src={shipbiharLogo} alt="shipBihar" className="dashboard-logo" />
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+      <div className="dashboard-nav-actions">
         <ThemeToggle />
         <button onClick={() => setView('profile')} className="btn-ghost" style={{ gap: '0.4rem', padding: '0.4rem 0.8rem', color: view === 'profile' ? 'var(--accent)' : undefined }}>
-          <Home size={14} /> Profile
+          <Home size={14} /> <span className="btn-ghost-text">Profile</span>
         </button>
         <button onClick={() => setView('wallet')} className="btn-ghost" style={{ gap: '0.4rem', padding: '0.4rem 0.8rem', color: view === 'wallet' ? 'var(--accent)' : undefined }}>
-          <Wallet size={14} /> Wallet
+          <Wallet size={14} /> <span className="btn-ghost-text">Wallet</span>
         </button>
         <button onClick={() => setView('book')} className="btn-ghost" style={{ gap: '0.4rem', padding: '0.4rem 0.8rem', color: view === 'book' ? 'var(--accent)' : undefined }}>
-          <PlusCircle size={14} /> New Booking
+          <PlusCircle size={14} /> <span className="btn-ghost-text">New Booking</span>
         </button>
         <button onClick={logout} className="btn-ghost" style={{ gap: '0.4rem', padding: '0.4rem 0.8rem' }}>
-          <LogOut size={14} /> Sign Out
+          <LogOut size={14} /> <span className="btn-ghost-text">Sign Out</span>
         </button>
       </div>
     </div>
@@ -183,7 +177,7 @@ const ShipmentCard = ({ s }) => {
 
 /* ─── Profile View (two columns) ─────────────────── */
 const ProfileView = ({ user, shipments, loadingShipments, walletBalance }) => (
-  <div style={{ display: 'grid', gridTemplateColumns: '320px 1fr', gap: '2rem', alignItems: 'start' }}>
+  <div className="profile-layout">
 
     {/* LEFT — User Info */}
     <div className="glass-card" style={{ padding: '2rem' }}>
@@ -1079,7 +1073,7 @@ const BookingView = ({ onBooked, walletBalance, walletLoading, refreshWalletBala
             </div>
           </div>
           <form onSubmit={handleCreateParcel}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', padding: '1.25rem 1.5rem' }}>
+            <div className="booking-fields-grid">
 
               {/* ── Sender side ── */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
@@ -1323,7 +1317,7 @@ const BookingView = ({ onBooked, walletBalance, walletLoading, refreshWalletBala
             <p style={{ color: 'var(--text-2)', fontSize: '0.9rem', marginBottom: '1.25rem' }}>
               Your booking is created. Please pay to confirm the shipment.
             </p>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.25rem' }}>
+            <div className="payment-grid">
               <div className="glass-card" style={{ padding: '1rem' }}>
                 <p style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 0.35rem' }}>Amount</p>
                 <p style={{ fontSize: '1.4rem', fontWeight: 900, color: 'var(--accent)', margin: 0 }}>₹{paymentInfo?.amount || pendingShipment.amount || pendingShipment.price}</p>
@@ -1388,7 +1382,7 @@ const BookingView = ({ onBooked, walletBalance, walletLoading, refreshWalletBala
               </div>
             </div>
 
-            <div style={{ marginBottom: '1.25rem', display: 'flex', gap: '1rem' }}>
+            <div className="payment-actions-grid">
               <div style={{ flex: 1 }}>
                 <p style={{ fontSize: '0.78rem', color: 'var(--text-2)', marginBottom: '0.4rem' }}>Pay Online instantly</p>
                 <button type="button" onClick={handlePayWithRazorpay} disabled={loading} className="btn-primary" style={{ width: '100%', justifyContent: 'center' }}>
@@ -1614,7 +1608,7 @@ const Dashboard = () => {
     <div style={{ minHeight: '100vh', fontFamily: "'Inter', system-ui, sans-serif" }}>
       <div className="bg-mesh" />
       <Navbar logout={logout} view={view} setView={setView} />
-      <main style={{ maxWidth: 1200, margin: '0 auto', padding: '2.5rem 1.5rem', position: 'relative', zIndex: 1 }}>
+      <main className="dashboard-main">
         {view === 'profile' && <ProfileView user={user} shipments={shipments} loadingShipments={loadingShipments} walletBalance={walletBalance} />}
         {view === 'wallet' && <WalletView balance={walletBalance} loading={walletLoading} notice={walletNotice} error={walletError} onRecharge={rechargeWallet} />}
         {view === 'book'    && (

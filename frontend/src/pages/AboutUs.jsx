@@ -482,6 +482,8 @@ const AboutUs = () => {
           .au-advantage-inner { flex-direction: column; gap: 40px; }
         }
         @media (max-width: 768px) {
+          .au-nav-inner { padding: 0 16px; }
+          .au-nav-logo { width: 140px; height: 35px; margin-top: 8px; }
           .au-hero-title { font-size: 32px; }
           .au-nav-center { display: none; }
           .au-launch-badge { display: none; }
