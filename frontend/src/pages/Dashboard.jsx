@@ -1346,7 +1346,7 @@ const BookingView = ({ onBooked, walletBalance, walletLoading, refreshWalletBala
                     <input type="text" name="DelevarableType" value={parcelData.DelevarableType} onChange={onFieldChange} className="input-field no-icon input-compact" placeholder="Document, Electronics…" required />
                   </Field>
                   <Field label="Weight (kg)">
-                    <input type="number" step="0.1" min="0.1" name="weight" value={parcelData.weight} onChange={onFieldChange} className="input-field no-icon input-compact" placeholder="0.5" required />
+                    <input type="number" step="any" min="0" name="weight" value={parcelData.weight} onChange={onFieldChange} className="input-field no-icon input-compact" placeholder="0.5" required />
                   </Field>
                   <Field label="Courier Type">
                     <select name="courierType" value={parcelData.courierType} onChange={onFieldChange} className="input-field no-icon input-compact" required>

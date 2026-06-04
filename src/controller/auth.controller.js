@@ -136,9 +136,14 @@ const loginUser = async (req,res)=>{
    const {email , password} = req.body
    if(!email || !password){
        return res.status(400).json({message  :  "all feilds must be present ..."})
-   } 
-   const user = await User.findOne({email})
-   if(!email){
+   }
+
+   // Determine if the input is an email or a phone number
+   const isEmail = validator.isEmail(email)
+   const query = isEmail ? { email } : { phoneNumber: Number(email) }
+
+   const user = await User.findOne(query)
+   if(!user){
     return res.status(404).json({message  :  "user is not found ...  "})
    }
    const verify = await bcrypt.compare(password,user.password)

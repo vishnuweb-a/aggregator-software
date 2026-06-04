@@ -101,11 +101,11 @@ const Login = () => {
           {mode === 'login' && (
             <form onSubmit={handleLogin} className="sb-card-form">
               <div className="sb-field">
-                <label className="sb-label">Email Address</label>
+                <label className="sb-label">Email or Phone Number</label>
                 <div className="sb-input-wrap">
                   <Mail size={16} className="sb-input-icon" />
-                  <input type="email" value={email} onChange={e => setEmail(e.target.value)}
-                    className="sb-input" placeholder="you@example.com" required />
+                  <input type="text" value={email} onChange={e => setEmail(e.target.value)}
+                    className="sb-input" placeholder="you@example.com or 9876543210" required />
                 </div>
               </div>
               <div className="sb-field">
