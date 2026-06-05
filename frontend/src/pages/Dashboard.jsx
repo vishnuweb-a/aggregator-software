@@ -1726,9 +1726,24 @@ const OrderTrackingModal = ({ shipment, onClose }) => {
   const [tracking, setTracking] = useState([]);
   const [loadingTrack, setLoadingTrack] = useState(true);
   const [trackError, setTrackError] = useState('');
+  const [cancelling, setCancelling] = useState(false);
   const status = shipment.shipmentStatus || 'PENDING';
   const cfg = getStatusCfg(status);
   const StatusIcon = cfg.icon;
+
+  const handleCancelOrder = async () => {
+    if (!window.confirm('Are you sure you want to cancel this order?')) return;
+    try {
+      setCancelling(true);
+      await api.post(`/order/cancel/${shipment.awb}`);
+      alert('Cancellation requested successfully.');
+      window.location.reload(); // Refresh to update list
+    } catch (err) {
+      alert(err.response?.data?.response || 'Failed to cancel order.');
+    } finally {
+      setCancelling(false);
+    }
+  };
 
   useEffect(() => {
     const fetchTracking = async () => {
@@ -1798,14 +1813,31 @@ const OrderTrackingModal = ({ shipment, onClose }) => {
                 <p style={{ color: '#fff', fontSize: '1.25rem', fontWeight: 900, fontFamily: 'monospace', margin: 0 }}>{shipment.awb || '—'}</p>
               </div>
             </div>
-            <button onClick={onClose} style={{
-              width: 36, height: 36, borderRadius: '50%', background: 'rgba(255,255,255,0.2)',
-              border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              transition: 'background 0.2s'
-            }} onMouseEnter={e => e.currentTarget.style.background='rgba(255,255,255,0.35)'}
-               onMouseLeave={e => e.currentTarget.style.background='rgba(255,255,255,0.2)'}>
-              <X size={18} color="#fff" />
-            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              {['PAYMENT_PENDING', 'BOOKED'].includes(shipment.shipmentStatus) && (
+                <button
+                  onClick={handleCancelOrder}
+                  disabled={cancelling}
+                  style={{
+                    padding: '0.45rem 0.9rem', borderRadius: 20, background: 'rgba(239, 68, 68, 0.9)',
+                    border: 'none', color: '#fff', fontSize: '0.75rem', fontWeight: 700,
+                    cursor: cancelling ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem',
+                    transition: 'background 0.2s', opacity: cancelling ? 0.7 : 1
+                  }}
+                >
+                  <AlertCircle size={14} />
+                  {cancelling ? 'Cancelling...' : 'Cancel Order'}
+                </button>
+              )}
+              <button onClick={onClose} style={{
+                width: 36, height: 36, borderRadius: '50%', background: 'rgba(255,255,255,0.2)',
+                border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                transition: 'background 0.2s'
+              }} onMouseEnter={e => e.currentTarget.style.background='rgba(255,255,255,0.35)'}
+                 onMouseLeave={e => e.currentTarget.style.background='rgba(255,255,255,0.2)'}>
+                <X size={18} color="#fff" />
+              </button>
+            </div>
           </div>
 
           {/* Status badges row */}
