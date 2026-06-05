@@ -262,7 +262,10 @@ const ProfileView = ({ user, shipments, loadingShipments, walletBalance }) => {
       if (file) formData.append('photo', file);
 
       await api.put('/auth/profile', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
+        transformRequest: [(data, headers) => {
+          delete headers['Content-Type'];
+          return data;
+        }]
       });
 
       await checkAuth(); // Refresh user data
