@@ -138,9 +138,27 @@ const loginUser = async (req,res)=>{
        return res.status(400).json({message  :  "all feilds must be present ..."})
    }
 
-   // Determine if the input is an email or a phone number
-   const isEmail = validator.isEmail(email)
-   const query = isEmail ? { email } : { phoneNumber: Number(email) }
+   // Trim input and prepare an $or query
+   const input = String(email).trim()
+   const isEmail = validator.isEmail(input)
+   const query = { $or: [] }
+
+   if (isEmail) {
+     query.$or.push({ email: input })
+   } else {
+     query.$or.push({ email: input }) // Fallback just in case
+     
+     const numericInput = Number(input)
+     if (!isNaN(numericInput)) {
+       query.$or.push({ phoneNumber: numericInput })
+     }
+     
+     // Also try to strip non-digits (e.g., if user types +91 98765 43210)
+     const phoneStr = input.replace(/\D/g, '')
+     if (phoneStr && phoneStr !== input) {
+       query.$or.push({ phoneNumber: Number(phoneStr) })
+     }
+   }
 
    const user = await User.findOne(query)
    if(!user){
