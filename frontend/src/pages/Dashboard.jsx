@@ -7,7 +7,8 @@ import {
   AlertCircle, ArrowLeft, Truck, Zap, Phone, Mail,
   ShieldCheck, PlusCircle, List, Home, Wallet, Download,
   Star, DollarSign, Award, Navigation, Shield, Ruler,
-  AlertTriangle, Moon, Sun, Menu, X, Camera
+  AlertTriangle, Moon, Sun, Menu, X, Camera, ClipboardList,
+  PackageCheck, PackageSearch, RefreshCw
 } from 'lucide-react';
 import shipbiharLogo from '../assets/sb3.png';
 
@@ -82,6 +83,9 @@ const Navbar = ({ logout, view, setView }) => {
           <button onClick={() => setView('wallet')} className="btn-ghost" style={{ gap: '0.4rem', padding: '0.4rem 0.8rem', color: view === 'wallet' ? 'var(--accent)' : undefined }}>
             <Wallet size={14} /> <span className="btn-ghost-text">Wallet</span>
           </button>
+          <button onClick={() => setView('orders')} className="btn-ghost" style={{ gap: '0.4rem', padding: '0.4rem 0.8rem', color: view === 'orders' ? 'var(--accent)' : undefined }}>
+            <ClipboardList size={14} /> <span className="btn-ghost-text">My Orders</span>
+          </button>
           <button onClick={() => setView('book')} className="btn-ghost" style={{ gap: '0.4rem', padding: '0.4rem 0.8rem', color: view === 'book' ? 'var(--accent)' : undefined }}>
             <PlusCircle size={14} /> <span className="btn-ghost-text">New Booking</span>
           </button>
@@ -107,6 +111,9 @@ const Navbar = ({ logout, view, setView }) => {
           </button>
           <button onClick={() => handleNav('wallet')} className={`dash-mobile-link ${view === 'wallet' ? 'dash-mobile-link--active' : ''}`}>
             <Wallet size={16} /> Wallet
+          </button>
+          <button onClick={() => handleNav('orders')} className={`dash-mobile-link ${view === 'orders' ? 'dash-mobile-link--active' : ''}`}>
+            <ClipboardList size={16} /> My Orders
           </button>
           <button onClick={() => handleNav('book')} className={`dash-mobile-link ${view === 'book' ? 'dash-mobile-link--active' : ''}`}>
             <PlusCircle size={16} /> New Booking
@@ -255,7 +262,7 @@ const ProfileView = ({ user, shipments, loadingShipments, walletBalance }) => {
       if (file) formData.append('photo', file);
 
       await api.put('/auth/profile', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
+        headers: { 'Content-Type': undefined }
       });
 
       await checkAuth(); // Refresh user data
@@ -1695,6 +1702,531 @@ const BookingView = ({ onBooked, walletBalance, walletLoading, refreshWalletBala
   );
 };
 
+/* ─── Order Tracking Modal ───────────────────────── */
+const STATUS_CONFIG = {
+  PAYMENT_PENDING: { label: 'Payment Pending', color: '#f59e0b', bg: 'rgba(245,158,11,0.1)', icon: Clock },
+  BOOKED:          { label: 'Booked',          color: '#3b82f6', bg: 'rgba(59,130,246,0.1)', icon: PackageCheck },
+  IN_TRANSIT:      { label: 'In Transit',      color: 'var(--accent)', bg: 'rgba(244,122,32,0.1)', icon: Truck },
+  DELIVERED:       { label: 'Delivered',       color: '#22c55e', bg: 'rgba(34,197,94,0.1)', icon: CheckCircle },
+  PENDING:         { label: 'Pending',         color: '#8b7265', bg: 'rgba(139,114,101,0.1)', icon: Clock },
+};
+
+const getStatusCfg = (status) => STATUS_CONFIG[status] || STATUS_CONFIG['PENDING'];
+
+const formatTs = (ts) => {
+  if (!ts) return '';
+  const d = new Date(ts);
+  return d.toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true });
+};
+
+const OrderTrackingModal = ({ shipment, onClose }) => {
+  const [tracking, setTracking] = useState([]);
+  const [loadingTrack, setLoadingTrack] = useState(true);
+  const [trackError, setTrackError] = useState('');
+  const status = shipment.shipmentStatus || 'PENDING';
+  const cfg = getStatusCfg(status);
+  const StatusIcon = cfg.icon;
+
+  useEffect(() => {
+    const fetchTracking = async () => {
+      try {
+        setLoadingTrack(true);
+        setTrackError('');
+        const r = await api.get(`/order/tracking/${shipment.awb}`);
+        const raw = r.data['tracking '] || r.data.tracking || r.data['tracking'] || [];
+        setTracking(Array.isArray(raw) ? raw : []);
+      } catch (err) {
+        setTrackError(err.response?.data?.response || 'Could not load tracking history.');
+        setTracking([]);
+      } finally {
+        setLoadingTrack(false);
+      }
+    };
+    fetchTracking();
+
+    // Lock body scroll
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = ''; };
+  }, [shipment.awb]);
+
+  const formatAddr = (addr) => {
+    if (!addr) return '—';
+    return [addr.fullAddress, addr.landmark, addr.city, addr.state, addr.pincode].filter(Boolean).join(', ') || '—';
+  };
+
+  // Ordered status steps for progress bar
+  const STEPS = ['PAYMENT_PENDING', 'BOOKED', 'IN_TRANSIT', 'DELIVERED'];
+  const currentStepIdx = STEPS.indexOf(status);
+
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 9999,
+      background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(6px)',
+      display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
+      overflowY: 'auto', padding: '2rem 1rem',
+      animation: 'fadeInBg 0.25s ease'
+    }} onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <div style={{
+        background: 'var(--bg-1)', borderRadius: 20, width: '100%', maxWidth: 760,
+        boxShadow: '0 32px 80px rgba(0,0,0,0.28)',
+        animation: 'slideUpModal 0.35s cubic-bezier(0.175,0.885,0.32,1.1)',
+        overflow: 'hidden', position: 'relative'
+      }}>
+        {/* Modal Header */}
+        <div style={{
+          background: 'linear-gradient(135deg, var(--accent) 0%, #c05200 100%)',
+          padding: '1.5rem 1.75rem', position: 'relative', overflow: 'hidden'
+        }}>
+          <div style={{
+            position: 'absolute', inset: 0, opacity: 0.08,
+            backgroundImage: 'repeating-linear-gradient(45deg, #fff 0, #fff 1px, transparent 0, transparent 50%)',
+            backgroundSize: '10px 10px'
+          }} />
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative', zIndex: 1 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <div style={{
+                width: 44, height: 44, borderRadius: 12, background: 'rgba(255,255,255,0.2)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center'
+              }}>
+                <Truck size={22} color="#fff" />
+              </div>
+              <div>
+                <p style={{ color: 'rgba(255,255,255,0.75)', fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', margin: 0 }}>AWB Number</p>
+                <p style={{ color: '#fff', fontSize: '1.25rem', fontWeight: 900, fontFamily: 'monospace', margin: 0 }}>{shipment.awb || '—'}</p>
+              </div>
+            </div>
+            <button onClick={onClose} style={{
+              width: 36, height: 36, borderRadius: '50%', background: 'rgba(255,255,255,0.2)',
+              border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              transition: 'background 0.2s'
+            }} onMouseEnter={e => e.currentTarget.style.background='rgba(255,255,255,0.35)'}
+               onMouseLeave={e => e.currentTarget.style.background='rgba(255,255,255,0.2)'}>
+              <X size={18} color="#fff" />
+            </button>
+          </div>
+
+          {/* Status badges row */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginTop: '1.25rem', position: 'relative', zIndex: 1, flexWrap: 'wrap' }}>
+            <div style={{
+              background: 'rgba(255,255,255,0.18)', borderRadius: 20, padding: '0.35rem 0.9rem',
+              display: 'flex', alignItems: 'center', gap: '0.4rem'
+            }}>
+              <StatusIcon size={13} color="#fff" />
+              <span style={{ color: '#fff', fontSize: '0.78rem', fontWeight: 700 }}>{cfg.label}</span>
+            </div>
+            <div style={{ background: 'rgba(255,255,255,0.18)', borderRadius: 20, padding: '0.35rem 0.9rem' }}>
+              <span style={{ color: '#fff', fontSize: '0.78rem', fontWeight: 600 }}>{shipment.courierPartner || '—'}</span>
+            </div>
+            <div style={{ background: 'rgba(255,255,255,0.18)', borderRadius: 20, padding: '0.35rem 0.9rem' }}>
+              <span style={{ color: '#fff', fontSize: '0.78rem', fontWeight: 600 }}>ETA: {shipment.eta} Day{shipment.eta !== 1 ? 's' : ''}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Progress stepper */}
+        <div style={{
+          background: 'var(--bg-deep)', padding: '1.25rem 1.75rem',
+          borderBottom: '1px solid var(--border)'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
+            {STEPS.map((s, i) => {
+              const done = i <= currentStepIdx;
+              const active = i === currentStepIdx;
+              const sCfg = getStatusCfg(s);
+              const SIcon = sCfg.icon;
+              return (
+                <Fragment key={s}>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.4rem', flex: 'none' }}>
+                    <div style={{
+                      width: 36, height: 36, borderRadius: '50%',
+                      background: done ? 'var(--accent)' : 'var(--bg-1)',
+                      border: `2px solid ${done ? 'var(--accent)' : 'var(--border)'}`,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      boxShadow: active ? '0 0 0 4px rgba(244,122,32,0.2)' : 'none',
+                      transition: 'all 0.3s'
+                    }}>
+                      <SIcon size={15} color={done ? '#fff' : 'var(--text-3)'} />
+                    </div>
+                    <span style={{
+                      fontSize: '0.6rem', fontWeight: 700, textAlign: 'center', maxWidth: 72,
+                      color: done ? 'var(--accent)' : 'var(--text-3)',
+                      textTransform: 'uppercase', letterSpacing: '0.04em', lineHeight: 1.2
+                    }}>{sCfg.label}</span>
+                  </div>
+                  {i < STEPS.length - 1 && (
+                    <div style={{
+                      flex: 1, height: 3, borderRadius: 4,
+                      background: i < currentStepIdx ? 'var(--accent)' : 'var(--border)',
+                      margin: '0 0.25rem 1.6rem',
+                      transition: 'background 0.3s'
+                    }} />
+                  )}
+                </Fragment>
+              );
+            })}
+          </div>
+        </div>
+
+        <div style={{ padding: '1.5rem 1.75rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          {/* Shipment Info Grid */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+            {/* Sender */}
+            <div style={{
+              background: 'var(--bg-deep)', borderRadius: 14, padding: '1rem',
+              border: '1px solid var(--border)'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
+                <div style={{
+                  width: 28, height: 28, borderRadius: 8, background: 'rgba(244,122,32,0.1)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center'
+                }}>
+                  <Package size={13} color="var(--accent)" />
+                </div>
+                <p style={{ fontSize: '0.68rem', fontWeight: 800, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.05em', margin: 0 }}>Sender</p>
+              </div>
+              <p style={{ fontWeight: 700, color: 'var(--text-1)', margin: '0 0 0.25rem', fontSize: '0.9rem' }}>{shipment.sender?.name || '—'}</p>
+              {shipment.sender?.phone && <p style={{ fontSize: '0.78rem', color: 'var(--text-2)', margin: '0 0 0.25rem' }}>📞 {shipment.sender.phone}</p>}
+              {shipment.sender?.address && <p style={{ fontSize: '0.72rem', color: 'var(--text-3)', margin: 0, lineHeight: 1.5 }}>📍 {formatAddr(shipment.sender.address)}</p>}
+            </div>
+
+            {/* Receiver */}
+            <div style={{
+              background: 'var(--bg-deep)', borderRadius: 14, padding: '1rem',
+              border: '1px solid var(--border)'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
+                <div style={{
+                  width: 28, height: 28, borderRadius: 8, background: 'rgba(34,197,94,0.1)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center'
+                }}>
+                  <MapPin size={13} color="#22c55e" />
+                </div>
+                <p style={{ fontSize: '0.68rem', fontWeight: 800, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.05em', margin: 0 }}>Receiver</p>
+              </div>
+              <p style={{ fontWeight: 700, color: 'var(--text-1)', margin: '0 0 0.25rem', fontSize: '0.9rem' }}>{shipment.receiver?.name || '—'}</p>
+              {shipment.receiver?.phone && <p style={{ fontSize: '0.78rem', color: 'var(--text-2)', margin: '0 0 0.25rem' }}>📞 {shipment.receiver.phone}</p>}
+              {shipment.receiver?.address && <p style={{ fontSize: '0.72rem', color: 'var(--text-3)', margin: 0, lineHeight: 1.5 }}>📍 {formatAddr(shipment.receiver.address)}</p>}
+            </div>
+          </div>
+
+          {/* Cost + Details */}
+          <div style={{
+            display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.75rem'
+          }}>
+            {[{label:'Amount', value:`₹${Number(shipment.price||0).toFixed(2)}`},
+              {label:'Mode', value: shipment.mode || '—'},
+              {label:'Payment', value: shipment.paymentStatus || '—'}
+            ].map(({label, value}) => (
+              <div key={label} style={{
+                background: 'var(--bg-deep)', borderRadius: 12, padding: '0.85rem 1rem',
+                border: '1px solid var(--border)', textAlign: 'center'
+              }}>
+                <p style={{ fontSize: '0.62rem', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 0.3rem' }}>{label}</p>
+                <p style={{ fontWeight: 800, fontSize: '0.95rem', color: 'var(--text-1)', margin: 0 }}>{value}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Tracking Timeline */}
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
+              <PackageSearch size={16} color="var(--accent)" />
+              <h3 style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--text-1)', margin: 0 }}>Tracking History</h3>
+            </div>
+
+            {loadingTrack ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '2rem', justifyContent: 'center', color: 'var(--text-3)' }}>
+                <RefreshCw size={18} style={{ animation: 'spin 1s linear infinite' }} />
+                <span style={{ fontSize: '0.85rem' }}>Loading tracking data…</span>
+              </div>
+            ) : trackError ? (
+              <div style={{ padding: '1.25rem', background: 'rgba(239,68,68,0.06)', borderRadius: 12, border: '1px solid rgba(239,68,68,0.15)', textAlign: 'center', color: '#ef4444', fontSize: '0.85rem', fontWeight: 600 }}>
+                <AlertCircle size={16} style={{ marginBottom: '0.3rem' }} /><br/>{trackError}
+              </div>
+            ) : tracking.length === 0 ? (
+              <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-3)' }}>
+                <PackageSearch size={36} style={{ opacity: 0.4, marginBottom: '0.75rem' }} />
+                <p style={{ fontSize: '0.85rem', margin: 0 }}>No tracking events recorded yet.</p>
+                <p style={{ fontSize: '0.75rem', color: 'var(--text-3)', marginTop: '0.3rem' }}>Events appear here once your shipment is picked up.</p>
+              </div>
+            ) : (
+              <div style={{ position: 'relative', paddingLeft: '1.5rem' }}>
+                {/* Vertical line */}
+                <div style={{
+                  position: 'absolute', left: '0.72rem', top: 0, bottom: 0,
+                  width: 2, background: 'linear-gradient(to bottom, var(--accent), rgba(244,122,32,0.1))',
+                  borderRadius: 99
+                }} />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
+                  {[...tracking].reverse().map((evt, idx) => {
+                    const isFirst = idx === 0;
+                    return (
+                      <div key={idx} style={{
+                        display: 'flex', gap: '1rem', paddingBottom: idx < tracking.length - 1 ? '1.25rem' : 0,
+                        animation: `slideInTrack 0.4s ease ${idx * 0.08}s both`
+                      }}>
+                        {/* Node */}
+                        <div style={{
+                          width: 14, height: 14, borderRadius: '50%', flexShrink: 0, marginTop: 4,
+                          background: isFirst ? 'var(--accent)' : 'var(--bg-1)',
+                          border: `2px solid ${isFirst ? 'var(--accent)' : 'var(--border)'}`,
+                          boxShadow: isFirst ? '0 0 0 4px rgba(244,122,32,0.15)' : 'none',
+                          position: 'relative', zIndex: 1
+                        }} />
+                        {/* Content */}
+                        <div style={{
+                          flex: 1, background: isFirst ? 'rgba(244,122,32,0.04)' : 'var(--bg-deep)',
+                          border: `1px solid ${isFirst ? 'rgba(244,122,32,0.25)' : 'var(--border)'}`,
+                          borderRadius: 12, padding: '0.85rem 1rem',
+                          transition: 'all 0.2s'
+                        }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem', flexWrap: 'wrap' }}>
+                            <div>
+                              <p style={{
+                                fontWeight: 700, fontSize: '0.88rem',
+                                color: isFirst ? 'var(--accent)' : 'var(--text-1)',
+                                margin: '0 0 0.2rem', textTransform: 'capitalize'
+                              }}>{evt.title || evt.status?.replaceAll('_', ' ') || 'Update'}</p>
+                              {evt.description && <p style={{ fontSize: '0.78rem', color: 'var(--text-2)', margin: '0 0 0.25rem', lineHeight: 1.5 }}>{evt.description}</p>}
+                              {evt.location && (
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', marginTop: '0.2rem' }}>
+                                  <MapPin size={11} color="var(--text-3)" />
+                                  <span style={{ fontSize: '0.72rem', color: 'var(--text-3)', fontWeight: 600 }}>{evt.location}</span>
+                                </div>
+                              )}
+                            </div>
+                            <span style={{
+                              fontSize: '0.68rem', color: 'var(--text-3)', fontWeight: 600,
+                              flexShrink: 0, background: 'var(--bg-1)',
+                              padding: '0.2rem 0.6rem', borderRadius: 20, border: '1px solid var(--border)'
+                            }}>{formatTs(evt.timestamp)}</span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Modal footer */}
+        <div style={{
+          padding: '1rem 1.75rem', background: 'var(--bg-deep)',
+          borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'flex-end'
+        }}>
+          <button onClick={onClose} className="btn-ghost" style={{ padding: '0.5rem 1.25rem', fontSize: '0.85rem' }}>Close</button>
+        </div>
+      </div>
+
+      <style>{`
+        @keyframes fadeInBg { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUpModal { from { opacity: 0; transform: translateY(40px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        @keyframes slideInTrack { from { opacity: 0; transform: translateX(-12px); } to { opacity: 1; transform: translateX(0); } }
+      `}</style>
+    </div>
+  );
+};
+
+/* ─── My Orders View ──────────────────────────────── */
+const MyOrdersView = ({ shipments, loadingShipments }) => {
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [filter, setFilter] = useState('ALL');
+  const [search, setSearch] = useState('');
+
+  const FILTERS = [
+    { key: 'ALL', label: 'All Orders' },
+    { key: 'PAYMENT_PENDING', label: 'Pending' },
+    { key: 'BOOKED', label: 'Booked' },
+    { key: 'IN_TRANSIT', label: 'In Transit' },
+    { key: 'DELIVERED', label: 'Delivered' },
+  ];
+
+  const filteredOrders = useMemo(() => {
+    let list = [...shipments].reverse(); // newest first
+    if (filter !== 'ALL') list = list.filter(s => (s.shipmentStatus || s.status) === filter);
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      list = list.filter(s =>
+        (s.awb || '').toLowerCase().includes(q) ||
+        (s.receiver?.name || '').toLowerCase().includes(q) ||
+        (s.courierPartner || '').toLowerCase().includes(q) ||
+        (s.receiver?.address?.city || '').toLowerCase().includes(q)
+      );
+    }
+    return list;
+  }, [shipments, filter, search]);
+
+  return (
+    <div style={{ maxWidth: 900, margin: '0 auto' }}>
+      {/* Page Header */}
+      <div style={{ marginBottom: '1.5rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.5rem' }}>
+          <ClipboardList size={20} color="var(--accent)" />
+          <h1 style={{ fontSize: '1.5rem', fontWeight: 900, color: 'var(--text-1)', margin: 0 }}>My Orders</h1>
+        </div>
+        <p style={{ color: 'var(--text-3)', fontSize: '0.85rem', margin: 0 }}>Track all your shipments in one place</p>
+      </div>
+
+      {/* Search + Filter Bar */}
+      <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.25rem', flexWrap: 'wrap', alignItems: 'center' }}>
+        <div style={{ position: 'relative', flex: '1', minWidth: 220 }}>
+          <Search size={14} color="var(--text-3)" style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)' }} />
+          <input
+            type="text"
+            placeholder="Search by AWB, receiver, city or courier…"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            style={{
+              width: '100%', padding: '0.6rem 0.75rem 0.6rem 2.2rem',
+              background: 'var(--bg-1)', border: '1px solid var(--border)',
+              borderRadius: 10, fontSize: '0.85rem', color: 'var(--text-1)',
+              outline: 'none', boxSizing: 'border-box'
+            }}
+          />
+        </div>
+        <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+          {FILTERS.map(f => (
+            <button key={f.key} onClick={() => setFilter(f.key)} style={{
+              padding: '0.4rem 0.85rem', borderRadius: 20, fontSize: '0.75rem', fontWeight: 700,
+              border: `1px solid ${filter === f.key ? 'var(--accent)' : 'var(--border)'}`,
+              background: filter === f.key ? 'rgba(244,122,32,0.1)' : 'var(--bg-1)',
+              color: filter === f.key ? 'var(--accent)' : 'var(--text-2)',
+              cursor: 'pointer', transition: 'all 0.2s'
+            }}>{f.label}</button>
+          ))}
+        </div>
+      </div>
+
+      {/* Orders List */}
+      {loadingShipments ? (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem', padding: '4rem', color: 'var(--text-3)' }}>
+          <RefreshCw size={20} style={{ animation: 'spin 1s linear infinite' }} />
+          <span>Loading your orders…</span>
+        </div>
+      ) : filteredOrders.length === 0 ? (
+        <div className="glass-card" style={{ padding: '3rem', textAlign: 'center' }}>
+          <ClipboardList size={48} color="var(--text-3)" style={{ opacity: 0.4, margin: '0 auto 1rem' }} />
+          <h3 style={{ margin: '0 0 0.5rem', color: 'var(--text-1)' }}>
+            {search || filter !== 'ALL' ? 'No orders match your filter' : 'No orders yet'}
+          </h3>
+          <p style={{ color: 'var(--text-2)', fontSize: '0.85rem', margin: 0 }}>
+            {search || filter !== 'ALL' ? 'Try clearing your search or changing the filter.' : 'Book your first shipment to see it here.'}
+          </p>
+        </div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+          {filteredOrders.map((s, i) => {
+            const status = s.shipmentStatus || s.status || 'PENDING';
+            const cfg = getStatusCfg(status);
+            const StatusIcon = cfg.icon;
+            const from = s.sender?.address?.city || s.sender?.address?.state || '—';
+            const to = s.receiver?.address?.city || s.receiver?.address?.state || '—';
+
+            return (
+              <div
+                key={s._id || i}
+                style={{
+                  background: 'var(--bg-1)', borderRadius: 16, border: '1px solid var(--border)',
+                  overflow: 'hidden', cursor: 'pointer', transition: 'all 0.2s',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                  animation: `slideInOrder 0.4s ease ${i * 0.05}s both`
+                }}
+                onClick={() => setSelectedOrder(s)}
+                onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.1)'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+                onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.04)'; e.currentTarget.style.transform = 'none'; }}
+              >
+                {/* Top accent bar */}
+                <div style={{ height: 3, background: `linear-gradient(90deg, ${cfg.color}, rgba(244,122,32,0.3))` }} />
+
+                <div style={{ padding: '1rem 1.25rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
+                    {/* Left: AWB + route */}
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
+                        <span style={{
+                          fontFamily: 'monospace', fontWeight: 900, fontSize: '1rem',
+                          color: 'var(--accent)'
+                        }}>{s.awb || 'N/A'}</span>
+                        <div style={{
+                          display: 'flex', alignItems: 'center', gap: '0.3rem',
+                          background: cfg.bg, borderRadius: 20, padding: '0.2rem 0.7rem'
+                        }}>
+                          <StatusIcon size={11} color={cfg.color} />
+                          <span style={{ fontSize: '0.7rem', fontWeight: 700, color: cfg.color }}>{cfg.label}</span>
+                        </div>
+                      </div>
+
+                      {/* Route: from → to */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.6rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                          <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--accent)' }} />
+                          <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-1)' }}>{from}</span>
+                        </div>
+                        <div style={{ flex: 1, height: 1, borderTop: '2px dashed var(--border)', minWidth: 20 }} />
+                        <Truck size={13} color="var(--text-3)" />
+                        <div style={{ flex: 1, height: 1, borderTop: '2px dashed var(--border)', minWidth: 20 }} />
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                          <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-1)' }}>{to}</span>
+                          <MapPin size={11} color="#22c55e" />
+                        </div>
+                      </div>
+
+                      {/* Receiver name */}
+                      <p style={{ fontSize: '0.75rem', color: 'var(--text-3)', margin: 0 }}>
+                        To: <span style={{ fontWeight: 600, color: 'var(--text-2)' }}>{s.receiver?.name || '—'}</span>
+                        {s.courierPartner && <> · <span style={{ color: 'var(--text-3)' }}>{s.courierPartner}</span></>}
+                      </p>
+                    </div>
+
+                    {/* Right: price + ETA + CTA */}
+                    <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                      <p style={{ fontSize: '1.2rem', fontWeight: 900, color: 'var(--text-1)', margin: '0 0 0.15rem' }}>₹{Number(s.price||0).toFixed(2)}</p>
+                      <p style={{ fontSize: '0.72rem', color: 'var(--text-3)', margin: '0 0 0.75rem' }}>{s.eta} day{s.eta !== 1 ? 's' : ''} ETA</p>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setSelectedOrder(s); }}
+                        style={{
+                          padding: '0.45rem 1rem', borderRadius: 10,
+                          background: 'rgba(244,122,32,0.1)', border: '1px solid rgba(244,122,32,0.3)',
+                          color: 'var(--accent)', fontSize: '0.75rem', fontWeight: 700,
+                          cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.35rem',
+                          transition: 'all 0.2s', marginLeft: 'auto'
+                        }}
+                        onMouseEnter={e => { e.currentTarget.style.background = 'var(--accent)'; e.currentTarget.style.color = '#fff'; }}
+                        onMouseLeave={e => { e.currentTarget.style.background = 'rgba(244,122,32,0.1)'; e.currentTarget.style.color = 'var(--accent)'; }}
+                      >
+                        Track Order <ChevronRight size={13} />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Summary pill */}
+      {!loadingShipments && shipments.length > 0 && (
+        <p style={{ textAlign: 'center', fontSize: '0.75rem', color: 'var(--text-3)', marginTop: '1.25rem' }}>
+          Showing {filteredOrders.length} of {shipments.length} order{shipments.length !== 1 ? 's' : ''}
+        </p>
+      )}
+
+      {/* Tracking Modal */}
+      {selectedOrder && <OrderTrackingModal shipment={selectedOrder} onClose={() => setSelectedOrder(null)} />}
+
+      <style>{`
+        @keyframes slideInOrder {
+          from { opacity: 0; transform: translateY(16px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
+    </div>
+  );
+};
+
 /* ─── Main Dashboard ─────────────────────────────── */
 const Dashboard = () => {
   const { user, logout } = useAuth();
@@ -1826,7 +2358,8 @@ const Dashboard = () => {
       <Navbar logout={logout} view={view} setView={setView} />
       <main className="dashboard-main">
         {view === 'profile' && <ProfileView user={user} shipments={shipments} loadingShipments={loadingShipments} walletBalance={walletBalance} />}
-        {view === 'wallet' && <WalletView balance={walletBalance} loading={walletLoading} notice={walletNotice} error={walletError} onRecharge={rechargeWallet} />}
+        {view === 'wallet'  && <WalletView balance={walletBalance} loading={walletLoading} notice={walletNotice} error={walletError} onRecharge={rechargeWallet} />}
+        {view === 'orders'  && <MyOrdersView shipments={shipments} loadingShipments={loadingShipments} />}
         {view === 'book'    && (
           <BookingView
             onBooked={handleBooked}
