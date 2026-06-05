@@ -14,7 +14,8 @@ const credential = {
   razorpayKeySecret : process.env.ROZAPAY_SECRET_KEY,
   cloudnaryApiKey : process.env.CLOUDNARY_API_KEY,
   cloudnaryApiSecret : process.env.CLOUDNARY_API_SECRET,
-  cloudnaryName : process.env.CLOUDNARY_NAME
+  cloudnaryName : process.env.CLOUDNARY_NAME,
+  razorpayWebhookSecret : process.env.RAZORPAY_WEBHOOK_SECRET
 }
 
 export default credential

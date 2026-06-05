@@ -41,6 +41,10 @@ export const createShipmentOrder = async (req, res) => {
 
     const order = await razorpayInstance.orders.create(options);
 
+    // Save Razorpay orderId on shipment so webhooks can find it
+    shipment.razorpayOrderId = order.id;
+    await shipment.save();
+
     return res.status(201).json({
       orderId: order.id,
       amount: shipment.price,
@@ -90,6 +94,7 @@ export const verifyShipmentPayment = async (req, res) => {
     // Update shipment
     shipment.paymentStatus = "PAID";
     shipment.shipmentStatus = "BOOKED";
+    shipment.razorpayPaymentId = razorpay_payment_id;
     shipment.utr = razorpay_payment_id;
     shipment.awb = "AWB" + Date.now();
 

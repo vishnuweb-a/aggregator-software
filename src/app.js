@@ -11,12 +11,7 @@ import pincodeRouter from './routes/pincode.route.js'
 import credential from './config/config.js'
 
 import TrackingOrder from './routes/shipmentTracking.routes.js'
-
-
-
-
-
-
+import paymentRouter from './routes/payment.route.js'
 
 
 const app = express()
@@ -33,6 +28,10 @@ app.use(cors({
   origin: clientUrls,
   credentials: true,
 }))
+
+// ─── Webhook route MUST come BEFORE express.json() ───
+// Razorpay webhook needs raw body for HMAC signature verification
+app.use('/api/payment', paymentRouter)
 
 app.use(express.json())
 app.use(express.urlencoded({extended : true}))

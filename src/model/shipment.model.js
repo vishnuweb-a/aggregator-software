@@ -25,12 +25,18 @@ eta:Number,
 
 awb:String,
 
+// ─── Razorpay fields ────────────────────────────
+razorpayOrderId: { type: String, index: true },
+razorpayPaymentId: String,
+
 paymentStatus:{
 type:String,
 enum:[
 "PENDING",
 "PAID",
-"FAILED"
+"FAILED",
+"REFUND_INITIATED",
+"REFUNDED"
 ],
 default:"PENDING"
 },
@@ -41,7 +47,10 @@ enum:[
 "PAYMENT_PENDING",
 "BOOKED",
 "IN_TRANSIT",
-"DELIVERED"
+"DELIVERED",
+"PAYMENT_FAILED",
+"CANCELLED",
+"REFUNDED"
 ],
 default:"PAYMENT_PENDING"
 },
@@ -118,6 +127,18 @@ costBreakdown: {
   platformFees: { type: Number, default: 0 },
   extraFees: { type: Number, default: 0 },
   totalAmount: Number
+},
+
+// ─── Refund tracking ────────────────────────────
+refund: {
+  refundId: String,
+  refundAmount: Number,
+  refundStatus: {
+    type: String,
+    enum: ["INITIATED", "PROCESSED", "FAILED"]
+  },
+  refundDate: Date,
+  refundReason: String
 }
 
 },{timestamps:true});
@@ -125,4 +146,4 @@ costBreakdown: {
 export default mongoose.model(
 "shipment",
 shipmentSchema
-);
+);
