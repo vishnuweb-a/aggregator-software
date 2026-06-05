@@ -1871,6 +1871,40 @@ const OrderTrackingModal = ({ shipment, onClose }) => {
         </div>
 
         <div style={{ padding: '1.5rem 1.75rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          {/* Alert messages for Payment Failures & Refunds */}
+          {shipment.paymentStatus === 'FAILED' && (
+            <div style={{
+              background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)',
+              borderRadius: 12, padding: '1rem', display: 'flex', alignItems: 'flex-start', gap: '0.75rem'
+            }}>
+              <AlertCircle size={20} color="#ef4444" style={{ marginTop: '0.1rem', flexShrink: 0 }} />
+              <div>
+                <p style={{ margin: '0 0 0.25rem', color: '#ef4444', fontWeight: 700, fontSize: '0.85rem' }}>Payment Failed</p>
+                <p style={{ margin: 0, color: 'var(--text-2)', fontSize: '0.8rem', lineHeight: 1.4 }}>
+                  There was an issue processing your payment. Please try again or contact support if the amount was deducted.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {shipment.refund && shipment.refund.refundId && (
+            <div style={{
+              background: 'rgba(59, 130, 246, 0.1)', border: '1px solid rgba(59, 130, 246, 0.3)',
+              borderRadius: 12, padding: '1rem', display: 'flex', alignItems: 'flex-start', gap: '0.75rem'
+            }}>
+              <CreditCard size={20} color="#3b82f6" style={{ marginTop: '0.1rem', flexShrink: 0 }} />
+              <div style={{ flex: 1 }}>
+                <p style={{ margin: '0 0 0.25rem', color: '#3b82f6', fontWeight: 700, fontSize: '0.85rem' }}>
+                  Refund {shipment.refund.refundStatus === 'PROCESSED' ? 'Processed' : 'Initiated'}
+                </p>
+                <p style={{ margin: 0, color: 'var(--text-2)', fontSize: '0.8rem', lineHeight: 1.4 }}>
+                  <strong>Amount:</strong> ₹{shipment.refund.refundAmount} <br />
+                  <strong>Reason:</strong> {shipment.refund.refundReason || 'Refund processed.'}
+                </p>
+              </div>
+            </div>
+          )}
+
           {/* Shipment Info Grid */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
             {/* Sender */}
@@ -2159,6 +2193,28 @@ const MyOrdersView = ({ shipments, loadingShipments }) => {
                           <StatusIcon size={11} color={cfg.color} />
                           <span style={{ fontSize: '0.7rem', fontWeight: 700, color: cfg.color }}>{cfg.label}</span>
                         </div>
+                        
+                        {s.paymentStatus === 'FAILED' && (
+                          <div style={{
+                            display: 'flex', alignItems: 'center', gap: '0.3rem',
+                            background: 'rgba(239, 68, 68, 0.1)', borderRadius: 20, padding: '0.2rem 0.7rem'
+                          }}>
+                            <AlertCircle size={11} color="#ef4444" />
+                            <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#ef4444' }}>Pay Failed</span>
+                          </div>
+                        )}
+
+                        {s.refund?.refundId && (
+                          <div style={{
+                            display: 'flex', alignItems: 'center', gap: '0.3rem',
+                            background: 'rgba(59, 130, 246, 0.1)', borderRadius: 20, padding: '0.2rem 0.7rem'
+                          }}>
+                            <CreditCard size={11} color="#3b82f6" />
+                            <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#3b82f6' }}>
+                              Refund {s.refund.refundStatus === 'PROCESSED' ? 'Processed' : 'Initiated'}
+                            </span>
+                          </div>
+                        )}
                       </div>
 
                       {/* Route: from → to */}
